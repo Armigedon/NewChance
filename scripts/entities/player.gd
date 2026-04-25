@@ -36,20 +36,23 @@ func _on_run_ended(_outcome: int) -> void:
 	if has_node("Sword"):
 		$Sword.set_active_element("")
 
+var _pending_incoming_color: String = ""
+
 func _on_at_cap(incoming_color: String) -> void:
+	_pending_incoming_color = incoming_color
 	var prompt = get_tree().root.find_child("ReplaceSkillPrompt", true, false)
 	if prompt == null:
 		return
 	if not prompt.replace_chosen.is_connected(_on_replace_chosen):
-		prompt.replace_chosen.connect(_on_replace_chosen.bind(incoming_color))
-		prompt.declined.connect(_on_replace_declined.bind(incoming_color))
+		prompt.replace_chosen.connect(_on_replace_chosen)
+		prompt.declined.connect(_on_replace_declined)
 	prompt.show_prompt(_skill_system, incoming_color)
 
-func _on_replace_chosen(index: int, incoming_color: String) -> void:
-	_skill_system.replace_at(index, incoming_color)
+func _on_replace_chosen(index: int) -> void:
+	_skill_system.replace_at(index, _pending_incoming_color)
 
-func _on_replace_declined(incoming_color: String) -> void:
-	_skill_system.decline_elder(incoming_color)
+func _on_replace_declined() -> void:
+	_skill_system.decline_elder(_pending_incoming_color)
 
 var hp: int = MAX_HP
 var _is_dead: bool = false
