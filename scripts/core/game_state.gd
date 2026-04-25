@@ -27,6 +27,8 @@ func transition_to(location: Location) -> void:
 		return
 	current_location = location
 	location_changed.emit(location)
+	# Notify Escalation about upstairs presence (drives time-alarm)
+	Escalation.set_player_upstairs(location == Location.UPSTAIRS)
 	var path: String = scene_path_for(location)
 	if path != "":
 		# deferred so signal handlers run before swap
@@ -38,4 +40,5 @@ func end_run(outcome: Outcome) -> void:
 	elif outcome == Outcome.DIED:
 		SoulEconomy.clear_carry()
 	run_ended.emit(outcome)
+	Escalation.reset()
 	transition_to(Location.MAIN_HALL)
