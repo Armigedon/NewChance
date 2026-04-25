@@ -143,7 +143,7 @@ dash={
 Run:
 ```bash
 cd /c/Users/wyenk/OneDrive/Documents/godot/new-chance
-"/c/Users/wyenk/OneDrive/Documents/godot/Godot_v4.6.2-stable_win64.exe" --headless --path . -s res://addons/gdUnit4/bin/GdUnitCmdTool.gd --run-tests
+"/c/Users/wyenk/OneDrive/Documents/godot/Godot_v4.6.2-stable_win64.exe" --headless --path . -s res://addons/gdUnit4/bin/GdUnitCmdTool.gd -a res://test --ignoreHeadlessMode
 ```
 Expected: GdUnit4 starts, finds 0 tests, exits cleanly with exit code 0 (no tests to run yet — that's fine).
 
@@ -195,7 +195,7 @@ func test_transition_emits_signal() -> void:
 - [ ] **Step 2: Run test — verify it fails**
 
 ```bash
-"/c/Users/wyenk/OneDrive/Documents/godot/Godot_v4.6.2-stable_win64.exe" --headless --path . -s res://addons/gdUnit4/bin/GdUnitCmdTool.gd --run-tests --add res://test/test_game_state.gd
+"/c/Users/wyenk/OneDrive/Documents/godot/Godot_v4.6.2-stable_win64.exe" --headless --path . -s res://addons/gdUnit4/bin/GdUnitCmdTool.gd -a res://test/test_game_state.gd --ignoreHeadlessMode
 ```
 Expected: FAIL with "preload failed" or "cannot find script".
 
@@ -222,7 +222,7 @@ func transition_to(location: Location) -> void:
 - [ ] **Step 4: Run test — verify it passes**
 
 ```bash
-"/c/Users/wyenk/OneDrive/Documents/godot/Godot_v4.6.2-stable_win64.exe" --headless --path . -s res://addons/gdUnit4/bin/GdUnitCmdTool.gd --run-tests --add res://test/test_game_state.gd
+"/c/Users/wyenk/OneDrive/Documents/godot/Godot_v4.6.2-stable_win64.exe" --headless --path . -s res://addons/gdUnit4/bin/GdUnitCmdTool.gd -a res://test/test_game_state.gd --ignoreHeadlessMode
 ```
 Expected: 3 tests pass, exit 0.
 
@@ -311,7 +311,7 @@ func test_pyre_filled_signal_only_once() -> void:
 - [ ] **Step 2: Run tests — verify they fail**
 
 ```bash
-"/c/Users/wyenk/OneDrive/Documents/godot/Godot_v4.6.2-stable_win64.exe" --headless --path . -s res://addons/gdUnit4/bin/GdUnitCmdTool.gd --run-tests --add res://test/test_soul_economy.gd
+"/c/Users/wyenk/OneDrive/Documents/godot/Godot_v4.6.2-stable_win64.exe" --headless --path . -s res://addons/gdUnit4/bin/GdUnitCmdTool.gd -a res://test/test_soul_economy.gd --ignoreHeadlessMode
 ```
 Expected: 8 tests fail.
 
@@ -445,7 +445,7 @@ func test_pyre_responds_to_pyre_filled_signal() -> void:
 - [ ] **Step 2: Run tests — expect failures**
 
 ```bash
-"/c/Users/wyenk/OneDrive/Documents/godot/Godot_v4.6.2-stable_win64.exe" --headless --path . -s res://addons/gdUnit4/bin/GdUnitCmdTool.gd --run-tests --add res://test/test_pyre.gd
+"/c/Users/wyenk/OneDrive/Documents/godot/Godot_v4.6.2-stable_win64.exe" --headless --path . -s res://addons/gdUnit4/bin/GdUnitCmdTool.gd -a res://test/test_pyre.gd --ignoreHeadlessMode
 ```
 Expected: 2 tests fail (script doesn't exist).
 
@@ -575,7 +575,7 @@ func test_reset_restores_hp() -> void:
 - [ ] **Step 2: Run tests — verify they fail**
 
 ```bash
-"/c/Users/wyenk/OneDrive/Documents/godot/Godot_v4.6.2-stable_win64.exe" --headless --path . -s res://addons/gdUnit4/bin/GdUnitCmdTool.gd --run-tests --add res://test/test_player.gd
+"/c/Users/wyenk/OneDrive/Documents/godot/Godot_v4.6.2-stable_win64.exe" --headless --path . -s res://addons/gdUnit4/bin/GdUnitCmdTool.gd -a res://test/test_player.gd --ignoreHeadlessMode
 ```
 Expected: 6 tests fail.
 
@@ -1512,7 +1512,7 @@ This task is verification, not implementation.
 - [ ] **Step 1: Run all unit tests**
 
 ```bash
-"/c/Users/wyenk/OneDrive/Documents/godot/Godot_v4.6.2-stable_win64.exe" --headless --path . -s res://addons/gdUnit4/bin/GdUnitCmdTool.gd --run-tests
+"/c/Users/wyenk/OneDrive/Documents/godot/Godot_v4.6.2-stable_win64.exe" --headless --path . -s res://addons/gdUnit4/bin/GdUnitCmdTool.gd -a res://test --ignoreHeadlessMode
 ```
 Expected: all tests across `test/test_game_state.gd`, `test/test_soul_economy.gd`, `test/test_pyre.gd`, `test/test_player.gd` PASS.
 
