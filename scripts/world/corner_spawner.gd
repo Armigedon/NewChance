@@ -47,9 +47,10 @@ func _spawn() -> void:
 	if tier in ["dragon", "elder"]:
 		enemy.color = color
 		_apply_color_tint(enemy, color)
-	enemy.global_position = _pick_spawn_position()
+	var spawn_pos: Vector3 = _pick_spawn_position()
 	enemy.died.connect(_on_died)
 	get_parent().add_child(enemy)
+	enemy.global_position = spawn_pos
 	_alive_count += 1
 
 func _scene_for_tier(tier: String) -> PackedScene:

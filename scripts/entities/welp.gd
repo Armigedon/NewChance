@@ -83,8 +83,9 @@ func _spawn_pickup(pickup_tier: String, offset: Vector3) -> void:
 	var pickup: Area3D = SOUL_PICKUP_SCENE.instantiate()
 	pickup.color = color
 	pickup.tier = pickup_tier
-	pickup.global_position = global_position + offset
+	var pickup_pos: Vector3 = global_position + offset
 	get_parent().add_child(pickup)
+	pickup.global_position = pickup_pos
 
 func _random_offset() -> Vector3:
 	return Vector3(randf_range(-0.5, 0.5), 0, randf_range(-0.5, 0.5))
