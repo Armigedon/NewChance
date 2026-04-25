@@ -1,0 +1,22 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/interactables/descent_staircase.gd" id="1_staircase"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_staircase"]
+size = Vector3(2, 2, 2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_staircase"]
+size = Vector3(2, 0.2, 2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_staircase"]
+albedo_color = Color(0.2, 0.2, 0.25, 1)
+
+[node name="DescentStaircase" type="Area3D"]
+script = ExtResource("1_staircase")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_staircase")
+
+[node name="Visual" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_staircase")
+material_override = SubResource("StandardMaterial3D_staircase")
