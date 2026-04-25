@@ -20,3 +20,15 @@ func test_transition_emits_signal() -> void:
     var monitor := monitor_signals(gs)
     gs.transition_to(GameStateScript.Location.UPSTAIRS)
     await assert_signal(gs).is_emitted("location_changed", [GameStateScript.Location.UPSTAIRS])
+
+func test_main_hall_scene_path() -> void:
+    assert_that(GameStateScript.MAIN_HALL_SCENE_PATH).is_equal("res://scenes/world/main_hall.tscn")
+
+func test_upstairs_scene_path() -> void:
+    assert_that(GameStateScript.UPSTAIRS_SCENE_PATH).is_equal("res://scenes/world/upstairs.tscn")
+
+func test_scene_path_for_location_returns_main_hall() -> void:
+    assert_that(GameStateScript.scene_path_for(GameStateScript.Location.MAIN_HALL)).is_equal(GameStateScript.MAIN_HALL_SCENE_PATH)
+
+func test_scene_path_for_location_returns_upstairs() -> void:
+    assert_that(GameStateScript.scene_path_for(GameStateScript.Location.UPSTAIRS)).is_equal(GameStateScript.UPSTAIRS_SCENE_PATH)
