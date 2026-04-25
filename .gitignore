@@ -4,3 +4,6 @@
 
 # Brainstorming companion sessions
 .superpowers/
+
+# GdUnit4 test reports
+reports/
