@@ -149,7 +149,9 @@ func _try_cast() -> void:
 			if to_target.length() > 0.01:
 				aim_dir = to_target.normalized()
 	cast.direction = aim_dir
-	cast.global_position = global_position + aim_dir * 1.0 + Vector3(0, 0.5, 0)
+	# Spawn at welp/enemy height (~0.5m) so the cast actually intersects ground-level enemies
+	# instead of flying over them. The aim direction is XZ-only so this doesn't affect aiming.
+	cast.global_position = Vector3(global_position.x, 0.5, global_position.z) + aim_dir * 1.0
 	get_parent().add_child(cast)
 	_cast_cooldown_remaining = cast_cooldown
 
