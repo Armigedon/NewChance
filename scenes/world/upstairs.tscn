@@ -1,42 +1,78 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=23 format=3]
 
-[ext_resource type="Script" path="res://scripts/world/welp_spawner.gd" id="1_spawner"]
-[ext_resource type="PackedScene" path="res://scenes/interactables/descent_staircase.tscn" id="2_staircase"]
-[ext_resource type="PackedScene" path="res://scenes/ui/descent_prompt.tscn" id="3_prompt"]
-[ext_resource type="PackedScene" path="res://scenes/entities/player.tscn" id="4_player"]
-[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="5_hud"]
+[ext_resource type="PackedScene" path="res://scenes/interactables/descent_staircase.tscn" id="1_staircase"]
+[ext_resource type="PackedScene" path="res://scenes/ui/descent_prompt.tscn" id="2_prompt"]
+[ext_resource type="PackedScene" path="res://scenes/entities/player.tscn" id="3_player"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="4_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/replace_skill_prompt.tscn" id="5_replace"]
 [ext_resource type="Script" path="res://scripts/world/death_handler.gd" id="6_death"]
-[ext_resource type="PackedScene" path="res://scenes/ui/replace_skill_prompt.tscn" id="7_replace"]
+[ext_resource type="Script" path="res://scripts/world/corner_spawner.gd" id="7_spawner"]
+[ext_resource type="Script" path="res://scripts/world/corner_zone.gd" id="8_zone"]
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_floor"]
-size = Vector3(40, 0.5, 40)
+[sub_resource type="BoxShape3D" id="floor_shape"]
+size = Vector3(50, 0.5, 50)
 
-[sub_resource type="BoxMesh" id="BoxMesh_floor"]
-size = Vector3(40, 0.5, 40)
+[sub_resource type="BoxMesh" id="floor_mesh"]
+size = Vector3(50, 0.5, 50)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor"]
+[sub_resource type="StandardMaterial3D" id="floor_mat"]
 albedo_color = Color(0.18, 0.16, 0.14, 1)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_wall"]
-size = Vector3(40, 4, 0.5)
-
-[sub_resource type="BoxMesh" id="BoxMesh_wall"]
-size = Vector3(40, 4, 0.5)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wall"]
-albedo_color = Color(0.22, 0.2, 0.18, 1)
-
-[sub_resource type="Environment" id="Environment_upstairs"]
+[sub_resource type="Environment" id="env"]
 background_mode = 1
 background_color = Color(0.02, 0.02, 0.04, 1)
 ambient_light_source = 2
 ambient_light_color = Color(0.3, 0.3, 0.4, 1)
 ambient_light_energy = 0.3
 
+[sub_resource type="BoxShape3D" id="zone_shape"]
+size = Vector3(10, 6, 10)
+
+[sub_resource type="CylinderMesh" id="disc_mesh"]
+top_radius = 4.0
+bottom_radius = 4.0
+height = 0.05
+
+[sub_resource type="StandardMaterial3D" id="disc_red"]
+albedo_color = Color(0.7, 0.2, 0.15, 0.65)
+emission_enabled = true
+emission = Color(0.7, 0.2, 0.15, 1)
+emission_energy_multiplier = 0.6
+
+[sub_resource type="StandardMaterial3D" id="disc_blue"]
+albedo_color = Color(0.25, 0.45, 0.85, 0.65)
+emission_enabled = true
+emission = Color(0.3, 0.5, 0.9, 1)
+emission_energy_multiplier = 0.6
+
+[sub_resource type="StandardMaterial3D" id="disc_green"]
+albedo_color = Color(0.25, 0.7, 0.25, 0.65)
+emission_enabled = true
+emission = Color(0.3, 0.8, 0.3, 1)
+emission_energy_multiplier = 0.6
+
+[sub_resource type="StandardMaterial3D" id="disc_purple"]
+albedo_color = Color(0.5, 0.25, 0.7, 0.65)
+emission_enabled = true
+emission = Color(0.55, 0.3, 0.8, 1)
+emission_energy_multiplier = 0.6
+
+[sub_resource type="StandardMaterial3D" id="disc_gold"]
+albedo_color = Color(0.95, 0.85, 0.25, 0.65)
+emission_enabled = true
+emission = Color(1, 0.9, 0.3, 1)
+emission_energy_multiplier = 0.6
+
+[sub_resource type="StandardMaterial3D" id="disc_white"]
+albedo_color = Color(0.92, 0.92, 0.88, 0.65)
+emission_enabled = true
+emission = Color(0.95, 0.95, 0.9, 1)
+emission_energy_multiplier = 0.6
+
 [node name="Upstairs" type="Node3D"]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_upstairs")
+environment = SubResource("env")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.7071, 0.7071, 0, -0.7071, 0.7071, 0, 8, 0)
@@ -47,71 +83,147 @@ light_energy = 0.4
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.25, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Floor"]
-shape = SubResource("BoxShape3D_floor")
+shape = SubResource("floor_shape")
 
 [node name="Mesh" type="MeshInstance3D" parent="Floor"]
-mesh = SubResource("BoxMesh_floor")
-material_override = SubResource("StandardMaterial3D_floor")
+mesh = SubResource("floor_mesh")
+material_override = SubResource("floor_mat")
 
-[node name="WallNorth" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -20)
+[node name="RedCorner" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0, 0)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="WallNorth"]
-shape = SubResource("BoxShape3D_wall")
+[node name="Disc" type="MeshInstance3D" parent="RedCorner"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+mesh = SubResource("disc_mesh")
+material_override = SubResource("disc_red")
 
-[node name="Mesh" type="MeshInstance3D" parent="WallNorth"]
-mesh = SubResource("BoxMesh_wall")
-material_override = SubResource("StandardMaterial3D_wall")
+[node name="Zone" type="Area3D" parent="RedCorner"]
+script = ExtResource("8_zone")
+zone_color = "red"
 
-[node name="WallSouth" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 20)
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RedCorner/Zone"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("zone_shape")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="WallSouth"]
-shape = SubResource("BoxShape3D_wall")
+[node name="Spawner" type="Node3D" parent="RedCorner"]
+script = ExtResource("7_spawner")
+color = "red"
 
-[node name="Mesh" type="MeshInstance3D" parent="WallSouth"]
-mesh = SubResource("BoxMesh_wall")
-material_override = SubResource("StandardMaterial3D_wall")
+[node name="BlueCorner" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0, -12.124)
 
-[node name="WallEast" type="StaticBody3D" parent="."]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 20, 2, 0)
+[node name="Disc" type="MeshInstance3D" parent="BlueCorner"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+mesh = SubResource("disc_mesh")
+material_override = SubResource("disc_blue")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="WallEast"]
-shape = SubResource("BoxShape3D_wall")
+[node name="Zone" type="Area3D" parent="BlueCorner"]
+script = ExtResource("8_zone")
+zone_color = "blue"
 
-[node name="Mesh" type="MeshInstance3D" parent="WallEast"]
-mesh = SubResource("BoxMesh_wall")
-material_override = SubResource("StandardMaterial3D_wall")
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BlueCorner/Zone"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("zone_shape")
 
-[node name="WallWest" type="StaticBody3D" parent="."]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -20, 2, 0)
+[node name="Spawner" type="Node3D" parent="BlueCorner"]
+script = ExtResource("7_spawner")
+color = "blue"
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="WallWest"]
-shape = SubResource("BoxShape3D_wall")
+[node name="GreenCorner" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0, -12.124)
 
-[node name="Mesh" type="MeshInstance3D" parent="WallWest"]
-mesh = SubResource("BoxMesh_wall")
-material_override = SubResource("StandardMaterial3D_wall")
+[node name="Disc" type="MeshInstance3D" parent="GreenCorner"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+mesh = SubResource("disc_mesh")
+material_override = SubResource("disc_green")
 
-[node name="WelpSpawner" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -10)
-script = ExtResource("1_spawner")
+[node name="Zone" type="Area3D" parent="GreenCorner"]
+script = ExtResource("8_zone")
+zone_color = "green"
 
-[node name="DescentStaircase" parent="." instance=ExtResource("2_staircase")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 8)
+[node name="CollisionShape3D" type="CollisionShape3D" parent="GreenCorner/Zone"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("zone_shape")
+
+[node name="Spawner" type="Node3D" parent="GreenCorner"]
+script = ExtResource("7_spawner")
+color = "green"
+
+[node name="PurpleCorner" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 0, 0)
+
+[node name="Disc" type="MeshInstance3D" parent="PurpleCorner"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+mesh = SubResource("disc_mesh")
+material_override = SubResource("disc_purple")
+
+[node name="Zone" type="Area3D" parent="PurpleCorner"]
+script = ExtResource("8_zone")
+zone_color = "purple"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PurpleCorner/Zone"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("zone_shape")
+
+[node name="Spawner" type="Node3D" parent="PurpleCorner"]
+script = ExtResource("7_spawner")
+color = "purple"
+
+[node name="GoldCorner" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0, 12.124)
+
+[node name="Disc" type="MeshInstance3D" parent="GoldCorner"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+mesh = SubResource("disc_mesh")
+material_override = SubResource("disc_gold")
+
+[node name="Zone" type="Area3D" parent="GoldCorner"]
+script = ExtResource("8_zone")
+zone_color = "gold"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="GoldCorner/Zone"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("zone_shape")
+
+[node name="Spawner" type="Node3D" parent="GoldCorner"]
+script = ExtResource("7_spawner")
+color = "gold"
+
+[node name="WhiteCorner" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0, 12.124)
+
+[node name="Disc" type="MeshInstance3D" parent="WhiteCorner"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+mesh = SubResource("disc_mesh")
+material_override = SubResource("disc_white")
+
+[node name="Zone" type="Area3D" parent="WhiteCorner"]
+script = ExtResource("8_zone")
+zone_color = "white"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WhiteCorner/Zone"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("zone_shape")
+
+[node name="Spawner" type="Node3D" parent="WhiteCorner"]
+script = ExtResource("7_spawner")
+color = "white"
+
+[node name="DescentStaircase" parent="." instance=ExtResource("1_staircase")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
 prompt_path = NodePath("../DescentPrompt")
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.5736, 0.8192, 0, -0.8192, 0.5736, 0, 12, 8)
+transform = Transform3D(1, 0, 0, 0, 0.5736, 0.8192, 0, -0.8192, 0.5736, 0, 18, 12)
 
-[node name="Player" parent="." instance=ExtResource("4_player")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+[node name="Player" parent="." instance=ExtResource("3_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 6)
 
-[node name="HUD" parent="." instance=ExtResource("5_hud")]
+[node name="HUD" parent="." instance=ExtResource("4_hud")]
 
-[node name="DescentPrompt" parent="." instance=ExtResource("3_prompt")]
+[node name="DescentPrompt" parent="." instance=ExtResource("2_prompt")]
+
+[node name="ReplaceSkillPrompt" parent="." instance=ExtResource("5_replace")]
 
 [node name="DeathHandler" type="Node" parent="."]
 script = ExtResource("6_death")
-
-[node name="ReplaceSkillPrompt" parent="." instance=ExtResource("7_replace")]
