@@ -9,6 +9,7 @@ const SOUL_VALUES: Dictionary = {
 
 signal pyre_filled(color: String)
 signal pyre_fill_changed(color: String, new_fill: int)
+signal carry_changed(color: String, tier: String, new_count: int)
 
 var _carry: Dictionary = {}     # { color: { tier: count } }
 var _pyres: Dictionary = {}     # { color: int (0..PYRE_CAP) }
@@ -35,6 +36,7 @@ func add_to_carry(color: String, tier: String, count: int) -> void:
 	assert(color in COLORS, "unknown color: %s" % color)
 	assert(tier in SOUL_VALUES, "unknown tier: %s" % tier)
 	_carry[color][tier] += count
+	carry_changed.emit(color, tier, _carry[color][tier])
 
 func carry_count(color: String, tier: String) -> int:
 	return _carry[color][tier]
@@ -44,7 +46,10 @@ func pyre_fill(color: String) -> int:
 
 func clear_carry() -> void:
 	for color in COLORS:
-		_carry[color] = {"minor": 0, "elder": 0}
+		for tier in SOUL_VALUES:
+			if _carry[color][tier] > 0:
+				_carry[color][tier] = 0
+				carry_changed.emit(color, tier, 0)
 
 func deposit_to_pyres() -> void:
 	for color in COLORS:

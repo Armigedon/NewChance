@@ -73,3 +73,14 @@ func test_pyre_fill_changed_not_emitted_when_no_carry_to_deposit() -> void:
 	var monitor := monitor_signals(econ)
 	econ.deposit_to_pyres()  # no carry, nothing to deposit
 	await assert_signal(econ).is_not_emitted("pyre_fill_changed")
+
+func test_carry_changed_emits_with_new_count() -> void:
+	var monitor := monitor_signals(econ)
+	econ.add_to_carry("red", "minor", 3)
+	await assert_signal(econ).is_emitted("carry_changed", ["red", "minor", 3])
+
+func test_carry_changed_emits_on_clear() -> void:
+	econ.add_to_carry("red", "minor", 5)
+	var monitor := monitor_signals(econ)
+	econ.clear_carry()
+	await assert_signal(econ).is_emitted("carry_changed", ["red", "minor", 0])
