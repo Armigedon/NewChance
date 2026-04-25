@@ -12,10 +12,28 @@ const CAST_BLUE_ICE_LINE: PackedScene = preload("res://scenes/skills/cast_blue_i
 @export var iframe_duration: float = 0.2
 @export var cast_cooldown: float = 0.6
 
-@onready var _skill_system: SkillSystem = $SkillSystem
+@onready var _skill_system: SkillSystem = $SkillSystem if has_node("SkillSystem") else null
 
 signal died
 signal hp_changed(new_hp: int)
+
+func _ready() -> void:
+	if _skill_system != null:
+		_skill_system.active_skill_changed.connect(_on_active_skill_changed)
+	GameState.run_ended.connect(_on_run_ended)
+
+func _on_active_skill_changed(_index: int) -> void:
+	if _skill_system == null:
+		return
+	var element: String = _skill_system.active_element()
+	if has_node("Sword"):
+		$Sword.set_active_element(element)
+
+func _on_run_ended(_outcome: int) -> void:
+	if _skill_system != null:
+		_skill_system.clear()
+	if has_node("Sword"):
+		$Sword.set_active_element("")
 
 var hp: int = MAX_HP
 var _is_dead: bool = false
