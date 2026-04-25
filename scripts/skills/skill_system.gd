@@ -1,0 +1,92 @@
+extends Node
+class_name SkillSystem
+
+const SkillScript = preload("res://scripts/skills/skill.gd")
+
+enum AddResult { UNLOCKED, AT_CAP, MODIFIED, NOOP }
+
+signal active_skill_changed(new_index: int)
+signal skill_unlocked(index: int)
+signal at_cap_replace_prompt_requested(incoming_color: String)
+
+var _skills: Array[Skill] = []
+var _active_index: int = -1
+var _cap: int = 3
+
+func set_cap(n: int) -> void:
+	_cap = n
+
+func cap() -> int:
+	return _cap
+
+func skill_count() -> int:
+	return _skills.size()
+
+func skill_at(index: int) -> Skill:
+	if index < 0 or index >= _skills.size():
+		return null
+	return _skills[index]
+
+func active_skill() -> Skill:
+	return skill_at(_active_index)
+
+func active_element() -> String:
+	var s: Skill = active_skill()
+	return s.base_color if s != null else ""
+
+func add_minor(color: String) -> int:
+	if _skills.is_empty():
+		var first := SkillScript.new(color) as Skill
+		_skills.append(first)
+		_active_index = 0
+		skill_unlocked.emit(0)
+		active_skill_changed.emit(0)
+		return AddResult.UNLOCKED
+	var active: Skill = active_skill()
+	if active == null:
+		return AddResult.NOOP
+	if active.locked:
+		return AddResult.NOOP
+	active.add_modifier(color)
+	return AddResult.MODIFIED
+
+func add_elder(color: String) -> int:
+	if _skills.size() >= _cap:
+		at_cap_replace_prompt_requested.emit(color)
+		return AddResult.AT_CAP
+	if _active_index >= 0:
+		_skills[_active_index].locked = true
+	var new_skill := SkillScript.new(color) as Skill
+	_skills.append(new_skill)
+	_active_index = _skills.size() - 1
+	skill_unlocked.emit(_active_index)
+	active_skill_changed.emit(_active_index)
+	return AddResult.UNLOCKED
+
+func switch_active(index: int) -> void:
+	if index < 0 or index >= _skills.size():
+		return
+	if index == _active_index:
+		return
+	_active_index = index
+	active_skill_changed.emit(index)
+
+func replace_at(index: int, new_color: String) -> void:
+	if index < 0 or index >= _skills.size():
+		return
+	var new_skill := SkillScript.new(new_color) as Skill
+	_skills[index] = new_skill
+	_active_index = index
+	skill_unlocked.emit(index)
+	active_skill_changed.emit(index)
+
+func decline_elder(declined_color: String) -> void:
+	if _active_index < 0:
+		return
+	for i in range(3):
+		add_minor(declined_color)
+
+func clear() -> void:
+	_skills.clear()
+	_active_index = -1
+	active_skill_changed.emit(-1)
