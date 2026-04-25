@@ -3,7 +3,7 @@ extends CharacterBody3D
 const MAX_HP: int = 30
 const MOVE_SPEED: float = 3.6
 const ATTACK_DAMAGE: int = 10
-const ATTACK_INTERVAL: float = 1.5
+const ATTACK_INTERVAL: float = 2.0
 const ATTACK_RANGE: float = 1.0
 
 const SOUL_PICKUP_SCENE: PackedScene = preload("res://scenes/interactables/soul_pickup.tscn")
