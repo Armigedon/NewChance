@@ -37,3 +37,29 @@ func test_reset_restores_hp() -> void:
 	player.take_damage(50)
 	player.reset_run_state()
 	assert_that(player.hp).is_equal(100)
+
+func test_dash_starts_off_cooldown() -> void:
+	assert_that(player.can_dash()).is_true()
+
+func test_dash_triggers_cooldown() -> void:
+	player.try_dash(Vector3(1, 0, 0))
+	assert_that(player.can_dash()).is_false()
+
+func test_dash_cooldown_expires() -> void:
+	player.try_dash(Vector3(1, 0, 0))
+	# Simulate 2 seconds passing
+	player._dash_cooldown_remaining = 0.0
+	assert_that(player.can_dash()).is_true()
+
+func test_dash_returns_false_on_cooldown() -> void:
+	player.try_dash(Vector3(1, 0, 0))
+	assert_that(player.try_dash(Vector3(1, 0, 0))).is_false()
+
+func test_dash_grants_iframes() -> void:
+	player.try_dash(Vector3(1, 0, 0))
+	assert_that(player.is_invincible()).is_true()
+
+func test_take_damage_during_iframes_does_nothing() -> void:
+	player.try_dash(Vector3(1, 0, 0))
+	player.take_damage(50)
+	assert_that(player.hp).is_equal(100)
