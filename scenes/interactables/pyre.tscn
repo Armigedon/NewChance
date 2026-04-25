@@ -1,0 +1,29 @@
+[gd_scene load_steps=5 format=3 uid="uid://b1xqzx0pyre000"]
+
+[ext_resource type="Script" path="res://scripts/interactables/pyre.gd" id="1_pyrescr"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_base01"]
+top_radius = 0.5
+bottom_radius = 0.5
+height = 0.5
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_flame1"]
+radius = 0.3
+height = 1.5
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_flame1"]
+albedo_color = Color(1, 0.3, 0.1, 1)
+emission_enabled = true
+emission = Color(1, 0.3, 0.1, 1)
+emission_energy_multiplier = 2.0
+
+[node name="Pyre" type="Node3D"]
+script = ExtResource("1_pyrescr")
+
+[node name="Base" type="MeshInstance3D" parent="."]
+mesh = SubResource("CylinderMesh_base01")
+
+[node name="Flame" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+mesh = SubResource("CapsuleMesh_flame1")
+material_override = SubResource("StandardMaterial3D_flame1")
