@@ -1,6 +1,7 @@
 extends Node3D
 
 const WELP_SCENE: PackedScene = preload("res://scenes/entities/welp.tscn")
+const WELP_BLUE_SCENE: PackedScene = preload("res://scenes/entities/welp_blue.tscn")
 
 @export var spawn_interval: float = 1.0
 @export var max_alive: int = 12
@@ -16,7 +17,8 @@ func _process(delta: float) -> void:
 		_spawn_welp()
 
 func _spawn_welp() -> void:
-	var welp: CharacterBody3D = WELP_SCENE.instantiate()
+	var scene: PackedScene = WELP_SCENE if randf() < 0.5 else WELP_BLUE_SCENE
+	var welp: CharacterBody3D = scene.instantiate()
 	var angle: float = randf() * TAU
 	var offset: Vector3 = Vector3(cos(angle) * spawn_radius, 1.0, sin(angle) * spawn_radius)
 	welp.global_position = global_position + offset
