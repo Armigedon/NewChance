@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3]
+[gd_scene load_steps=24 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/interactables/descent_staircase.tscn" id="1_staircase"]
 [ext_resource type="PackedScene" path="res://scenes/ui/descent_prompt.tscn" id="2_prompt"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://scripts/world/death_handler.gd" id="6_death"]
 [ext_resource type="Script" path="res://scripts/world/corner_spawner.gd" id="7_spawner"]
 [ext_resource type="Script" path="res://scripts/world/corner_zone.gd" id="8_zone"]
+[ext_resource type="Script" path="res://scripts/world/alarm_spawner.gd" id="9_alarm"]
 
 [sub_resource type="BoxShape3D" id="floor_shape"]
 size = Vector3(50, 0.5, 50)
@@ -212,6 +213,10 @@ color = "white"
 [node name="DescentStaircase" parent="." instance=ExtResource("1_staircase")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
 prompt_path = NodePath("../DescentPrompt")
+
+[node name="AlarmSpawner" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 4)
+script = ExtResource("9_alarm")
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.5736, 0.8192, 0, -0.8192, 0.5736, 0, 18, 12)
