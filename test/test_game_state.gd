@@ -32,3 +32,22 @@ func test_scene_path_for_location_returns_main_hall() -> void:
 
 func test_scene_path_for_location_returns_upstairs() -> void:
 	assert_that(GameStateScript.scene_path_for(GameStateScript.Location.UPSTAIRS)).is_equal(GameStateScript.UPSTAIRS_SCENE_PATH)
+
+func test_end_run_descended_deposits_to_pyres() -> void:
+	SoulEconomy._reset_state()
+	SoulEconomy.add_to_carry("red", "minor", 5)
+	gs.end_run(GameStateScript.Outcome.DESCENDED)
+	assert_that(SoulEconomy.pyre_fill("red")).is_equal(5)
+	assert_that(SoulEconomy.carry_count("red", "minor")).is_equal(0)
+
+func test_end_run_died_clears_carry_without_deposit() -> void:
+	SoulEconomy._reset_state()
+	SoulEconomy.add_to_carry("red", "minor", 5)
+	gs.end_run(GameStateScript.Outcome.DIED)
+	assert_that(SoulEconomy.pyre_fill("red")).is_equal(0)
+	assert_that(SoulEconomy.carry_count("red", "minor")).is_equal(0)
+
+func test_end_run_emits_signal_with_outcome() -> void:
+	var monitor := monitor_signals(gs)
+	gs.end_run(GameStateScript.Outcome.DIED)
+	await assert_signal(gs).is_emitted("run_ended", [GameStateScript.Outcome.DIED])

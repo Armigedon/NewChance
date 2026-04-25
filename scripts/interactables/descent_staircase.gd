@@ -28,8 +28,7 @@ func _on_body_exited(body: Node) -> void:
 		_player_in_zone = false
 
 func _on_confirmed() -> void:
-	SoulEconomy.deposit_to_pyres()
-	GameState.transition_to(GameState.Location.MAIN_HALL)
+	GameState.end_run(GameState.Outcome.DESCENDED)
 
 func _on_canceled() -> void:
 	pass  # player stays upstairs; nothing to do

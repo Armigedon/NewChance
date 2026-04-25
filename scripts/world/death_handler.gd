@@ -10,5 +10,4 @@ func _ready() -> void:
 		player.died.connect(_on_player_died)
 
 func _on_player_died() -> void:
-	SoulEconomy.clear_carry()
-	GameState.transition_to(GameState.Location.MAIN_HALL)
+	GameState.end_run(GameState.Outcome.DIED)
