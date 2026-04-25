@@ -2,8 +2,8 @@ extends Node3D
 
 const WELP_SCENE: PackedScene = preload("res://scenes/entities/welp.tscn")
 
-@export var spawn_interval: float = 3.0
-@export var max_alive: int = 5
+@export var spawn_interval: float = 1.0
+@export var max_alive: int = 12
 @export var spawn_radius: float = 12.0
 
 var _timer: float = 0.0

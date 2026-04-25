@@ -1,6 +1,6 @@
 extends Area3D
 
-const SWING_INTERVAL: float = 1.0  # seconds per swing
+const SWING_INTERVAL: float = 0.4  # seconds per swing
 const BASE_DAMAGE: int = 15
 
 signal hit_enemy(enemy: Node, damage: int)
