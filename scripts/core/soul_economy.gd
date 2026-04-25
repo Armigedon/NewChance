@@ -8,6 +8,7 @@ const SOUL_VALUES: Dictionary = {
 }
 
 signal pyre_filled(color: String)
+signal pyre_fill_changed(color: String, new_fill: int)
 
 var _carry: Dictionary = {}     # { color: { tier: count } }
 var _pyres: Dictionary = {}     # { color: int (0..PYRE_CAP) }
@@ -53,9 +54,12 @@ func deposit_to_pyres() -> void:
 		)
 		if fill_units == 0:
 			continue
+		var old_fill: int = _pyres[color]
 		var new_fill: int = min(_pyres[color] + fill_units, PYRE_CAP)
 		var was_full: bool = _filled_pyres[color]
 		_pyres[color] = new_fill
+		if new_fill != old_fill:
+			pyre_fill_changed.emit(color, new_fill)
 		if new_fill >= PYRE_CAP and not was_full:
 			_filled_pyres[color] = true
 			pyre_filled.emit(color)

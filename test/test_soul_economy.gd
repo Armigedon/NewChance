@@ -62,3 +62,14 @@ func test_reset_meta_clears_everything() -> void:
 	econ.reset_meta()
 	assert_that(econ.carry_count("red", "minor")).is_equal(0)
 	assert_that(econ.pyre_fill("red")).is_equal(0)
+
+func test_pyre_fill_changed_emits_with_new_fill() -> void:
+	var monitor := monitor_signals(econ)
+	econ.add_to_carry("red", "minor", 7)
+	econ.deposit_to_pyres()
+	await assert_signal(econ).is_emitted("pyre_fill_changed", ["red", 7])
+
+func test_pyre_fill_changed_not_emitted_when_no_carry_to_deposit() -> void:
+	var monitor := monitor_signals(econ)
+	econ.deposit_to_pyres()  # no carry, nothing to deposit
+	await assert_signal(econ).is_not_emitted("pyre_fill_changed")
