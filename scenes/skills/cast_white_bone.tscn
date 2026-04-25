@@ -1,0 +1,30 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/cast_white_bone.gd" id="1_cast"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_white"]
+radius = 0.4
+
+[sub_resource type="SphereMesh" id="SphereMesh_white"]
+radius = 0.3
+height = 0.6
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_white"]
+albedo_color = Color(0.9, 0.9, 0.85, 1)
+emission_enabled = true
+emission = Color(0.9, 0.9, 0.85, 1)
+emission_energy_multiplier = 3.5
+
+[node name="CastWhiteBone" type="Node3D"]
+script = ExtResource("1_cast")
+
+[node name="HitArea" type="Area3D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HitArea"]
+shape = SubResource("SphereShape3D_white")
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_white")
+material_override = SubResource("StandardMaterial3D_white")

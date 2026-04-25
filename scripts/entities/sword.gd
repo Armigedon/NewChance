@@ -27,9 +27,13 @@ func _is_enemy(body: Node) -> bool:
 @onready var _blade_mesh: MeshInstance3D = $Blade if has_node("Blade") else null
 
 const COLOR_TINTS: Dictionary = {
-	"": Color(0.55, 0.5, 0.42, 1),  # default rusty
+	"": Color(0.55, 0.5, 0.42, 1),
 	"red": Color(1, 0.3, 0.1, 1),
 	"blue": Color(0.4, 0.7, 1, 1),
+	"green": Color(0.3, 0.85, 0.3, 1),
+	"purple": Color(0.6, 0.3, 0.8, 1),
+	"gold": Color(1, 0.9, 0.3, 1),
+	"white": Color(0.95, 0.95, 0.9, 1),
 }
 
 func set_active_element(color: String) -> void:

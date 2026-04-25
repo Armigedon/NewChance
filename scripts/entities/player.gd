@@ -4,6 +4,10 @@ const MAX_HP: int = 100
 
 const CAST_RED_FIREBALL: PackedScene = preload("res://scenes/skills/cast_red_fireball.tscn")
 const CAST_BLUE_ICE_LINE: PackedScene = preload("res://scenes/skills/cast_blue_ice_line.tscn")
+const CAST_GREEN_PLAGUE: PackedScene = preload("res://scenes/skills/cast_green_plague.tscn")
+const CAST_PURPLE_VOID: PackedScene = preload("res://scenes/skills/cast_purple_void.tscn")
+const CAST_GOLD_LIGHTNING: PackedScene = preload("res://scenes/skills/cast_gold_lightning.tscn")
+const CAST_WHITE_BONE: PackedScene = preload("res://scenes/skills/cast_white_bone.tscn")
 
 @export var move_speed: float = 5.0
 @export var dash_distance: float = 4.0
@@ -159,6 +163,10 @@ func _scene_for_color(color: String) -> PackedScene:
 	match color:
 		"red": return CAST_RED_FIREBALL
 		"blue": return CAST_BLUE_ICE_LINE
+		"green": return CAST_GREEN_PLAGUE
+		"purple": return CAST_PURPLE_VOID
+		"gold": return CAST_GOLD_LIGHTNING
+		"white": return CAST_WHITE_BONE
 		_: return null
 
 func reset_run_state() -> void:

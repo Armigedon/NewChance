@@ -6,6 +6,10 @@ extends Area3D
 const TINTS: Dictionary = {
 	"red": Color(1, 0.4, 0.2, 1),
 	"blue": Color(0.4, 0.7, 1, 1),
+	"green": Color(0.4, 0.9, 0.4, 1),
+	"purple": Color(0.6, 0.3, 0.85, 1),
+	"gold": Color(1, 0.9, 0.4, 1),
+	"white": Color(0.95, 0.95, 0.9, 1),
 }
 
 # Vacuum: pickups slide toward the player when within VACUUM_RANGE,
