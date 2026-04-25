@@ -1,0 +1,29 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/cast_blue_ice_line.gd" id="1_iceline"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_iceline"]
+size = Vector3(0.4, 0.4, 2.0)
+
+[sub_resource type="BoxMesh" id="BoxMesh_iceline"]
+size = Vector3(0.3, 0.3, 1.8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_iceline"]
+albedo_color = Color(0.6, 0.8, 1, 1)
+emission_enabled = true
+emission = Color(0.6, 0.85, 1, 1)
+emission_energy_multiplier = 3.5
+
+[node name="CastBlueIceLine" type="Node3D"]
+script = ExtResource("1_iceline")
+
+[node name="HitArea" type="Area3D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HitArea"]
+shape = SubResource("BoxShape3D_iceline")
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_iceline")
+material_override = SubResource("StandardMaterial3D_iceline")
