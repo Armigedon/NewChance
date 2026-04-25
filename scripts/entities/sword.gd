@@ -14,10 +14,11 @@ func _process(delta: float) -> void:
 	var enemies: Array = get_overlapping_bodies().filter(_is_enemy)
 	if enemies.size() == 0:
 		return
-	var nearest: Node = enemies[0]  # Phase 1: just use first found
-	if nearest.has_method("take_damage"):
-		nearest.take_damage(BASE_DAMAGE)
-	hit_enemy.emit(nearest, BASE_DAMAGE)
+	# Cleave: swing damages every enemy in range, not just the first.
+	for enemy in enemies:
+		if enemy.has_method("take_damage"):
+			enemy.take_damage(BASE_DAMAGE)
+		hit_enemy.emit(enemy, BASE_DAMAGE)
 	_swing_cooldown = SWING_INTERVAL
 
 func _is_enemy(body: Node) -> bool:
