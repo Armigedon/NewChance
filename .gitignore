@@ -7,3 +7,6 @@
 
 # GdUnit4 test reports
 reports/
+
+# Godot resource UID sidecars (regenerated on import)
+*.uid
