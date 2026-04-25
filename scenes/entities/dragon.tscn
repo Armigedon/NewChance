@@ -1,0 +1,29 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/entities/welp.gd" id="1_welp"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_dragon"]
+size = Vector3(1.0, 1.2, 1.0)
+
+[sub_resource type="BoxMesh" id="BoxMesh_dragon"]
+size = Vector3(1.0, 1.2, 1.0)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dragon"]
+albedo_color = Color(0.5, 0.1, 0.1, 1)
+
+[node name="Dragon" type="CharacterBody3D"]
+script = ExtResource("1_welp")
+color = "red"
+tier = "dragon"
+max_hp = 80
+move_speed = 3.0
+attack_damage = 18
+attack_range = 1.2
+attack_interval = 2.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_dragon")
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_dragon")
+material_override = SubResource("StandardMaterial3D_dragon")

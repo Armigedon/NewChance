@@ -1,6 +1,6 @@
 extends CharacterBody3D
 
-const MAX_HP: int = 30
+@export var max_hp: int = 30
 
 @export var move_speed: float = 3.6
 @export var attack_damage: int = 10
@@ -10,15 +10,17 @@ const MAX_HP: int = 30
 const SOUL_PICKUP_SCENE: PackedScene = preload("res://scenes/interactables/soul_pickup.tscn")
 
 @export var color: String = "red"
+@export var tier: String = "welp"
 
 signal died(welp: Node, color: String)
 
-var hp: int = MAX_HP
+var hp: int = max_hp
 var _attack_cooldown: float = 0.0
 var _player: Node = null
 var _is_dead: bool = false
 
 func _ready() -> void:
+	hp = max_hp
 	add_to_group("enemy")
 	collision_layer = 2  # match Sword mask
 	_find_player()
@@ -62,10 +64,27 @@ func take_damage(amount: int) -> void:
 	hp = max(0, hp - amount)
 	if hp == 0:
 		_is_dead = true
-		var pickup: Area3D = SOUL_PICKUP_SCENE.instantiate()
-		pickup.color = color
-		pickup.tier = "minor"
-		pickup.global_position = global_position
-		get_parent().add_child(pickup)
+		_drop_souls()
 		died.emit(self, color)
 		queue_free()
+
+func _drop_souls() -> void:
+	# Special "alarm" welps drop nothing (used by time-alarm spawner in T8)
+	if color == "alarm":
+		return
+	# welp: 1 minor; dragon: 2-3 minor; elder: 1 elder + 2-3 minor
+	var minor_count: int = 1 if tier == "welp" else (2 + (1 if randf() < 0.5 else 0))
+	for i in range(minor_count):
+		_spawn_pickup("minor", _random_offset())
+	if tier == "elder":
+		_spawn_pickup("elder", _random_offset())
+
+func _spawn_pickup(pickup_tier: String, offset: Vector3) -> void:
+	var pickup: Area3D = SOUL_PICKUP_SCENE.instantiate()
+	pickup.color = color
+	pickup.tier = pickup_tier
+	pickup.global_position = global_position + offset
+	get_parent().add_child(pickup)
+
+func _random_offset() -> Vector3:
+	return Vector3(randf_range(-0.5, 0.5), 0, randf_range(-0.5, 0.5))
