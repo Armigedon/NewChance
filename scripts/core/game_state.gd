@@ -19,6 +19,7 @@ static func scene_path_for(location: Location) -> String:
 		Location.UPSTAIRS:
 			return UPSTAIRS_SCENE_PATH
 		_:
+			push_error("scene_path_for: unknown location %s" % location)
 			return ""
 
 func transition_to(location: Location) -> void:

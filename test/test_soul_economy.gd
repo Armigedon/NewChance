@@ -84,3 +84,22 @@ func test_carry_changed_emits_on_clear() -> void:
 	var monitor := monitor_signals(econ)
 	econ.clear_carry()
 	await assert_signal(econ).is_emitted("carry_changed", ["red", "minor", 0])
+
+func test_elder_soul_alone_advances_pyre_by_10() -> void:
+	econ.add_to_carry("red", "elder", 1)
+	econ.deposit_to_pyres()
+	assert_that(econ.pyre_fill("red")).is_equal(10)
+
+func test_deposit_mixes_minor_and_elder_correctly() -> void:
+	econ.add_to_carry("red", "minor", 7)
+	econ.add_to_carry("red", "elder", 2)
+	econ.deposit_to_pyres()
+	# 7 minor (1 each) + 2 elder (10 each) = 7 + 20 = 27
+	assert_that(econ.pyre_fill("red")).is_equal(27)
+
+func test_deposit_does_not_overflow_with_elder_at_cap() -> void:
+	econ.add_to_carry("red", "minor", 245)
+	econ.add_to_carry("red", "elder", 1)
+	econ.deposit_to_pyres()
+	# 245 + 10 = 255, clamped to 250
+	assert_that(econ.pyre_fill("red")).is_equal(250)
