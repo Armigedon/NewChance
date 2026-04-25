@@ -6,6 +6,8 @@ const ATTACK_DAMAGE: int = 10
 const ATTACK_INTERVAL: float = 1.5
 const ATTACK_RANGE: float = 1.5
 
+const SOUL_PICKUP_SCENE: PackedScene = preload("res://scenes/interactables/soul_pickup.tscn")
+
 @export var color: String = "red"
 
 signal died(welp: Node, color: String)
@@ -59,5 +61,10 @@ func take_damage(amount: int) -> void:
 	hp = max(0, hp - amount)
 	if hp == 0:
 		_is_dead = true
+		var pickup: Area3D = SOUL_PICKUP_SCENE.instantiate()
+		pickup.color = color
+		pickup.tier = "minor"
+		pickup.global_position = global_position
+		get_parent().add_child(pickup)
 		died.emit(self, color)
 		queue_free()
