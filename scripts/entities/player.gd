@@ -76,7 +76,7 @@ func _process(delta: float) -> void:
 		var dash_dir: Vector3 = Vector3(input_dir.x, 0, input_dir.y)
 		if dash_dir.length() > 0.01:
 			try_dash(dash_dir.normalized())
-	if Input.is_action_just_pressed("cast"):
+	if Input.is_action_pressed("cast"):
 		_try_cast()
 	if Input.is_action_just_pressed("switch_skill_1"):
 		_skill_system.switch_active(0)
