@@ -1,7 +1,8 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/entities/player.gd" id="1_player"]
 [ext_resource type="Script" path="res://scripts/entities/sword.gd" id="2_sword"]
+[ext_resource type="Script" path="res://scripts/skills/skill_system.gd" id="3_skillsys"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_player"]
 radius = 0.4
@@ -47,3 +48,6 @@ shape = SubResource("SphereShape3D_sword")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.45, 0.2, -0.6)
 mesh = SubResource("BoxMesh_sword")
 material_override = SubResource("StandardMaterial3D_sword")
+
+[node name="SkillSystem" type="Node" parent="."]
+script = ExtResource("3_skillsys")
