@@ -1,0 +1,44 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/replace_skill_prompt.gd" id="1_replace"]
+
+[node name="ReplaceSkillPrompt" type="CanvasLayer"]
+process_mode = 3
+script = ExtResource("1_replace")
+
+[node name="Center" type="CenterContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Panel" type="PanelContainer" parent="Center"]
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Center/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Summary" type="Label" parent="Center/Panel/VBox"]
+layout_mode = 2
+text = "Replace prompt"
+autowrap_mode = 2
+
+[node name="Buttons" type="VBoxContainer" parent="Center/Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Replace0" type="Button" parent="Center/Panel/VBox/Buttons"]
+layout_mode = 2
+text = "Replace [1]"
+
+[node name="Replace1" type="Button" parent="Center/Panel/VBox/Buttons"]
+layout_mode = 2
+text = "Replace [2]"
+
+[node name="Replace2" type="Button" parent="Center/Panel/VBox/Buttons"]
+layout_mode = 2
+text = "Replace [3]"
+
+[node name="Decline" type="Button" parent="Center/Panel/VBox/Buttons"]
+layout_mode = 2
+text = "Decline (3 minor souls)"
