@@ -1,11 +1,12 @@
 extends CharacterBody3D
 
 const MAX_HP: int = 100
-const MOVE_SPEED: float = 5.0
-const DASH_DISTANCE: float = 4.0
-const DASH_DURATION: float = 0.15
-const DASH_COOLDOWN: float = 2.0
-const IFRAME_DURATION: float = 0.2
+
+@export var move_speed: float = 5.0
+@export var dash_distance: float = 4.0
+@export var dash_duration: float = 0.15
+@export var dash_cooldown: float = 2.0
+@export var iframe_duration: float = 0.2
 
 signal died
 signal hp_changed(new_hp: int)
@@ -39,8 +40,8 @@ func _physics_process(delta: float) -> void:
 	else:
 		var input_dir: Vector2 = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
 		var direction: Vector3 = Vector3(input_dir.x, 0, input_dir.y)
-		velocity.x = direction.x * MOVE_SPEED
-		velocity.z = direction.z * MOVE_SPEED
+		velocity.x = direction.x * move_speed
+		velocity.z = direction.z * move_speed
 	velocity.y -= 9.8 * delta if not is_on_floor() else 0.0
 	move_and_slide()
 
@@ -50,10 +51,10 @@ func can_dash() -> bool:
 func try_dash(direction: Vector3) -> bool:
 	if not can_dash():
 		return false
-	_dash_velocity = direction * (DASH_DISTANCE / DASH_DURATION)
-	_dash_time_remaining = DASH_DURATION
-	_dash_cooldown_remaining = DASH_COOLDOWN
-	_iframe_remaining = IFRAME_DURATION
+	_dash_velocity = direction * (dash_distance / dash_duration)
+	_dash_time_remaining = dash_duration
+	_dash_cooldown_remaining = dash_cooldown
+	_iframe_remaining = iframe_duration
 	return true
 
 func is_invincible() -> bool:

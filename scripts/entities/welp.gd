@@ -1,10 +1,11 @@
 extends CharacterBody3D
 
 const MAX_HP: int = 30
-const MOVE_SPEED: float = 3.6
-const ATTACK_DAMAGE: int = 10
-const ATTACK_INTERVAL: float = 2.0
-const ATTACK_RANGE: float = 1.0
+
+@export var move_speed: float = 3.6
+@export var attack_damage: int = 10
+@export var attack_interval: float = 2.0
+@export var attack_range: float = 1.0
 
 const SOUL_PICKUP_SCENE: PackedScene = preload("res://scenes/interactables/soul_pickup.tscn")
 
@@ -32,15 +33,15 @@ func _physics_process(delta: float) -> void:
 	var to_player: Vector3 = _player.global_position - global_position
 	to_player.y = 0.0
 	var distance: float = to_player.length()
-	if distance > ATTACK_RANGE:
-		velocity.x = to_player.normalized().x * MOVE_SPEED
-		velocity.z = to_player.normalized().z * MOVE_SPEED
+	if distance > attack_range:
+		velocity.x = to_player.normalized().x * move_speed
+		velocity.z = to_player.normalized().z * move_speed
 	else:
 		velocity.x = 0.0
 		velocity.z = 0.0
 		if _attack_cooldown <= 0.0:
 			_attack_player()
-			_attack_cooldown = ATTACK_INTERVAL
+			_attack_cooldown = attack_interval
 	if _attack_cooldown > 0.0:
 		_attack_cooldown = max(0.0, _attack_cooldown - delta)
 	velocity.y -= 9.8 * delta if not is_on_floor() else 0.0
@@ -53,7 +54,7 @@ func _find_player() -> void:
 
 func _attack_player() -> void:
 	if _player != null and _player.has_method("take_damage"):
-		_player.take_damage(ATTACK_DAMAGE)
+		_player.take_damage(attack_damage)
 
 func take_damage(amount: int) -> void:
 	if _is_dead:
