@@ -20,6 +20,7 @@ signal hp_changed(new_hp: int)
 func _ready() -> void:
 	if _skill_system != null:
 		_skill_system.active_skill_changed.connect(_on_active_skill_changed)
+		_skill_system.at_cap_replace_prompt_requested.connect(_on_at_cap)
 	GameState.run_ended.connect(_on_run_ended)
 
 func _on_active_skill_changed(_index: int) -> void:
@@ -34,6 +35,21 @@ func _on_run_ended(_outcome: int) -> void:
 		_skill_system.clear()
 	if has_node("Sword"):
 		$Sword.set_active_element("")
+
+func _on_at_cap(incoming_color: String) -> void:
+	var prompt = get_tree().root.find_child("ReplaceSkillPrompt", true, false)
+	if prompt == null:
+		return
+	if not prompt.replace_chosen.is_connected(_on_replace_chosen):
+		prompt.replace_chosen.connect(_on_replace_chosen.bind(incoming_color))
+		prompt.declined.connect(_on_replace_declined.bind(incoming_color))
+	prompt.show_prompt(_skill_system, incoming_color)
+
+func _on_replace_chosen(index: int, incoming_color: String) -> void:
+	_skill_system.replace_at(index, incoming_color)
+
+func _on_replace_declined(incoming_color: String) -> void:
+	_skill_system.decline_elder(incoming_color)
 
 var hp: int = MAX_HP
 var _is_dead: bool = false

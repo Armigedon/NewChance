@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/welp_spawner.gd" id="1_spawner"]
 [ext_resource type="PackedScene" path="res://scenes/interactables/descent_staircase.tscn" id="2_staircase"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://scenes/entities/player.tscn" id="4_player"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="5_hud"]
 [ext_resource type="Script" path="res://scripts/world/death_handler.gd" id="6_death"]
+[ext_resource type="PackedScene" path="res://scenes/ui/replace_skill_prompt.tscn" id="7_replace"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_floor"]
 size = Vector3(40, 0.5, 40)
@@ -112,3 +113,5 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 
 [node name="DeathHandler" type="Node" parent="."]
 script = ExtResource("6_death")
+
+[node name="ReplaceSkillPrompt" parent="." instance=ExtResource("7_replace")]
