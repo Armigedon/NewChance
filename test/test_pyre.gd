@@ -6,7 +6,7 @@ var pyre: Node3D
 
 func before_test() -> void:
 	# autoloads are running; reset their state for isolation
-	SoulEconomy._reset_state()
+	SoulEconomy.reset_meta()
 	pyre = auto_free(PyreScript.new())
 	pyre.color = "red"
 	add_child(pyre)

@@ -47,3 +47,18 @@ func test_pyre_filled_signal_only_once() -> void:
 	econ.add_to_carry("red", "minor", 5)
 	econ.deposit_to_pyres()
 	await assert_signal(econ).is_not_emitted("pyre_filled")
+
+func test_reset_run_clears_carry_keeps_pyres() -> void:
+	econ.add_to_carry("red", "minor", 5)
+	econ.deposit_to_pyres()
+	econ.add_to_carry("red", "minor", 3)
+	econ.reset_run()
+	assert_that(econ.carry_count("red", "minor")).is_equal(0)
+	assert_that(econ.pyre_fill("red")).is_equal(5)
+
+func test_reset_meta_clears_everything() -> void:
+	econ.add_to_carry("red", "minor", 5)
+	econ.deposit_to_pyres()
+	econ.reset_meta()
+	assert_that(econ.carry_count("red", "minor")).is_equal(0)
+	assert_that(econ.pyre_fill("red")).is_equal(0)

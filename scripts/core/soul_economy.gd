@@ -14,9 +14,14 @@ var _pyres: Dictionary = {}     # { color: int (0..PYRE_CAP) }
 var _filled_pyres: Dictionary = {}  # { color: bool } — track which already emitted filled signal
 
 func _ready() -> void:
-	_reset_state()
+	reset_meta()
 
-func _reset_state() -> void:
+func reset_run() -> void:
+	# Clears in-run state only (carry pool). Pyre fills + filled flags persist.
+	clear_carry()
+
+func reset_meta() -> void:
+	# Clears all state including pyres. New-game / test isolation use only.
 	_carry.clear()
 	_pyres.clear()
 	_filled_pyres.clear()
