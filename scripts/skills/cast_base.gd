@@ -28,7 +28,14 @@ func _on_hit_enemy(enemy: Node) -> void:
 	if enemy.has_method("flash_hit"):
 		enemy.flash_hit()
 	if enemy.has_method("apply_knockback"):
-		var dir: Vector3 = enemy.global_position - global_position
+		# Knockback direction = away from the player (the attacker), not from
+		# the cast's instantaneous position (which is co-located with the
+		# enemy at impact and produces an unstable direction vector).
+		var source_pos: Vector3 = global_position
+		var player: Node = get_tree().get_first_node_in_group("player")
+		if player != null:
+			source_pos = player.global_position
+		var dir: Vector3 = enemy.global_position - source_pos
 		var force: float = _knockback_force_for(enemy)
 		enemy.apply_knockback(dir, force)
 	ScreenShake.shake(0.15, 0.10)
