@@ -35,6 +35,11 @@ func show_prompt() -> void:
 		lines.append("%s: %s → pyre %d → %d / %d" % [name, carry_desc, current_fill, new_fill, SoulEconomy.PYRE_CAP])
 	if not any_carry:
 		lines.append("(no souls to deposit)")
+	# Detect boss trigger
+	if _will_fill_all_primary_pyres():
+		lines.append("")
+		lines.append("⚠ BOSS TRIGGER — this deposit fills the final primary pyre.")
+		lines.append("(Phase 4: skill retention + boss cutscene NOT YET IMPLEMENTED — Phase 5.)")
 	lines.append("")
 	lines.append("All current skills will be lost.")
 	_summary_label.text = "\n".join(lines)
@@ -56,3 +61,13 @@ func _on_cancel() -> void:
 func _process(_delta: float) -> void:
 	if visible and Input.is_action_just_pressed("ui_cancel"):
 		_on_cancel()
+
+func _will_fill_all_primary_pyres() -> bool:
+	for color in SoulEconomy.COLORS:
+		var minor: int = SoulEconomy.carry_count(color, "minor")
+		var elder: int = SoulEconomy.carry_count(color, "elder")
+		var fill_delta: int = minor * SoulEconomy.SOUL_VALUES["minor"] + elder * SoulEconomy.SOUL_VALUES["elder"]
+		var new_fill: int = min(SoulEconomy.pyre_fill(color) + fill_delta, SoulEconomy.PYRE_CAP)
+		if new_fill < SoulEconomy.PYRE_CAP:
+			return false
+	return true
