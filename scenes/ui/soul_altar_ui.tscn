@@ -1,0 +1,56 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/soul_altar_ui.gd" id="1_altarui"]
+
+[node name="SoulAltarUI" type="CanvasLayer"]
+process_mode = 3
+script = ExtResource("1_altarui")
+
+[node name="Center" type="CenterContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Panel" type="PanelContainer" parent="Center"]
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Center/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Summary" type="Label" parent="Center/Panel/VBox"]
+layout_mode = 2
+text = "Soul Altar"
+autowrap_mode = 2
+
+[node name="Buttons" type="VBoxContainer" parent="Center/Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Red" type="Button" parent="Center/Panel/VBox/Buttons"]
+layout_mode = 2
+text = "Red"
+
+[node name="Blue" type="Button" parent="Center/Panel/VBox/Buttons"]
+layout_mode = 2
+text = "Blue"
+
+[node name="Green" type="Button" parent="Center/Panel/VBox/Buttons"]
+layout_mode = 2
+text = "Green"
+
+[node name="Purple" type="Button" parent="Center/Panel/VBox/Buttons"]
+layout_mode = 2
+text = "Purple"
+
+[node name="Gold" type="Button" parent="Center/Panel/VBox/Buttons"]
+layout_mode = 2
+text = "Gold"
+
+[node name="White" type="Button" parent="Center/Panel/VBox/Buttons"]
+layout_mode = 2
+text = "White"
+
+[node name="Close" type="Button" parent="Center/Panel/VBox"]
+layout_mode = 2
+text = "Close"

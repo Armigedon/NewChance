@@ -26,6 +26,9 @@ func _ready() -> void:
 		_skill_system.active_skill_changed.connect(_on_active_skill_changed)
 		_skill_system.at_cap_replace_prompt_requested.connect(_on_at_cap)
 	GameState.run_ended.connect(_on_run_ended)
+	var queued: String = MetaProgress.consume_start_with_skill()
+	if queued != "" and _skill_system != null:
+		_skill_system.add_minor(queued)
 
 func _on_active_skill_changed(_index: int) -> void:
 	if _skill_system == null:

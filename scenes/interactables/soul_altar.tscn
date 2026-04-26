@@ -1,0 +1,28 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/interactables/soul_altar.gd" id="1_altar"]
+
+[sub_resource type="BoxShape3D" id="altar_shape"]
+size = Vector3(2, 2, 2)
+
+[sub_resource type="CylinderMesh" id="altar_mesh"]
+top_radius = 0.7
+bottom_radius = 0.9
+height = 1.6
+
+[sub_resource type="StandardMaterial3D" id="altar_mat"]
+albedo_color = Color(0.6, 0.5, 0.7, 1)
+emission_enabled = true
+emission = Color(0.4, 0.3, 0.6, 1)
+emission_energy_multiplier = 1.5
+
+[node name="SoulAltar" type="Area3D"]
+script = ExtResource("1_altar")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("altar_shape")
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+mesh = SubResource("altar_mesh")
+material_override = SubResource("altar_mat")

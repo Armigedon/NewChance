@@ -1,9 +1,11 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/main_hall_upstairs_trigger.gd" id="1_trigger"]
 [ext_resource type="PackedScene" path="res://scenes/interactables/pyre.tscn" id="2_pyre"]
 [ext_resource type="PackedScene" path="res://scenes/entities/player.tscn" id="3_player"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="4_hud"]
+[ext_resource type="PackedScene" path="res://scenes/interactables/soul_altar.tscn" id="5_altar"]
+[ext_resource type="PackedScene" path="res://scenes/ui/soul_altar_ui.tscn" id="6_altarui"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_floor"]
 size = Vector3(20, 0.5, 20)
@@ -124,3 +126,9 @@ transform = Transform3D(1, 0, 0, 0, 0.5736, 0.8192, 0, -0.8192, 0.5736, 0, 12, 8
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 5)
 
 [node name="HUD" parent="." instance=ExtResource("4_hud")]
+
+[node name="SoulAltar" parent="." instance=ExtResource("5_altar")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, 0)
+ui_path = NodePath("../SoulAltarUI")
+
+[node name="SoulAltarUI" parent="." instance=ExtResource("6_altarui")]
