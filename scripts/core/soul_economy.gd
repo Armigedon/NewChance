@@ -1,10 +1,10 @@
 extends Node
 
-const PYRE_CAP: int = 250
+const PYRE_CAP: int = 10  # FAST-TEST MODE — design value is 250. Lowered for milestone validation.
 const COLORS: Array[String] = ["red", "blue", "green", "purple", "gold", "white"]
 const SOUL_VALUES: Dictionary = {
 	"minor": 1,
-	"elder": 10,
+	"elder": 5,  # FAST-TEST MODE — design value is 10. Lowered so 1 elder = half pyre, not full.
 }
 
 signal pyre_filled(color: String)

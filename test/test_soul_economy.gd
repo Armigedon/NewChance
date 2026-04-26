@@ -24,10 +24,10 @@ func test_deposit_moves_carry_to_pyres_minor() -> void:
 	assert_that(econ.carry_count("red", "minor")).is_equal(0)
 	assert_that(econ.pyre_fill("red")).is_equal(10)
 
-func test_pyre_caps_at_250() -> void:
-	econ.add_to_carry("red", "minor", 300)
+func test_pyre_caps_at_PYRE_CAP() -> void:
+	econ.add_to_carry("red", "minor", econ.PYRE_CAP * 2)
 	econ.deposit_to_pyres()
-	assert_that(econ.pyre_fill("red")).is_equal(250)
+	assert_that(econ.pyre_fill("red")).is_equal(econ.PYRE_CAP)
 
 func test_clear_carry_zeroes_pool() -> void:
 	econ.add_to_carry("red", "minor", 5)
@@ -36,15 +36,15 @@ func test_clear_carry_zeroes_pool() -> void:
 
 func test_pyre_filled_signal_at_100_percent() -> void:
 	var monitor := monitor_signals(econ)
-	econ.add_to_carry("red", "minor", 250)
+	econ.add_to_carry("red", "minor", econ.PYRE_CAP)
 	econ.deposit_to_pyres()
 	await assert_signal(econ).is_emitted("pyre_filled", ["red"])
 
 func test_pyre_filled_signal_only_once() -> void:
-	econ.add_to_carry("red", "minor", 250)
+	econ.add_to_carry("red", "minor", econ.PYRE_CAP)
 	econ.deposit_to_pyres()
 	var monitor := monitor_signals(econ)
-	econ.add_to_carry("red", "minor", 5)
+	econ.add_to_carry("red", "minor", 1)
 	econ.deposit_to_pyres()
 	await assert_signal(econ).is_not_emitted("pyre_filled")
 
@@ -85,21 +85,25 @@ func test_carry_changed_emits_on_clear() -> void:
 	econ.clear_carry()
 	await assert_signal(econ).is_emitted("carry_changed", ["red", "minor", 0])
 
-func test_elder_soul_alone_advances_pyre_by_10() -> void:
+func test_elder_soul_alone_advances_pyre_by_elder_value() -> void:
 	econ.add_to_carry("red", "elder", 1)
 	econ.deposit_to_pyres()
-	assert_that(econ.pyre_fill("red")).is_equal(10)
+	# pyre advances by SOUL_VALUES["elder"] (clamped at PYRE_CAP)
+	var expected: int = min(econ.SOUL_VALUES["elder"], econ.PYRE_CAP)
+	assert_that(econ.pyre_fill("red")).is_equal(expected)
 
 func test_deposit_mixes_minor_and_elder_correctly() -> void:
-	econ.add_to_carry("red", "minor", 7)
-	econ.add_to_carry("red", "elder", 2)
-	econ.deposit_to_pyres()
-	# 7 minor (1 each) + 2 elder (10 each) = 7 + 20 = 27
-	assert_that(econ.pyre_fill("red")).is_equal(27)
-
-func test_deposit_does_not_overflow_with_elder_at_cap() -> void:
-	econ.add_to_carry("red", "minor", 245)
+	econ.add_to_carry("red", "minor", 1)
 	econ.add_to_carry("red", "elder", 1)
 	econ.deposit_to_pyres()
-	# 245 + 10 = 255, clamped to 250
-	assert_that(econ.pyre_fill("red")).is_equal(250)
+	# 1 minor + 1 elder = 1 + SOUL_VALUES["elder"] (clamped to PYRE_CAP)
+	var expected: int = min(1 + econ.SOUL_VALUES["elder"], econ.PYRE_CAP)
+	assert_that(econ.pyre_fill("red")).is_equal(expected)
+
+func test_deposit_does_not_overflow_with_elder_at_cap() -> void:
+	# Push pyre near cap, then add an elder; should clamp to PYRE_CAP exactly.
+	var near_cap: int = econ.PYRE_CAP - 2
+	econ.add_to_carry("red", "minor", near_cap)
+	econ.add_to_carry("red", "elder", 1)
+	econ.deposit_to_pyres()
+	assert_that(econ.pyre_fill("red")).is_equal(econ.PYRE_CAP)

@@ -11,7 +11,7 @@ extends CanvasLayer
 ]
 @onready var _close_btn: Button = $Center/Panel/VBox/Close
 
-const ALTAR_COST: int = 25
+const ALTAR_COST: int = 3  # FAST-TEST MODE — design value is 25 (~10% of 250 cap)
 
 func _ready() -> void:
 	visible = false
