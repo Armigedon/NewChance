@@ -19,6 +19,11 @@ func _ready() -> void:
 	if courtyard_door_path != NodePath(""):
 		_door = get_node_or_null(courtyard_door_path)
 	BossFlow.state_changed.connect(_on_boss_state_changed)
+	# Cross-scene catch-up: if BossFlow already PENDING when this scene loads
+	# (e.g., descent_prompt fired trigger_boss before scene swap completed),
+	# run the cutscene now since we missed the original signal.
+	if BossFlow.state == BossFlow.State.PENDING:
+		_run_cutscene()
 
 func _on_boss_state_changed(s: int) -> void:
 	if s == BossFlow.State.PENDING:

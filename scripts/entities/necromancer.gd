@@ -7,6 +7,9 @@ func _ready() -> void:
 	visible = false
 	_dragon_mesh.visible = false
 	BossFlow.state_changed.connect(_on_boss_state_changed)
+	# Cross-scene catch-up: appear if scene loaded mid-PENDING.
+	if BossFlow.state == BossFlow.State.PENDING:
+		appear_humanoid()
 
 func _on_boss_state_changed(s: int) -> void:
 	if s == BossFlow.State.PENDING:
