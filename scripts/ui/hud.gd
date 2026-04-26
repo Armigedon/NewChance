@@ -2,9 +2,11 @@ extends CanvasLayer
 
 @onready var _hp_label: Label = $Margin/VBox/HP
 @onready var _souls_label: Label = $Margin/VBox/Souls
+@onready var _damage_flash: ColorRect = $DamageFlash
 
 var _player: Node = null
 var _last_red_minor: int = -1
+var _flash_tween: Tween = null
 
 func _ready() -> void:
 	_bind_to_player()
@@ -36,3 +38,13 @@ func _refresh_souls() -> void:
 
 func _on_hp_changed(new_hp: int) -> void:
 	_hp_label.text = "HP: %d / 100" % new_hp
+
+func play_damage_flash() -> void:
+	if _damage_flash == null:
+		return
+	# Kill any in-flight flash tween so two near-simultaneous hits don't fight.
+	if _flash_tween != null and _flash_tween.is_valid():
+		_flash_tween.kill()
+	_damage_flash.color.a = 0.45
+	_flash_tween = create_tween()
+	_flash_tween.tween_property(_damage_flash, "color:a", 0.0, 0.35)

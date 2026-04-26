@@ -1,5 +1,7 @@
 extends CharacterBody3D
 
+const Vfx = preload("res://scripts/effects/vfx.gd")
+
 const MAX_HP_TEST: int = 150
 const MAX_HP_SHIP: int = 400
 static var MAX_HP: int = MAX_HP_TEST if Debug.FAST_TEST else MAX_HP_SHIP
@@ -8,6 +10,7 @@ const PHASE_2_HP_PCT: float = 0.66
 const PHASE_3_HP_PCT: float = 0.33
 const IDLE_TAUNT_INTERVAL: float = 18.0
 const TAUNT_COOLDOWN_SECONDS: float = 5.0
+const KNOCKBACK_DECAY: float = 12.0
 
 const BOSS_WHELP_SCENE: PackedScene = preload("res://scenes/entities/boss_whelp.tscn")
 
@@ -25,6 +28,9 @@ var _phase: int = 1
 var _is_dead: bool = false
 var _idle_taunt_timer: float = 0.0
 var _taunt_cooldown: float = 0.0
+var _knockback_velocity: Vector3 = Vector3.ZERO
+var _flash_resting_albedo: Color = Color(0, 0, 0, 0)
+var _flash_tween: Tween = null
 
 signal phase_changed(new_phase: int)
 signal died
@@ -63,6 +69,11 @@ func _physics_process(delta: float) -> void:
 	if _summon_timer >= interval:
 		_summon_timer = 0.0
 		_summon_whelp()
+	# Apply knockback impulse on top of tracking velocity, then decay.
+	if _knockback_velocity.length() > 0.01:
+		velocity.x += _knockback_velocity.x
+		velocity.z += _knockback_velocity.z
+		_knockback_velocity = _knockback_velocity.move_toward(Vector3.ZERO, KNOCKBACK_DECAY * delta)
 	velocity.y -= 9.8 * delta if not is_on_floor() else 0.0
 	move_and_slide()
 
@@ -87,6 +98,31 @@ func _summon_whelp() -> void:
 	get_parent().add_child(whelp)
 	whelp.global_position = spawn_pos
 
+func flash_hit(duration: float = 0.18) -> void:
+	var mesh: MeshInstance3D = get_node_or_null("Mesh") as MeshInstance3D
+	if mesh == null:
+		return
+	var mat: StandardMaterial3D = mesh.material_override as StandardMaterial3D
+	if mat == null:
+		return
+	if not mat.resource_local_to_scene:
+		mat = mat.duplicate()
+		mat.resource_local_to_scene = true
+		mesh.material_override = mat
+	if _flash_resting_albedo.a == 0.0:
+		_flash_resting_albedo = mat.albedo_color
+	if _flash_tween != null and _flash_tween.is_valid():
+		_flash_tween.kill()
+	mat.albedo_color = Color(1, 1, 1, 1)
+	_flash_tween = create_tween()
+	_flash_tween.tween_property(mat, "albedo_color", _flash_resting_albedo, duration)
+
+func apply_knockback(direction: Vector3, force: float) -> void:
+	direction.y = 0.0
+	if direction.length() < 0.001:
+		return
+	_knockback_velocity += direction.normalized() * force
+
 func take_damage(amount: int) -> void:
 	if _is_dead:
 		return
@@ -96,11 +132,18 @@ func take_damage(amount: int) -> void:
 		_is_dead = true
 		died.emit()
 		BossFlow.boss_killed()
-		# Transition player back to main hall — the cutscene controller there
-		# picks up the WON state via cross-scene catch-up and runs the victory
-		# sequence (flames return, basement reveal).
-		GameState.transition_to(GameState.Location.MAIN_HALL)
-		queue_free()
+		ScreenShake.shake(0.7, 0.6)
+		Vfx.spawn_death_burst(global_position + Vector3(0, 1, 0), Color(0.6, 0.1, 0.1), get_parent())
+		# Slow-mo: 1.0 → 0.3 over 100ms, hold 300ms, → 1.0 over 200ms, then transition.
+		var tw: Tween = create_tween()
+		tw.set_ignore_time_scale(true)
+		tw.tween_property(Engine, "time_scale", 0.3, 0.1)
+		tw.tween_interval(0.3)
+		tw.tween_property(Engine, "time_scale", 1.0, 0.2)
+		tw.tween_callback(func():
+			GameState.transition_to(GameState.Location.MAIN_HALL)
+			queue_free()
+		)
 
 func _advance_taunt_timers(delta: float) -> void:
 	_idle_taunt_timer += delta
@@ -138,6 +181,7 @@ func _check_phase_transition() -> void:
 	if new_phase != _phase:
 		_phase = new_phase
 		phase_changed.emit(_phase)
+		ScreenShake.shake(0.5, 0.4)
 		# Suppress phase taunts on lethal blow — the victory line will follow.
 		if hp > 0:
 			if _phase == 2:

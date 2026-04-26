@@ -1,5 +1,7 @@
 extends Node3D
 
+const Vfx = preload("res://scripts/effects/vfx.gd")
+
 const WELP_SCENES: Dictionary = {
 	"red": preload("res://scenes/entities/welp.tscn"),
 	"blue": preload("res://scenes/entities/welp_blue.tscn"),
@@ -10,15 +12,6 @@ const WELP_SCENES: Dictionary = {
 }
 const DRAGON_SCENE: PackedScene = preload("res://scenes/entities/dragon.tscn")
 const ELDER_DRAGON_SCENE: PackedScene = preload("res://scenes/entities/elder_dragon.tscn")
-
-const COLOR_ALBEDO: Dictionary = {
-	"red": Color(0.5, 0.1, 0.1, 1),
-	"blue": Color(0.2, 0.4, 0.85, 1),
-	"green": Color(0.2, 0.6, 0.2, 1),
-	"purple": Color(0.4, 0.2, 0.6, 1),
-	"gold": Color(0.8, 0.7, 0.2, 1),
-	"white": Color(0.8, 0.8, 0.78, 1),
-}
 
 @export var color: String = "red"
 @export var base_spawn_interval: float = 3.0  # at heat 0
@@ -80,7 +73,7 @@ func _apply_color_tint(enemy: Node, c: String) -> void:
 		return
 	mat = mat.duplicate() as StandardMaterial3D
 	mesh.material_override = mat
-	mat.albedo_color = COLOR_ALBEDO.get(c, COLOR_ALBEDO["red"])
+	mat.albedo_color = Vfx.COLOR_ALBEDO.get(c, Vfx.COLOR_ALBEDO["red"])
 
 func _pick_spawn_position() -> Vector3:
 	var player_pos: Vector3 = _get_player_pos()

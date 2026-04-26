@@ -19,13 +19,32 @@ func _process(delta: float) -> void:
 		return
 	# Cleave: swing damages every enemy in range, not just the first.
 	for enemy in enemies:
-		if enemy.has_method("take_damage"):
-			enemy.take_damage(base_damage)
+		if not enemy.has_method("take_damage"):
+			continue
+		enemy.take_damage(base_damage)
 		hit_enemy.emit(enemy, base_damage)
+		# Visual feedback per hit.
+		if enemy.has_method("flash_hit"):
+			enemy.flash_hit()
+		if enemy.has_method("apply_knockback"):
+			var dir: Vector3 = enemy.global_position - global_position
+			var force: float = _knockback_force_for(enemy)
+			enemy.apply_knockback(dir, force)
+		ScreenShake.shake(0.10, 0.06)
 	_swing_cooldown = swing_interval
 
 func _is_enemy(body: Node) -> bool:
 	return body.is_in_group("enemy")
+
+func _knockback_force_for(enemy: Node) -> float:
+	# Boss has no "tier" property; treat as boss → 1.5
+	if not "tier" in enemy:
+		return 1.5
+	match enemy.tier:
+		"welp": return 4.0
+		"dragon": return 3.0
+		"elder": return 3.0
+		_: return 4.0
 
 @onready var _blade_mesh: MeshInstance3D = $Blade if has_node("Blade") else null
 

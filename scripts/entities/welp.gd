@@ -1,5 +1,7 @@
 extends CharacterBody3D
 
+const Vfx = preload("res://scripts/effects/vfx.gd")
+
 @export var max_hp: int = 30
 
 @export var move_speed: float = 3.6
@@ -12,12 +14,17 @@ const SOUL_PICKUP_SCENE: PackedScene = preload("res://scenes/interactables/soul_
 @export var color: String = "red"
 @export var tier: String = "welp"
 
+const KNOCKBACK_DECAY: float = 12.0  # m/s² — knockback impulse decay rate
+
 signal died(welp: Node, color: String)
 
 var hp: int = max_hp
 var _attack_cooldown: float = 0.0
 var _player: Node = null
 var _is_dead: bool = false
+var _knockback_velocity: Vector3 = Vector3.ZERO
+var _flash_resting_albedo: Color = Color(0, 0, 0, 0)  # sentinel: alpha 0 = "not yet captured"
+var _flash_tween: Tween = null
 
 func _ready() -> void:
 	hp = max_hp
@@ -46,6 +53,11 @@ func _physics_process(delta: float) -> void:
 			_attack_cooldown = attack_interval
 	if _attack_cooldown > 0.0:
 		_attack_cooldown = max(0.0, _attack_cooldown - delta)
+	# Apply knockback impulse on top of tracking velocity, then decay it.
+	if _knockback_velocity.length() > 0.01:
+		velocity.x += _knockback_velocity.x
+		velocity.z += _knockback_velocity.z
+		_knockback_velocity = _knockback_velocity.move_toward(Vector3.ZERO, KNOCKBACK_DECAY * delta)
 	velocity.y -= 9.8 * delta if not is_on_floor() else 0.0
 	move_and_slide()
 
@@ -58,6 +70,34 @@ func _attack_player() -> void:
 	if _player != null and _player.has_method("take_damage"):
 		_player.take_damage(attack_damage)
 
+func flash_hit(duration: float = 0.12) -> void:
+	var mesh: MeshInstance3D = get_node_or_null("Mesh") as MeshInstance3D
+	if mesh == null:
+		return
+	var mat: StandardMaterial3D = mesh.material_override as StandardMaterial3D
+	if mat == null:
+		return
+	if not mat.resource_local_to_scene:
+		mat = mat.duplicate()
+		mat.resource_local_to_scene = true
+		mesh.material_override = mat
+	# Capture resting albedo on first flash so concurrent flashes always
+	# return to the TRUE color (not a mid-flash white).
+	if _flash_resting_albedo.a == 0.0:
+		_flash_resting_albedo = mat.albedo_color
+	# Kill any active tween so two near-simultaneous flashes don't fight.
+	if _flash_tween != null and _flash_tween.is_valid():
+		_flash_tween.kill()
+	mat.albedo_color = Color(1, 1, 1, 1)
+	_flash_tween = create_tween()
+	_flash_tween.tween_property(mat, "albedo_color", _flash_resting_albedo, duration)
+
+func apply_knockback(direction: Vector3, force: float) -> void:
+	direction.y = 0.0
+	if direction.length() < 0.001:
+		return
+	_knockback_velocity += direction.normalized() * force
+
 func take_damage(amount: int) -> void:
 	if _is_dead:
 		return
@@ -65,8 +105,19 @@ func take_damage(amount: int) -> void:
 	if hp == 0:
 		_is_dead = true
 		_drop_souls()
+		HitStop.freeze(_hit_stop_duration())
+		var burst_color: Color = Vfx.COLOR_ALBEDO.get(color, Color(0.5, 0.5, 0.5, 1))
+		Vfx.spawn_death_burst(global_position + Vector3(0, 0.5, 0), burst_color, get_parent())
 		died.emit(self, color)
 		queue_free()
+
+func _hit_stop_duration() -> float:
+	# Tier-tuned freeze duration for kill weight.
+	match tier:
+		"welp": return 0.05
+		"dragon": return 0.08
+		"elder": return 0.12
+		_: return 0.05
 
 func _drop_souls() -> void:
 	# Special "alarm" welps drop nothing (used by time-alarm spawner in T8)
