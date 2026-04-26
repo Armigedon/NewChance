@@ -1,6 +1,5 @@
 extends GdUnitTestSuite
 
-const VfxScript = preload("res://scripts/effects/vfx.gd")
 const SpawnerScript = preload("res://scripts/world/corner_spawner.gd")
 
 var spawner: Node3D

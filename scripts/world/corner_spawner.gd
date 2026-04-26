@@ -1,7 +1,6 @@
 extends Node3D
 
-# Force load Vfx to make class_name globally available
-const _VFX_LOADER = preload("res://scripts/effects/vfx.gd")
+const Vfx = preload("res://scripts/effects/vfx.gd")
 
 const WELP_SCENES: Dictionary = {
 	"red": preload("res://scenes/entities/welp.tscn"),
@@ -74,7 +73,7 @@ func _apply_color_tint(enemy: Node, c: String) -> void:
 		return
 	mat = mat.duplicate() as StandardMaterial3D
 	mesh.material_override = mat
-	mat.albedo_color = _VFX_LOADER.COLOR_ALBEDO.get(c, _VFX_LOADER.COLOR_ALBEDO["red"])
+	mat.albedo_color = Vfx.COLOR_ALBEDO.get(c, Vfx.COLOR_ALBEDO["red"])
 
 func _pick_spawn_position() -> Vector3:
 	var player_pos: Vector3 = _get_player_pos()
