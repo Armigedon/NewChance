@@ -13,15 +13,31 @@ func _ready() -> void:
 	_cancel_button.pressed.connect(_on_cancel)
 
 func show_prompt() -> void:
-	var red_minor: int = SoulEconomy.carry_count("red", "minor")
-	var fill_delta: int = red_minor  # 1/1 in Phase 1
-	var current_fill: int = SoulEconomy.pyre_fill("red")
-	var new_fill: int = min(current_fill + fill_delta, SoulEconomy.PYRE_CAP)
-	_summary_label.text = (
-		"Deposit %d red minor souls.\n" % red_minor
-		+ "Red pyre: %d → %d / %d\n" % [current_fill, new_fill, SoulEconomy.PYRE_CAP]
-		+ "All current skills will be lost."
-	)
+	var lines: Array[String] = []
+	var any_carry: bool = false
+	for color in SoulEconomy.COLORS:
+		var minor: int = SoulEconomy.carry_count(color, "minor")
+		var elder: int = SoulEconomy.carry_count(color, "elder")
+		if minor == 0 and elder == 0:
+			continue
+		any_carry = true
+		var fill_delta: int = minor * SoulEconomy.SOUL_VALUES["minor"] + elder * SoulEconomy.SOUL_VALUES["elder"]
+		var current_fill: int = SoulEconomy.pyre_fill(color)
+		var new_fill: int = min(current_fill + fill_delta, SoulEconomy.PYRE_CAP)
+		var name: String = color.capitalize()
+		var carry_desc: String = ""
+		if minor > 0 and elder > 0:
+			carry_desc = "%d minor + %d elder" % [minor, elder]
+		elif elder > 0:
+			carry_desc = "%d elder" % elder
+		else:
+			carry_desc = "%d minor" % minor
+		lines.append("%s: %s → pyre %d → %d / %d" % [name, carry_desc, current_fill, new_fill, SoulEconomy.PYRE_CAP])
+	if not any_carry:
+		lines.append("(no souls to deposit)")
+	lines.append("")
+	lines.append("All current skills will be lost.")
+	_summary_label.text = "\n".join(lines)
 	visible = true
 	get_tree().paused = true
 
