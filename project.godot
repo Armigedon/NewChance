@@ -22,6 +22,7 @@ SoulEconomy="*res://scripts/core/soul_economy.gd"
 Escalation="*res://scripts/world/escalation.gd"
 SaveSystem="*res://scripts/core/save_system.gd"
 MetaProgress="*res://scripts/core/meta_progress.gd"
+BossFlow="*res://scripts/core/boss_flow.gd"
 
 [editor_plugins]
 
