@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3]
+[gd_scene load_steps=29 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/main_hall_upstairs_trigger.gd" id="1_trigger"]
 [ext_resource type="PackedScene" path="res://scenes/interactables/pyre.tscn" id="2_pyre"]
@@ -10,6 +10,10 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/cantrip_stones_ui.tscn" id="8_stonesui"]
 [ext_resource type="PackedScene" path="res://scenes/interactables/sigil_forge.tscn" id="9_sigil"]
 [ext_resource type="PackedScene" path="res://scenes/interactables/trial_chamber.tscn" id="10_trial"]
+[ext_resource type="PackedScene" path="res://scenes/entities/necromancer.tscn" id="11_necro"]
+[ext_resource type="PackedScene" path="res://scenes/ui/dialogue_banner.tscn" id="12_banner"]
+[ext_resource type="Script" path="res://scripts/world/cutscene_controller.gd" id="13_cutscene"]
+[ext_resource type="Script" path="res://scripts/world/courtyard_door_trigger.gd" id="14_doortrigger"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_floor"]
 size = Vector3(20, 0.5, 20)
@@ -40,6 +44,27 @@ albedo_color = Color(0.4, 0.6, 1, 1)
 emission_enabled = true
 emission = Color(0.5, 0.7, 1, 1)
 emission_energy_multiplier = 2.5
+
+[sub_resource type="BoxShape3D" id="door_shape"]
+size = Vector3(4, 4, 0.5)
+
+[sub_resource type="BoxMesh" id="door_mesh"]
+size = Vector3(4, 4, 0.5)
+
+[sub_resource type="StandardMaterial3D" id="door_mat"]
+albedo_color = Color(0.4, 0.2, 0.2, 1)
+emission_enabled = true
+emission = Color(0.7, 0.3, 0.3, 1)
+emission_energy_multiplier = 0.8
+
+[sub_resource type="BoxMesh" id="basement_mesh"]
+size = Vector3(3, 0.3, 5)
+
+[sub_resource type="StandardMaterial3D" id="basement_mat"]
+albedo_color = Color(0.15, 0.1, 0.2, 1)
+emission_enabled = true
+emission = Color(0.4, 0.2, 0.6, 1)
+emission_energy_multiplier = 1.5
 
 [sub_resource type="Environment" id="Environment_main"]
 background_mode = 1
@@ -148,3 +173,38 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, -5)
 
 [node name="TrialChamber" parent="." instance=ExtResource("10_trial")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, -5)
+
+[node name="Necromancer" parent="." instance=ExtResource("11_necro")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -3)
+
+[node name="DialogueBanner" parent="." instance=ExtResource("12_banner")]
+
+[node name="CutsceneController" type="Node" parent="."]
+script = ExtResource("13_cutscene")
+necromancer_path = NodePath("../Necromancer")
+dialogue_banner_path = NodePath("../DialogueBanner")
+courtyard_door_path = NodePath("../CourtyardDoor")
+
+[node name="CourtyardDoor" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 2, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CourtyardDoor"]
+shape = SubResource("door_shape")
+
+[node name="Mesh" type="MeshInstance3D" parent="CourtyardDoor"]
+mesh = SubResource("door_mesh")
+material_override = SubResource("door_mat")
+
+[node name="Trigger" type="Area3D" parent="CourtyardDoor"]
+script = ExtResource("14_doortrigger")
+
+[node name="TriggerCollider" type="CollisionShape3D" parent="CourtyardDoor/Trigger"]
+shape = SubResource("door_shape")
+
+[node name="BasementStair" type="Node3D" parent="."]
+visible = false
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 5)
+
+[node name="Mesh" type="MeshInstance3D" parent="BasementStair"]
+mesh = SubResource("basement_mesh")
+material_override = SubResource("basement_mat")

@@ -99,3 +99,37 @@ func clear() -> void:
 	_in_run_elder_count = 0
 	Escalation.set_in_run_elder_count(0)
 	active_skill_changed.emit(-1)
+
+# --- Serialize/restore for cross-scene retention (boss flow) ---
+
+func to_dict() -> Dictionary:
+	var skill_dicts: Array = []
+	for s in _skills:
+		skill_dicts.append({
+			"base_color": s.base_color,
+			"modifier_stack": s.modifier_stack.duplicate(),
+			"locked": s.locked,
+		})
+	return {
+		"skills": skill_dicts,
+		"active_index": _active_index,
+		"in_run_elder_count": _in_run_elder_count,
+	}
+
+func from_dict(d: Dictionary) -> void:
+	_skills.clear()
+	var skill_dicts: Array = d.get("skills", [])
+	for sd in skill_dicts:
+		var s := SkillScript.new(sd.get("base_color", "red")) as Skill
+		# Bypass add_modifier (which respects locked) by appending directly
+		var mods: Array = sd.get("modifier_stack", [])
+		for m in mods:
+			s.modifier_stack.append(m)
+		s.locked = bool(sd.get("locked", false))
+		_skills.append(s)
+	_active_index = int(d.get("active_index", -1))
+	_in_run_elder_count = int(d.get("in_run_elder_count", 0))
+	Escalation.set_in_run_elder_count(_in_run_elder_count)
+	if _active_index >= 0:
+		skill_unlocked.emit(_active_index)
+		active_skill_changed.emit(_active_index)

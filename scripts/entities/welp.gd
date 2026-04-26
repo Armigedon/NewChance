@@ -70,7 +70,8 @@ func take_damage(amount: int) -> void:
 
 func _drop_souls() -> void:
 	# Special "alarm" welps drop nothing (used by time-alarm spawner in T8)
-	if color == "alarm":
+	# Boss-summoned whelps also drop nothing
+	if color == "alarm" or color == "boss":
 		return
 	# welp: 1 minor; dragon: 2-3 minor; elder: 1 elder + 2-3 minor
 	var minor_count: int = 1 if tier == "welp" else (2 + (1 if randf() < 0.5 else 0))

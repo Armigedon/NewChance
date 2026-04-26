@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3]
+[gd_scene load_steps=25 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/interactables/descent_staircase.tscn" id="1_staircase"]
 [ext_resource type="PackedScene" path="res://scenes/ui/descent_prompt.tscn" id="2_prompt"]
@@ -9,6 +9,7 @@
 [ext_resource type="Script" path="res://scripts/world/corner_spawner.gd" id="7_spawner"]
 [ext_resource type="Script" path="res://scripts/world/corner_zone.gd" id="8_zone"]
 [ext_resource type="Script" path="res://scripts/world/alarm_spawner.gd" id="9_alarm"]
+[ext_resource type="PackedScene" path="res://scenes/ui/dialogue_banner.tscn" id="10_banner"]
 
 [sub_resource type="BoxShape3D" id="floor_shape"]
 size = Vector3(50, 0.5, 50)
@@ -232,3 +233,5 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 6)
 
 [node name="DeathHandler" type="Node" parent="."]
 script = ExtResource("6_death")
+
+[node name="DialogueBanner" parent="." instance=ExtResource("10_banner")]
