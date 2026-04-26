@@ -9,15 +9,20 @@ signal active_skill_changed(new_index: int)
 signal skill_unlocked(index: int)
 signal at_cap_replace_prompt_requested(incoming_color: String)
 
+const BASE_CAP: int = 3
+
 var _skills: Array[Skill] = []
 var _active_index: int = -1
-var _cap: int = 3
+var _cap_override: int = -1  # -1 = use MetaProgress; >=0 = test override
+var _in_run_elder_count: int = 0
 
 func set_cap(n: int) -> void:
-	_cap = n
+	_cap_override = n
 
 func cap() -> int:
-	return _cap
+	if _cap_override >= 0:
+		return _cap_override
+	return BASE_CAP + MetaProgress.active_skill_cap_bonus()
 
 func skill_count() -> int:
 	return _skills.size()
@@ -51,7 +56,7 @@ func add_minor(color: String) -> int:
 	return AddResult.MODIFIED
 
 func add_elder(color: String) -> int:
-	if _skills.size() >= _cap:
+	if _skills.size() >= cap():
 		at_cap_replace_prompt_requested.emit(color)
 		return AddResult.AT_CAP
 	if _active_index >= 0:
@@ -59,6 +64,8 @@ func add_elder(color: String) -> int:
 	var new_skill := SkillScript.new(color) as Skill
 	_skills.append(new_skill)
 	_active_index = _skills.size() - 1
+	_in_run_elder_count += 1
+	Escalation.set_in_run_elder_count(_in_run_elder_count)
 	skill_unlocked.emit(_active_index)
 	active_skill_changed.emit(_active_index)
 	return AddResult.UNLOCKED
@@ -89,4 +96,6 @@ func decline_elder(declined_color: String) -> void:
 func clear() -> void:
 	_skills.clear()
 	_active_index = -1
+	_in_run_elder_count = 0
+	Escalation.set_in_run_elder_count(0)
 	active_skill_changed.emit(-1)

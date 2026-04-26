@@ -44,6 +44,8 @@ func _spawn() -> void:
 	if scene == null:
 		return
 	var enemy = scene.instantiate()
+	if "max_hp" in enemy:
+		enemy.max_hp = int(enemy.max_hp * Escalation.enemy_hp_factor())
 	if tier in ["dragon", "elder"]:
 		enemy.color = color
 		_apply_color_tint(enemy, color)

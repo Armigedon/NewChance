@@ -10,6 +10,10 @@ var _heat: Dictionary = {}
 var _player_in_corner: String = ""
 var _player_upstairs: bool = false
 var _upstairs_time: float = 0.0
+var _in_run_elders: int = 0
+
+func set_in_run_elder_count(n: int) -> void:
+	_in_run_elders = n
 
 func _ready() -> void:
 	reset()
@@ -43,7 +47,12 @@ func set_player_upstairs(value: bool) -> void:
 		_upstairs_time = 0.0
 
 func spawn_rate_factor(heat: float) -> float:
-	return 1.0 + (heat / HEAT_CAP) * 2.0
+	var heat_factor: float = 1.0 + (heat / HEAT_CAP) * 2.0
+	var elder_factor: float = 1.0 + 0.12 * float(_in_run_elders)
+	return heat_factor * elder_factor
+
+func enemy_hp_factor() -> float:
+	return 1.0 + 0.08 * float(_in_run_elders)
 
 func roll_tier(heat: float) -> String:
 	if heat < 30.0:
@@ -67,3 +76,4 @@ func reset() -> void:
 	_player_in_corner = ""
 	_player_upstairs = false
 	_upstairs_time = 0.0
+	_in_run_elders = 0
