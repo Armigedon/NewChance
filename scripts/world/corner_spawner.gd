@@ -31,15 +31,24 @@ var _alive_count: int = 0
 
 func _process(delta: float) -> void:
 	var heat: float = Escalation.corner_heat(color)
-	var effective_interval: float = base_spawn_interval / Escalation.spawn_rate_factor(heat)
+	var player_pos: Vector3 = _get_player_pos()
+	var proximity_mult: float = _compute_proximity_multiplier(player_pos)
+	var effective_interval: float = base_spawn_interval / (Escalation.spawn_rate_factor(heat) * proximity_mult)
 	_timer += delta
 	if _timer >= effective_interval and _alive_count < max_alive:
 		_timer = 0.0
 		_spawn()
+		# Burst spawn: 25% chance of a second welp same tick when player is close.
+		if _is_close(player_pos) and randf() < 0.25 and _alive_count < max_alive:
+			_spawn()
 
 func _spawn() -> void:
 	var heat: float = Escalation.corner_heat(color)
+	var player_pos: Vector3 = _get_player_pos()
 	var tier: String = Escalation.roll_tier(heat)
+	# Far corners only ever produce welps — no off-screen dragons/elders.
+	if _is_far(player_pos):
+		tier = "welp"
 	var scene: PackedScene = _scene_for_tier(tier)
 	if scene == null:
 		return
@@ -96,6 +105,28 @@ func _get_player_pos() -> Vector3:
 	if players.is_empty():
 		return Vector3.INF
 	return players[0].global_position
+
+func _compute_proximity_multiplier(player_pos: Vector3) -> float:
+	if player_pos == Vector3.INF:
+		return 1.0
+	var d: float = Vector2(player_pos.x - global_position.x, player_pos.z - global_position.z).length()
+	if d <= 8.0:
+		return 2.5
+	if d <= 16.0:
+		return 1.0
+	return 0.3
+
+func _is_close(player_pos: Vector3) -> bool:
+	if player_pos == Vector3.INF:
+		return false
+	var d: float = Vector2(player_pos.x - global_position.x, player_pos.z - global_position.z).length()
+	return d <= 8.0
+
+func _is_far(player_pos: Vector3) -> bool:
+	if player_pos == Vector3.INF:
+		return false
+	var d: float = Vector2(player_pos.x - global_position.x, player_pos.z - global_position.z).length()
+	return d > 16.0
 
 func _on_died(_enemy: Node, _color: String) -> void:
 	_alive_count = max(0, _alive_count - 1)
