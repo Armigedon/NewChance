@@ -26,9 +26,14 @@ func _ready() -> void:
 		_skill_system.active_skill_changed.connect(_on_active_skill_changed)
 		_skill_system.at_cap_replace_prompt_requested.connect(_on_at_cap)
 	GameState.run_ended.connect(_on_run_ended)
-	var queued: String = MetaProgress.consume_start_with_skill()
-	if queued != "" and _skill_system != null:
-		_skill_system.add_minor(queued)
+	# In boss flow, skip consume in MAIN_HALL so the courtyard player gets the
+	# retained skill instead. Otherwise the main_hall player would consume it
+	# (no combat in main hall) and the courtyard player would arrive empty.
+	var skip_consume: bool = BossFlow.is_active() and GameState.current_location == GameState.Location.MAIN_HALL
+	if not skip_consume:
+		var queued: String = MetaProgress.consume_start_with_skill()
+		if queued != "" and _skill_system != null:
+			_skill_system.add_minor(queued)
 	max_hp += MetaProgress.cantrip_bonus("max_hp")
 	hp = max_hp
 	dash_cooldown = max(0.2, dash_cooldown + MetaProgress.cantrip_bonus_float("dash_cooldown"))

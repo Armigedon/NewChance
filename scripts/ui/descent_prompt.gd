@@ -89,11 +89,22 @@ func _descend_and_fight() -> void:
 			if SoulEconomy.carry_count(c, "elder") > 0:
 				SoulEconomy._carry[c]["elder"] -= 1
 				break
+	# Snapshot the player's active skill base color BEFORE the scene swap so
+	# the new player instance (in main_hall, then courtyard) re-unlocks it via
+	# MetaProgress.consume_start_with_skill in player._ready. Without this,
+	# the scene swap recreates the player with no skills — boss fight unwinnable.
+	var players: Array = get_tree().get_nodes_in_group("player")
+	if players.size() > 0:
+		var p: Node = players[0]
+		if p.has_node("SkillSystem"):
+			var ss: SkillSystem = p.get_node("SkillSystem") as SkillSystem
+			if ss != null:
+				var sk: Skill = ss.active_skill()
+				if sk != null:
+					MetaProgress.set_start_with_skill(sk.base_color)
 	# Deposit any remaining souls (fills the 6th on first trigger)
 	SoulEconomy.deposit_to_pyres()
-	# Reset escalation but DON'T strip skills (this is the retention path)
 	Escalation.reset()
-	# Trigger boss flow + transition back to main hall (cutscene plays there)
 	BossFlow.trigger_boss()
 	GameState.transition_to(GameState.Location.MAIN_HALL)
 
