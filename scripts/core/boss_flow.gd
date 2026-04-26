@@ -28,7 +28,10 @@ func enter_arena() -> void:
 		_set_state(State.ACTIVE)
 
 func boss_killed() -> void:
-	if state == State.ACTIVE:
+	# Defensive: accept either ACTIVE or PENDING in case the gate trigger that
+	# was supposed to flip PENDING→ACTIVE never fired (e.g., player took a
+	# different path into the arena).
+	if state == State.ACTIVE or state == State.PENDING:
 		_set_state(State.WON)
 
 func player_died_in_boss() -> void:
