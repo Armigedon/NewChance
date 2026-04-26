@@ -118,13 +118,15 @@ func _find_dialogue_banner() -> CanvasLayer:
 	return get_tree().root.find_child("DialogueBanner", true, false) as CanvasLayer
 
 func _show_taunt(category: String) -> void:
+	# Always record the attempt so timers reset, even if the banner is missing.
+	# Otherwise a missing banner would cause per-frame tree scans.
+	_record_taunt_fired()
 	var banner: CanvasLayer = _find_dialogue_banner()
 	if banner == null:
 		return
 	if not banner.has_method("show_line"):
 		return
 	banner.show_line(category)
-	_record_taunt_fired()
 
 func _check_phase_transition() -> void:
 	var pct: float = float(hp) / float(MAX_HP)
@@ -136,7 +138,9 @@ func _check_phase_transition() -> void:
 	if new_phase != _phase:
 		_phase = new_phase
 		phase_changed.emit(_phase)
-		if _phase == 2:
-			_show_taunt("phase_2_taunt")
-		elif _phase == 3:
-			_show_taunt("phase_3_taunt")
+		# Suppress phase taunts on lethal blow — the victory line will follow.
+		if hp > 0:
+			if _phase == 2:
+				_show_taunt("phase_2_taunt")
+			elif _phase == 3:
+				_show_taunt("phase_3_taunt")
