@@ -12,6 +12,14 @@ signal run_ended(outcome: Outcome)
 
 var current_location: Location = Location.MAIN_HALL
 
+func _ready() -> void:
+	var save_data: Dictionary = SaveSystem.load_save()
+	if save_data.has("meta"):
+		MetaProgress.from_dict(save_data["meta"])
+	if save_data.has("pyres"):
+		for color in save_data["pyres"]:
+			SoulEconomy.set_pyre_fill(color, int(save_data["pyres"][color]))
+
 static func scene_path_for(location: Location) -> String:
 	match location:
 		Location.MAIN_HALL:
@@ -41,4 +49,16 @@ func end_run(outcome: Outcome) -> void:
 		SoulEconomy.clear_carry()
 	run_ended.emit(outcome)
 	Escalation.reset()
+	# Persist meta progress + pyre fills
+	var save_data: Dictionary = {
+		"meta": MetaProgress.to_dict(),
+		"pyres": _pyre_fills_dict(),
+	}
+	SaveSystem.save(save_data)
 	transition_to(Location.MAIN_HALL)
+
+func _pyre_fills_dict() -> Dictionary:
+	var d: Dictionary = {}
+	for c in SoulEconomy.COLORS:
+		d[c] = SoulEconomy.pyre_fill(c)
+	return d

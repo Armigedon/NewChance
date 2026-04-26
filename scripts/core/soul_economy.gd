@@ -75,3 +75,14 @@ func has_any_carry() -> bool:
 		if _carry[color]["minor"] > 0 or _carry[color]["elder"] > 0:
 			return true
 	return false
+
+func set_pyre_fill(color: String, fill: int) -> void:
+	if not (color in COLORS):
+		return
+	var clamped: int = clamp(fill, 0, PYRE_CAP)
+	var prior: int = _pyres[color]
+	_pyres[color] = clamped
+	if clamped >= PYRE_CAP and not _filled_pyres[color]:
+		_filled_pyres[color] = true
+	if clamped != prior:
+		pyre_fill_changed.emit(color, clamped)

@@ -24,6 +24,18 @@ var _start_with_skill: String = ""
 
 func _ready() -> void:
 	_init_defaults()
+	SoulEconomy.pyre_fill_changed.connect(_on_pyre_fill_changed)
+
+func _on_pyre_fill_changed(color: String, new_fill: int) -> void:
+	# Compute pct, fire EVERY applicable milestone (handles big jumps).
+	var pct: float = (float(new_fill) / float(SoulEconomy.PYRE_CAP)) * 100.0
+	var prior_milestone: int = _pyre_milestones.get(color, 0)
+	# Walk thresholds in order; fire each not-yet-reached one.
+	for m in [25, 50, 75]:
+		if pct >= float(m) and prior_milestone < m:
+			on_pyre_milestone(color, m)
+	if pct >= 100.0:
+		on_pyre_full(color)  # also sets milestone to 100
 
 func _init_defaults() -> void:
 	_cantrips.clear()
