@@ -1,5 +1,7 @@
 extends CharacterBody3D
 
+const Vfx = preload("res://scripts/effects/vfx.gd")
+
 @export var max_hp: int = 30
 
 @export var move_speed: float = 3.6
@@ -103,8 +105,19 @@ func take_damage(amount: int) -> void:
 	if hp == 0:
 		_is_dead = true
 		_drop_souls()
+		HitStop.freeze(_hit_stop_duration())
+		var burst_color: Color = Vfx.COLOR_ALBEDO.get(color, Color(0.5, 0.5, 0.5, 1))
+		Vfx.spawn_death_burst(global_position + Vector3(0, 0.5, 0), burst_color, get_parent())
 		died.emit(self, color)
 		queue_free()
+
+func _hit_stop_duration() -> float:
+	# Tier-tuned freeze duration for kill weight.
+	match tier:
+		"welp": return 0.05
+		"dragon": return 0.08
+		"elder": return 0.12
+		_: return 0.05
 
 func _drop_souls() -> void:
 	# Special "alarm" welps drop nothing (used by time-alarm spawner in T8)
