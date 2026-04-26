@@ -32,6 +32,10 @@ func _on_boss_state_changed(s: int) -> void:
 		_run_victory()
 
 func _run_cutscene() -> void:
+	# Belt-and-suspenders: explicitly raise the necromancer here in case the
+	# cross-scene catch-up in Necromancer._ready raced the cutscene start.
+	if _necromancer != null and _necromancer.has_method("appear_humanoid"):
+		_necromancer.appear_humanoid()
 	if _banner != null:
 		_banner.show_line("flame_drain")
 	await get_tree().create_timer(2.5).timeout
