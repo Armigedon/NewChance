@@ -26,6 +26,7 @@ MetaProgress="*res://scripts/core/meta_progress.gd"
 BossFlow="*res://scripts/core/boss_flow.gd"
 ScreenShake="*res://scripts/world/screen_shake.gd"
 HitStop="*res://scripts/world/hit_stop.gd"
+RunStats="*res://scripts/core/run_stats.gd"
 
 [editor_plugins]
 
