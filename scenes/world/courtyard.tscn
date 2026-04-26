@@ -1,9 +1,10 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/courtyard_gate.gd" id="1_gate"]
 [ext_resource type="PackedScene" path="res://scenes/entities/player.tscn" id="2_player"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="3_hud"]
 [ext_resource type="PackedScene" path="res://scenes/ui/dialogue_banner.tscn" id="4_banner"]
+[ext_resource type="PackedScene" path="res://scenes/entities/boss_dragon.tscn" id="5_boss"]
 
 [sub_resource type="CylinderShape3D" id="floor_shape"]
 height = 0.5
@@ -73,6 +74,9 @@ material_override = SubResource("gate_block_mat")
 [node name="GateColliderShape" type="CollisionShape3D" parent="EntryGate/GateCollider"]
 disabled = true
 shape = SubResource("gate_trigger_shape")
+
+[node name="Boss" parent="." instance=ExtResource("5_boss")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.5736, 0.8192, 0, -0.8192, 0.5736, 0, 18, 14)
