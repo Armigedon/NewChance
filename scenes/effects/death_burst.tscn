@@ -1,0 +1,26 @@
+[gd_scene load_steps=3 format=3]
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_burst"]
+direction = Vector3(0, 1, 0)
+spread = 45.0
+initial_velocity_min = 3.0
+initial_velocity_max = 6.0
+gravity = Vector3(0, -2, 0)
+scale_min = 0.15
+scale_max = 0.25
+color = Color(1, 1, 1, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_burst"]
+radius = 0.05
+height = 0.1
+radial_segments = 6
+rings = 3
+
+[node name="DeathBurst" type="GPUParticles3D"]
+amount = 30
+lifetime = 0.5
+one_shot = true
+explosiveness = 0.95
+emitting = false
+process_material = SubResource("ParticleProcessMaterial_burst")
+draw_pass_1 = SubResource("SphereMesh_burst")
