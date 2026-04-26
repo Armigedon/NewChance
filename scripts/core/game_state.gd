@@ -13,6 +13,12 @@ signal run_ended(outcome: Outcome)
 var current_location: Location = Location.MAIN_HALL
 
 func _ready() -> void:
+	# Defer load until all autoloads have finished _ready (autoload _ready
+	# runs in registration order; deferring ensures SoulEconomy / MetaProgress
+	# have initialized before we restore saved state into them).
+	call_deferred("_load_save_state")
+
+func _load_save_state() -> void:
 	var save_data: Dictionary = SaveSystem.load_save()
 	if save_data.has("meta"):
 		MetaProgress.from_dict(save_data["meta"])
