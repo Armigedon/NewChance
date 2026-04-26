@@ -79,3 +79,16 @@ func test_victory_line_flag_starts_false() -> void:
 func test_mark_victory_line_shown_flips_flag() -> void:
 	bf.mark_victory_line_shown()
 	assert_that(bf.has_shown_victory_line()).is_true()
+
+func test_pending_banner_line_starts_empty() -> void:
+	assert_that(bf.consume_pending_banner_line()).is_equal("")
+
+func test_set_pending_banner_line_sets_value() -> void:
+	bf.set_pending_banner_line("death_normal")
+	assert_that(bf.consume_pending_banner_line()).is_equal("death_normal")
+
+func test_consume_pending_banner_line_clears_value() -> void:
+	bf.set_pending_banner_line("death_boss")
+	bf.consume_pending_banner_line()
+	# Subsequent consume returns empty.
+	assert_that(bf.consume_pending_banner_line()).is_equal("")

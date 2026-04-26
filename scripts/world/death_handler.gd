@@ -12,11 +12,7 @@ func _ready() -> void:
 func _on_player_died() -> void:
 	if GameState.current_location == GameState.Location.COURTYARD:
 		BossFlow.player_died_in_boss()
-		var banner: CanvasLayer = get_tree().root.find_child("DialogueBanner", true, false)
-		if banner != null:
-			banner.show_line("death_boss")
+		BossFlow.set_pending_banner_line("death_boss")
 	else:
-		var banner: CanvasLayer = get_tree().root.find_child("DialogueBanner", true, false)
-		if banner != null:
-			banner.show_line("death_normal")
+		BossFlow.set_pending_banner_line("death_normal")
 	GameState.end_run(GameState.Outcome.DIED)

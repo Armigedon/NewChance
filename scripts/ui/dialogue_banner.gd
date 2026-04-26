@@ -75,6 +75,11 @@ var _timer: float = 0.0
 func _ready() -> void:
 	visible = false
 	set_process(true)
+	# Cross-scene line catch-up: death_handler stashes a category on BossFlow
+	# before scene swap (which destroys the source-scene banner). Show it now.
+	var pending: String = BossFlow.consume_pending_banner_line()
+	if pending != "":
+		show_line(pending)
 
 func _process(delta: float) -> void:
 	if not visible:
