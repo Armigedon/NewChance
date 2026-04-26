@@ -12,12 +12,15 @@ const SOUL_PICKUP_SCENE: PackedScene = preload("res://scenes/interactables/soul_
 @export var color: String = "red"
 @export var tier: String = "welp"
 
+const KNOCKBACK_DECAY: float = 12.0  # m/s² — knockback impulse decay rate
+
 signal died(welp: Node, color: String)
 
 var hp: int = max_hp
 var _attack_cooldown: float = 0.0
 var _player: Node = null
 var _is_dead: bool = false
+var _knockback_velocity: Vector3 = Vector3.ZERO
 
 func _ready() -> void:
 	hp = max_hp
@@ -46,6 +49,11 @@ func _physics_process(delta: float) -> void:
 			_attack_cooldown = attack_interval
 	if _attack_cooldown > 0.0:
 		_attack_cooldown = max(0.0, _attack_cooldown - delta)
+	# Apply knockback impulse on top of tracking velocity, then decay it.
+	if _knockback_velocity.length() > 0.01:
+		velocity.x += _knockback_velocity.x
+		velocity.z += _knockback_velocity.z
+		_knockback_velocity = _knockback_velocity.move_toward(Vector3.ZERO, KNOCKBACK_DECAY * delta)
 	velocity.y -= 9.8 * delta if not is_on_floor() else 0.0
 	move_and_slide()
 
@@ -57,6 +65,27 @@ func _find_player() -> void:
 func _attack_player() -> void:
 	if _player != null and _player.has_method("take_damage"):
 		_player.take_damage(attack_damage)
+
+func flash_hit(duration: float = 0.12) -> void:
+	var mesh: MeshInstance3D = get_node_or_null("Mesh") as MeshInstance3D
+	if mesh == null:
+		return
+	var mat: StandardMaterial3D = mesh.material_override as StandardMaterial3D
+	if mat == null:
+		return
+	if not mat.resource_local_to_scene:
+		mat = mat.duplicate()
+		mesh.material_override = mat
+	var original: Color = mat.albedo_color
+	mat.albedo_color = Color(1, 1, 1, 1)
+	var tw: Tween = create_tween()
+	tw.tween_property(mat, "albedo_color", original, duration)
+
+func apply_knockback(direction: Vector3, force: float) -> void:
+	direction.y = 0.0
+	if direction.length() < 0.001:
+		return
+	_knockback_velocity += direction.normalized() * force
 
 func take_damage(amount: int) -> void:
 	if _is_dead:

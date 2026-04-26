@@ -8,6 +8,7 @@ const PHASE_2_HP_PCT: float = 0.66
 const PHASE_3_HP_PCT: float = 0.33
 const IDLE_TAUNT_INTERVAL: float = 18.0
 const TAUNT_COOLDOWN_SECONDS: float = 5.0
+const KNOCKBACK_DECAY: float = 12.0
 
 const BOSS_WHELP_SCENE: PackedScene = preload("res://scenes/entities/boss_whelp.tscn")
 
@@ -25,6 +26,7 @@ var _phase: int = 1
 var _is_dead: bool = false
 var _idle_taunt_timer: float = 0.0
 var _taunt_cooldown: float = 0.0
+var _knockback_velocity: Vector3 = Vector3.ZERO
 
 signal phase_changed(new_phase: int)
 signal died
@@ -63,6 +65,11 @@ func _physics_process(delta: float) -> void:
 	if _summon_timer >= interval:
 		_summon_timer = 0.0
 		_summon_whelp()
+	# Apply knockback impulse on top of tracking velocity, then decay.
+	if _knockback_velocity.length() > 0.01:
+		velocity.x += _knockback_velocity.x
+		velocity.z += _knockback_velocity.z
+		_knockback_velocity = _knockback_velocity.move_toward(Vector3.ZERO, KNOCKBACK_DECAY * delta)
 	velocity.y -= 9.8 * delta if not is_on_floor() else 0.0
 	move_and_slide()
 
@@ -86,6 +93,27 @@ func _summon_whelp() -> void:
 	var spawn_pos: Vector3 = global_position + Vector3(cos(angle) * 5.0, 1.0, sin(angle) * 5.0)
 	get_parent().add_child(whelp)
 	whelp.global_position = spawn_pos
+
+func flash_hit(duration: float = 0.18) -> void:
+	var mesh: MeshInstance3D = get_node_or_null("Mesh") as MeshInstance3D
+	if mesh == null:
+		return
+	var mat: StandardMaterial3D = mesh.material_override as StandardMaterial3D
+	if mat == null:
+		return
+	if not mat.resource_local_to_scene:
+		mat = mat.duplicate()
+		mesh.material_override = mat
+	var original: Color = mat.albedo_color
+	mat.albedo_color = Color(1, 1, 1, 1)
+	var tw: Tween = create_tween()
+	tw.tween_property(mat, "albedo_color", original, duration)
+
+func apply_knockback(direction: Vector3, force: float) -> void:
+	direction.y = 0.0
+	if direction.length() < 0.001:
+		return
+	_knockback_velocity += direction.normalized() * force
 
 func take_damage(amount: int) -> void:
 	if _is_dead:
