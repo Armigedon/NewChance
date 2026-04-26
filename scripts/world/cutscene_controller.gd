@@ -23,6 +23,8 @@ func _ready() -> void:
 func _on_boss_state_changed(s: int) -> void:
 	if s == BossFlow.State.PENDING:
 		_run_cutscene()
+	elif s == BossFlow.State.WON:
+		_run_victory()
 
 func _run_cutscene() -> void:
 	if _banner != null:
@@ -38,6 +40,25 @@ func _run_cutscene() -> void:
 		var col: CollisionShape3D = _door.get_node_or_null("CollisionShape3D")
 		if col != null:
 			col.disabled = true
+
+func _run_victory() -> void:
+	var hall: Node = get_tree().root.find_child("MainHall", true, false)
+	if hall == null:
+		return
+	for c in hall.get_children():
+		if c.has_node("Flame"):
+			var flame: MeshInstance3D = c.get_node("Flame")
+			flame.scale.y = 1.6
+			var mat: StandardMaterial3D = flame.material_override as StandardMaterial3D
+			if mat != null:
+				mat.emission_energy_multiplier = 4.5
+	if _banner != null:
+		_banner.show_line("victory")
+	var stair: Node3D = hall.get_node_or_null("BasementStair")
+	if stair != null:
+		stair.visible = true
+	if _necromancer != null and _necromancer.has_method("dismiss"):
+		_necromancer.dismiss()
 
 func _visually_extinguish_pyres() -> void:
 	var hall: Node = get_tree().root.find_child("MainHall", true, false)
