@@ -27,6 +27,8 @@ var _is_dead: bool = false
 var _idle_taunt_timer: float = 0.0
 var _taunt_cooldown: float = 0.0
 var _knockback_velocity: Vector3 = Vector3.ZERO
+var _flash_resting_albedo: Color = Color(0, 0, 0, 0)
+var _flash_tween: Tween = null
 
 signal phase_changed(new_phase: int)
 signal died
@@ -103,11 +105,15 @@ func flash_hit(duration: float = 0.18) -> void:
 		return
 	if not mat.resource_local_to_scene:
 		mat = mat.duplicate()
+		mat.resource_local_to_scene = true
 		mesh.material_override = mat
-	var original: Color = mat.albedo_color
+	if _flash_resting_albedo.a == 0.0:
+		_flash_resting_albedo = mat.albedo_color
+	if _flash_tween != null and _flash_tween.is_valid():
+		_flash_tween.kill()
 	mat.albedo_color = Color(1, 1, 1, 1)
-	var tw: Tween = create_tween()
-	tw.tween_property(mat, "albedo_color", original, duration)
+	_flash_tween = create_tween()
+	_flash_tween.tween_property(mat, "albedo_color", _flash_resting_albedo, duration)
 
 func apply_knockback(direction: Vector3, force: float) -> void:
 	direction.y = 0.0

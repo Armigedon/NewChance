@@ -21,6 +21,8 @@ var _attack_cooldown: float = 0.0
 var _player: Node = null
 var _is_dead: bool = false
 var _knockback_velocity: Vector3 = Vector3.ZERO
+var _flash_resting_albedo: Color = Color(0, 0, 0, 0)  # sentinel: alpha 0 = "not yet captured"
+var _flash_tween: Tween = null
 
 func _ready() -> void:
 	hp = max_hp
@@ -75,11 +77,18 @@ func flash_hit(duration: float = 0.12) -> void:
 		return
 	if not mat.resource_local_to_scene:
 		mat = mat.duplicate()
+		mat.resource_local_to_scene = true
 		mesh.material_override = mat
-	var original: Color = mat.albedo_color
+	# Capture resting albedo on first flash so concurrent flashes always
+	# return to the TRUE color (not a mid-flash white).
+	if _flash_resting_albedo.a == 0.0:
+		_flash_resting_albedo = mat.albedo_color
+	# Kill any active tween so two near-simultaneous flashes don't fight.
+	if _flash_tween != null and _flash_tween.is_valid():
+		_flash_tween.kill()
 	mat.albedo_color = Color(1, 1, 1, 1)
-	var tw: Tween = create_tween()
-	tw.tween_property(mat, "albedo_color", original, duration)
+	_flash_tween = create_tween()
+	_flash_tween.tween_property(mat, "albedo_color", _flash_resting_albedo, duration)
 
 func apply_knockback(direction: Vector3, force: float) -> void:
 	direction.y = 0.0
