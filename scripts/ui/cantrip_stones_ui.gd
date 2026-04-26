@@ -6,7 +6,9 @@ extends CanvasLayer
 @onready var _btn_dash: Button = $Center/Panel/VBox/Buttons/Dash
 @onready var _close_btn: Button = $Center/Panel/VBox/Close
 
-const STONE_COST: int = 3  # FAST-TEST MODE — design value is 30 (~12% of 250 cap)
+const STONE_COST_TEST: int = 3
+const STONE_COST_SHIP: int = 12
+static var STONE_COST: int = STONE_COST_TEST if Debug.FAST_TEST else STONE_COST_SHIP
 
 func _ready() -> void:
 	visible = false

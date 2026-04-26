@@ -1,9 +1,13 @@
 extends CharacterBody3D
 
-const MAX_HP: int = 150  # FAST-TEST MODE — design value is 600. Lowered so phases are reachable in playtest.
+const MAX_HP_TEST: int = 150
+const MAX_HP_SHIP: int = 400
+static var MAX_HP: int = MAX_HP_TEST if Debug.FAST_TEST else MAX_HP_SHIP
 const MOVE_SPEED: float = 2.0
 const PHASE_2_HP_PCT: float = 0.66
 const PHASE_3_HP_PCT: float = 0.33
+const IDLE_TAUNT_INTERVAL: float = 18.0
+const TAUNT_COOLDOWN_SECONDS: float = 5.0
 
 const BOSS_WHELP_SCENE: PackedScene = preload("res://scenes/entities/boss_whelp.tscn")
 
@@ -19,6 +23,8 @@ var _summon_timer: float = 0.0
 var _contact_timer: float = 0.0
 var _phase: int = 1
 var _is_dead: bool = false
+var _idle_taunt_timer: float = 0.0
+var _taunt_cooldown: float = 0.0
 
 signal phase_changed(new_phase: int)
 signal died
@@ -31,6 +37,9 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if _is_dead:
 		return
+	_advance_taunt_timers(delta)
+	if _should_fire_idle_taunt():
+		_show_taunt("boss_idle")
 	if _player == null or not is_instance_valid(_player):
 		_find_player()
 		if _player == null:
@@ -93,6 +102,32 @@ func take_damage(amount: int) -> void:
 		GameState.transition_to(GameState.Location.MAIN_HALL)
 		queue_free()
 
+func _advance_taunt_timers(delta: float) -> void:
+	_idle_taunt_timer += delta
+	if _taunt_cooldown > 0.0:
+		_taunt_cooldown = max(0.0, _taunt_cooldown - delta)
+
+func _should_fire_idle_taunt() -> bool:
+	return _idle_taunt_timer >= IDLE_TAUNT_INTERVAL and _taunt_cooldown <= 0.0
+
+func _record_taunt_fired() -> void:
+	_idle_taunt_timer = 0.0
+	_taunt_cooldown = TAUNT_COOLDOWN_SECONDS
+
+func _find_dialogue_banner() -> CanvasLayer:
+	return get_tree().root.find_child("DialogueBanner", true, false) as CanvasLayer
+
+func _show_taunt(category: String) -> void:
+	# Always record the attempt so timers reset, even if the banner is missing.
+	# Otherwise a missing banner would cause per-frame tree scans.
+	_record_taunt_fired()
+	var banner: CanvasLayer = _find_dialogue_banner()
+	if banner == null:
+		return
+	if not banner.has_method("show_line"):
+		return
+	banner.show_line(category)
+
 func _check_phase_transition() -> void:
 	var pct: float = float(hp) / float(MAX_HP)
 	var new_phase: int = _phase
@@ -103,3 +138,9 @@ func _check_phase_transition() -> void:
 	if new_phase != _phase:
 		_phase = new_phase
 		phase_changed.emit(_phase)
+		# Suppress phase taunts on lethal blow — the victory line will follow.
+		if hp > 0:
+			if _phase == 2:
+				_show_taunt("phase_2_taunt")
+			elif _phase == 3:
+				_show_taunt("phase_3_taunt")

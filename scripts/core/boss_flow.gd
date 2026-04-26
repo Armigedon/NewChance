@@ -11,12 +11,32 @@ var state: State = State.IDLE
 # flow) restore from this in their _ready. Cleared on player death in boss
 # or on next normal extraction.
 var retained_skills: Dictionary = {}
+var _victory_line_shown: bool = false
+
+# Set by death_handler before scene swap; consumed by the newly-loaded
+# DialogueBanner in its _ready. Allows death lines to appear on the
+# main_hall banner instead of the destroyed source-scene banner.
+var _pending_banner_line: String = ""
 
 func set_retained_skills(d: Dictionary) -> void:
 	retained_skills = d.duplicate(true)
 
 func clear_retained_skills() -> void:
 	retained_skills.clear()
+
+func mark_victory_line_shown() -> void:
+	_victory_line_shown = true
+
+func has_shown_victory_line() -> bool:
+	return _victory_line_shown
+
+func set_pending_banner_line(category: String) -> void:
+	_pending_banner_line = category
+
+func consume_pending_banner_line() -> String:
+	var c: String = _pending_banner_line
+	_pending_banner_line = ""
+	return c
 
 func trigger_boss() -> void:
 	if state == State.WON:
