@@ -62,13 +62,17 @@ func _run_victory() -> void:
 			var mat: StandardMaterial3D = flame.material_override as StandardMaterial3D
 			if mat != null:
 				mat.emission_energy_multiplier = 4.5
-	if _banner != null:
-		_banner.show_line("victory")
 	var stair: Node3D = hall.get_node_or_null("BasementStair")
 	if stair != null:
 		stair.visible = true
 	if _necromancer != null and _necromancer.has_method("dismiss"):
 		_necromancer.dismiss()
+	# Show the victory line ONCE per session — subsequent main_hall loads keep
+	# the visual state (flames, stair, dismissed necromancer) but don't replay
+	# the dramatic line over death/idle taunts.
+	if _banner != null and not BossFlow.has_shown_victory_line():
+		_banner.show_line("victory")
+		BossFlow.mark_victory_line_shown()
 
 func _visually_extinguish_pyres() -> void:
 	var hall: Node = get_tree().root.find_child("MainHall", true, false)

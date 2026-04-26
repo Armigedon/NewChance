@@ -11,12 +11,19 @@ var state: State = State.IDLE
 # flow) restore from this in their _ready. Cleared on player death in boss
 # or on next normal extraction.
 var retained_skills: Dictionary = {}
+var _victory_line_shown: bool = false
 
 func set_retained_skills(d: Dictionary) -> void:
 	retained_skills = d.duplicate(true)
 
 func clear_retained_skills() -> void:
 	retained_skills.clear()
+
+func mark_victory_line_shown() -> void:
+	_victory_line_shown = true
+
+func has_shown_victory_line() -> bool:
+	return _victory_line_shown
 
 func trigger_boss() -> void:
 	if state == State.WON:

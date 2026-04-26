@@ -72,3 +72,10 @@ func test_reset_preserves_won() -> void:
 	bf.boss_killed()
 	bf.reset()
 	assert_that(bf.state).is_equal(BossFlowScript.State.WON)
+
+func test_victory_line_flag_starts_false() -> void:
+	assert_that(bf.has_shown_victory_line()).is_false()
+
+func test_mark_victory_line_shown_flips_flag() -> void:
+	bf.mark_victory_line_shown()
+	assert_that(bf.has_shown_victory_line()).is_true()
