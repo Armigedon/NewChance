@@ -2,6 +2,7 @@ extends CanvasLayer
 
 @onready var _hp_label: Label = $Margin/VBox/HP
 @onready var _souls_label: Label = $Margin/VBox/Souls
+@onready var _damage_flash: ColorRect = $DamageFlash
 
 var _player: Node = null
 var _last_red_minor: int = -1
@@ -36,3 +37,10 @@ func _refresh_souls() -> void:
 
 func _on_hp_changed(new_hp: int) -> void:
 	_hp_label.text = "HP: %d / 100" % new_hp
+
+func play_damage_flash() -> void:
+	if _damage_flash == null:
+		return
+	_damage_flash.color.a = 0.45
+	var tw: Tween = create_tween()
+	tw.tween_property(_damage_flash, "color:a", 0.0, 0.35)
