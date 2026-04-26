@@ -1,6 +1,8 @@
 extends CharacterBody3D
 
-const MAX_HP: int = 150  # FAST-TEST MODE — design value is 600. Lowered so phases are reachable in playtest.
+const MAX_HP_TEST: int = 150
+const MAX_HP_SHIP: int = 400
+static var MAX_HP: int = MAX_HP_TEST if Debug.FAST_TEST else MAX_HP_SHIP
 const MOVE_SPEED: float = 2.0
 const PHASE_2_HP_PCT: float = 0.66
 const PHASE_3_HP_PCT: float = 0.33
