@@ -1,11 +1,12 @@
 extends Node
 
-enum Location { MAIN_HALL, UPSTAIRS }
+enum Location { MAIN_HALL, UPSTAIRS, COURTYARD }
 
 enum Outcome { DESCENDED, DIED }
 
 const MAIN_HALL_SCENE_PATH: String = "res://scenes/world/main_hall.tscn"
 const UPSTAIRS_SCENE_PATH: String = "res://scenes/world/upstairs.tscn"
+const COURTYARD_SCENE_PATH: String = "res://scenes/world/courtyard.tscn"
 
 signal location_changed(new_location: Location)
 signal run_ended(outcome: Outcome)
@@ -32,6 +33,8 @@ static func scene_path_for(location: Location) -> String:
 			return MAIN_HALL_SCENE_PATH
 		Location.UPSTAIRS:
 			return UPSTAIRS_SCENE_PATH
+		Location.COURTYARD:
+			return COURTYARD_SCENE_PATH
 		_:
 			push_error("scene_path_for: unknown location %s" % location)
 			return ""
