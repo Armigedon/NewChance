@@ -1,6 +1,6 @@
 extends CharacterBody3D
 
-const MAX_HP: int = 100
+@export var max_hp: int = 100
 
 const CAST_RED_FIREBALL: PackedScene = preload("res://scenes/skills/cast_red_fireball.tscn")
 const CAST_BLUE_ICE_LINE: PackedScene = preload("res://scenes/skills/cast_blue_ice_line.tscn")
@@ -29,6 +29,9 @@ func _ready() -> void:
 	var queued: String = MetaProgress.consume_start_with_skill()
 	if queued != "" and _skill_system != null:
 		_skill_system.add_minor(queued)
+	max_hp += MetaProgress.cantrip_bonus("max_hp")
+	hp = max_hp
+	dash_cooldown = max(0.2, dash_cooldown + MetaProgress.cantrip_bonus_float("dash_cooldown"))
 
 func _on_active_skill_changed(_index: int) -> void:
 	if _skill_system == null:
@@ -61,7 +64,7 @@ func _on_replace_chosen(index: int) -> void:
 func _on_replace_declined() -> void:
 	_skill_system.decline_elder(_pending_incoming_color)
 
-var hp: int = MAX_HP
+var hp: int = max_hp
 var _is_dead: bool = false
 var _dash_cooldown_remaining: float = 0.0
 var _iframe_remaining: float = 0.0
@@ -173,6 +176,6 @@ func _scene_for_color(color: String) -> PackedScene:
 		_: return null
 
 func reset_run_state() -> void:
-	hp = MAX_HP
+	hp = max_hp
 	_is_dead = false
 	hp_changed.emit(hp)

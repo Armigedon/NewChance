@@ -7,6 +7,9 @@ signal hit_enemy(enemy: Node, damage: int)
 
 var _swing_cooldown: float = 0.0
 
+func _ready() -> void:
+	base_damage += MetaProgress.cantrip_bonus("sword_damage")
+
 func _process(delta: float) -> void:
 	if _swing_cooldown > 0.0:
 		_swing_cooldown = max(0.0, _swing_cooldown - delta)

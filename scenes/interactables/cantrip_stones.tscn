@@ -1,0 +1,28 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/interactables/cantrip_stones.gd" id="1_stones"]
+
+[sub_resource type="BoxShape3D" id="stones_shape"]
+size = Vector3(2, 2, 2)
+
+[sub_resource type="CylinderMesh" id="stones_mesh"]
+top_radius = 0.5
+bottom_radius = 0.7
+height = 1.4
+
+[sub_resource type="StandardMaterial3D" id="stones_mat"]
+albedo_color = Color(0.55, 0.55, 0.65, 1)
+emission_enabled = true
+emission = Color(0.3, 0.3, 0.4, 1)
+emission_energy_multiplier = 1.0
+
+[node name="CantripStones" type="Area3D"]
+script = ExtResource("1_stones")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("stones_shape")
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+mesh = SubResource("stones_mesh")
+material_override = SubResource("stones_mat")
