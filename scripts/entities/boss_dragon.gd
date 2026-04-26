@@ -87,6 +87,10 @@ func take_damage(amount: int) -> void:
 		_is_dead = true
 		died.emit()
 		BossFlow.boss_killed()
+		# Transition player back to main hall — the cutscene controller there
+		# picks up the WON state via cross-scene catch-up and runs the victory
+		# sequence (flames return, basement reveal).
+		GameState.transition_to(GameState.Location.MAIN_HALL)
 		queue_free()
 
 func _check_phase_transition() -> void:

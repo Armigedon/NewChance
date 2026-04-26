@@ -6,6 +6,18 @@ signal state_changed(new_state: State)
 
 var state: State = State.IDLE
 
+# Snapshot of player's SkillSystem.to_dict() taken at boss-trigger descent.
+# New player instances (across main_hall ↔ courtyard scene swaps during boss
+# flow) restore from this in their _ready. Cleared on player death in boss
+# or on next normal extraction.
+var retained_skills: Dictionary = {}
+
+func set_retained_skills(d: Dictionary) -> void:
+	retained_skills = d.duplicate(true)
+
+func clear_retained_skills() -> void:
+	retained_skills.clear()
+
 func trigger_boss() -> void:
 	if state == State.WON:
 		return

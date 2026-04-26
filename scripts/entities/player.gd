@@ -26,11 +26,11 @@ func _ready() -> void:
 		_skill_system.active_skill_changed.connect(_on_active_skill_changed)
 		_skill_system.at_cap_replace_prompt_requested.connect(_on_at_cap)
 	GameState.run_ended.connect(_on_run_ended)
-	# In boss flow, skip consume in MAIN_HALL so the courtyard player gets the
-	# retained skill instead. Otherwise the main_hall player would consume it
-	# (no combat in main hall) and the courtyard player would arrive empty.
-	var skip_consume: bool = BossFlow.is_active() and GameState.current_location == GameState.Location.MAIN_HALL
-	if not skip_consume:
+	# Boss-flow skill retention: if BossFlow has a snapshot, restore it.
+	# Otherwise consume the Soul Altar's queued skill (separate mechanism).
+	if not BossFlow.retained_skills.is_empty() and _skill_system != null:
+		_skill_system.from_dict(BossFlow.retained_skills)
+	else:
 		var queued: String = MetaProgress.consume_start_with_skill()
 		if queued != "" and _skill_system != null:
 			_skill_system.add_minor(queued)
@@ -48,6 +48,8 @@ func _on_active_skill_changed(_index: int) -> void:
 func _on_run_ended(_outcome: int) -> void:
 	if _skill_system != null:
 		_skill_system.clear()
+	# Any normal end-of-run also drops the boss-flow skill snapshot.
+	BossFlow.clear_retained_skills()
 	if has_node("Sword"):
 		$Sword.set_active_element("")
 
