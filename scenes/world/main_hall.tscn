@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3]
+[gd_scene load_steps=20 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/main_hall_upstairs_trigger.gd" id="1_trigger"]
 [ext_resource type="PackedScene" path="res://scenes/interactables/pyre.tscn" id="2_pyre"]
@@ -8,6 +8,8 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/soul_altar_ui.tscn" id="6_altarui"]
 [ext_resource type="PackedScene" path="res://scenes/interactables/cantrip_stones.tscn" id="7_stones"]
 [ext_resource type="PackedScene" path="res://scenes/ui/cantrip_stones_ui.tscn" id="8_stonesui"]
+[ext_resource type="PackedScene" path="res://scenes/interactables/sigil_forge.tscn" id="9_sigil"]
+[ext_resource type="PackedScene" path="res://scenes/interactables/trial_chamber.tscn" id="10_trial"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_floor"]
 size = Vector3(20, 0.5, 20)
@@ -140,3 +142,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, 0)
 ui_path = NodePath("../CantripStonesUI")
 
 [node name="CantripStonesUI" parent="." instance=ExtResource("8_stonesui")]
+
+[node name="SigilForge" parent="." instance=ExtResource("9_sigil")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, -5)
+
+[node name="TrialChamber" parent="." instance=ExtResource("10_trial")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, -5)

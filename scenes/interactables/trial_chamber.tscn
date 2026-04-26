@@ -1,0 +1,28 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/interactables/trial_chamber.gd" id="1_trial"]
+
+[sub_resource type="BoxShape3D" id="trial_shape"]
+size = Vector3(2, 2, 2)
+
+[sub_resource type="CylinderMesh" id="trial_mesh"]
+top_radius = 0.5
+bottom_radius = 0.7
+height = 1.4
+
+[sub_resource type="StandardMaterial3D" id="trial_mat"]
+albedo_color = Color(0.7, 0.5, 0.3, 1)
+emission_enabled = true
+emission = Color(0.6, 0.4, 0.2, 1)
+emission_energy_multiplier = 1.2
+
+[node name="TrialChamber" type="Area3D"]
+script = ExtResource("1_trial")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("trial_shape")
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+mesh = SubResource("trial_mesh")
+material_override = SubResource("trial_mat")
