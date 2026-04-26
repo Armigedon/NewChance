@@ -35,19 +35,22 @@ func show_prompt() -> void:
 		lines.append("%s: %s → pyre %d → %d / %d" % [name, carry_desc, current_fill, new_fill, SoulEconomy.PYRE_CAP])
 	if not any_carry:
 		lines.append("(no souls to deposit)")
-	# Detect boss trigger
-	if _will_fill_all_primary_pyres():
+	# Detect boss trigger (suppressed once boss is already defeated)
+	var boss_path: bool = (not BossFlow.has_won()) and (_will_fill_all_primary_pyres() or _can_retry_boss())
+	if boss_path:
+		if _will_fill_all_primary_pyres():
+			lines.append("")
+			lines.append("⚠ BOSS TRIGGER — this deposit fills the final primary pyre.")
+			lines.append("Skills will be RETAINED for the boss fight.")
+		else:
+			lines.append("")
+			lines.append("⚠ BOSS RETRY — consumes 1 elder soul to re-trigger boss.")
+			lines.append("Skills will be RETAINED for the boss fight.")
+	else:
 		lines.append("")
-		lines.append("⚠ BOSS TRIGGER — this deposit fills the final primary pyre.")
-		lines.append("Skills will be RETAINED for the boss fight.")
-	elif _can_retry_boss():
-		lines.append("")
-		lines.append("⚠ BOSS RETRY — consumes 1 elder soul to re-trigger boss.")
-		lines.append("Skills will be RETAINED for the boss fight.")
-	lines.append("")
-	lines.append("All current skills will be lost.")
+		lines.append("All current skills will be lost.")
 	_summary_label.text = "\n".join(lines)
-	if _will_fill_all_primary_pyres() or _can_retry_boss():
+	if boss_path:
 		_confirm_button.text = "Descend & Fight"
 	else:
 		_confirm_button.text = "Descend & deposit"
@@ -60,6 +63,11 @@ func hide_prompt() -> void:
 
 func _on_confirm() -> void:
 	hide_prompt()
+	# After victory, never re-trigger the boss; always run the normal extraction
+	# path (deposit + skill strip).
+	if BossFlow.has_won():
+		confirmed.emit()
+		return
 	if _will_fill_all_primary_pyres() or _can_retry_boss():
 		_descend_and_fight()
 	else:
