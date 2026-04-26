@@ -39,10 +39,18 @@ func show_prompt() -> void:
 	if _will_fill_all_primary_pyres():
 		lines.append("")
 		lines.append("⚠ BOSS TRIGGER — this deposit fills the final primary pyre.")
-		lines.append("(Phase 4: skill retention + boss cutscene NOT YET IMPLEMENTED — Phase 5.)")
+		lines.append("Skills will be RETAINED for the boss fight.")
+	elif _can_retry_boss():
+		lines.append("")
+		lines.append("⚠ BOSS RETRY — consumes 1 elder soul to re-trigger boss.")
+		lines.append("Skills will be RETAINED for the boss fight.")
 	lines.append("")
 	lines.append("All current skills will be lost.")
 	_summary_label.text = "\n".join(lines)
+	if _will_fill_all_primary_pyres() or _can_retry_boss():
+		_confirm_button.text = "Descend & Fight"
+	else:
+		_confirm_button.text = "Descend & deposit"
 	visible = true
 	get_tree().paused = true
 
@@ -52,7 +60,42 @@ func hide_prompt() -> void:
 
 func _on_confirm() -> void:
 	hide_prompt()
-	confirmed.emit()
+	if _will_fill_all_primary_pyres() or _can_retry_boss():
+		_descend_and_fight()
+	else:
+		confirmed.emit()
+
+func _can_retry_boss() -> bool:
+	var all_lit: bool = true
+	for c in SoulEconomy.COLORS:
+		if SoulEconomy.pyre_fill(c) < SoulEconomy.PYRE_CAP:
+			all_lit = false
+			break
+	if not all_lit:
+		return false
+	if BossFlow.has_won():
+		return false
+	var has_elder: bool = false
+	for c in SoulEconomy.COLORS:
+		if SoulEconomy.carry_count(c, "elder") > 0:
+			has_elder = true
+			break
+	return has_elder
+
+func _descend_and_fight() -> void:
+	# Retry path: consume 1 elder soul if pyres are already at 100%
+	if _can_retry_boss():
+		for c in SoulEconomy.COLORS:
+			if SoulEconomy.carry_count(c, "elder") > 0:
+				SoulEconomy._carry[c]["elder"] -= 1
+				break
+	# Deposit any remaining souls (fills the 6th on first trigger)
+	SoulEconomy.deposit_to_pyres()
+	# Reset escalation but DON'T strip skills (this is the retention path)
+	Escalation.reset()
+	# Trigger boss flow + transition back to main hall (cutscene plays there)
+	BossFlow.trigger_boss()
+	GameState.transition_to(GameState.Location.MAIN_HALL)
 
 func _on_cancel() -> void:
 	hide_prompt()
