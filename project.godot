@@ -21,6 +21,7 @@ GameState="*res://scripts/core/game_state.gd"
 SoulEconomy="*res://scripts/core/soul_economy.gd"
 Escalation="*res://scripts/world/escalation.gd"
 SaveSystem="*res://scripts/core/save_system.gd"
+MetaProgress="*res://scripts/core/meta_progress.gd"
 
 [editor_plugins]
 
