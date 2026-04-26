@@ -17,6 +17,7 @@ config/icon="res://icon.svg"
 
 [autoload]
 
+Debug="*res://scripts/core/debug.gd"
 GameState="*res://scripts/core/game_state.gd"
 SoulEconomy="*res://scripts/core/soul_economy.gd"
 Escalation="*res://scripts/world/escalation.gd"
