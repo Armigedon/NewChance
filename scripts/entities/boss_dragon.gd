@@ -1,5 +1,7 @@
 extends CharacterBody3D
 
+const Vfx = preload("res://scripts/effects/vfx.gd")
+
 const MAX_HP_TEST: int = 150
 const MAX_HP_SHIP: int = 400
 static var MAX_HP: int = MAX_HP_TEST if Debug.FAST_TEST else MAX_HP_SHIP
@@ -130,11 +132,18 @@ func take_damage(amount: int) -> void:
 		_is_dead = true
 		died.emit()
 		BossFlow.boss_killed()
-		# Transition player back to main hall — the cutscene controller there
-		# picks up the WON state via cross-scene catch-up and runs the victory
-		# sequence (flames return, basement reveal).
-		GameState.transition_to(GameState.Location.MAIN_HALL)
-		queue_free()
+		ScreenShake.shake(0.7, 0.6)
+		Vfx.spawn_death_burst(global_position + Vector3(0, 1, 0), Color(0.6, 0.1, 0.1), get_parent())
+		# Slow-mo: 1.0 → 0.3 over 100ms, hold 300ms, → 1.0 over 200ms, then transition.
+		var tw: Tween = create_tween()
+		tw.set_ignore_time_scale(true)
+		tw.tween_property(Engine, "time_scale", 0.3, 0.1)
+		tw.tween_interval(0.3)
+		tw.tween_property(Engine, "time_scale", 1.0, 0.2)
+		tw.tween_callback(func():
+			GameState.transition_to(GameState.Location.MAIN_HALL)
+			queue_free()
+		)
 
 func _advance_taunt_timers(delta: float) -> void:
 	_idle_taunt_timer += delta
@@ -172,6 +181,7 @@ func _check_phase_transition() -> void:
 	if new_phase != _phase:
 		_phase = new_phase
 		phase_changed.emit(_phase)
+		ScreenShake.shake(0.5, 0.4)
 		# Suppress phase taunts on lethal blow — the victory line will follow.
 		if hp > 0:
 			if _phase == 2:
