@@ -79,6 +79,11 @@ var _dash_velocity: Vector3 = Vector3.ZERO
 var _dash_time_remaining: float = 0.0
 var _cast_cooldown_remaining: float = 0.0
 
+# --- Armor stacks (Phase 9, white WARD layer) ---
+const ARMOR_PER_STACK: int = 5
+var _armor_stacks: int = 0
+var _armor_remaining: float = 0.0
+
 func _process(delta: float) -> void:
 	if _cast_cooldown_remaining > 0.0:
 		_cast_cooldown_remaining = max(0.0, _cast_cooldown_remaining - delta)
@@ -88,6 +93,10 @@ func _process(delta: float) -> void:
 		_iframe_remaining = max(0.0, _iframe_remaining - delta)
 	if _dash_time_remaining > 0.0:
 		_dash_time_remaining = max(0.0, _dash_time_remaining - delta)
+	if _armor_remaining > 0.0:
+		_armor_remaining = max(0.0, _armor_remaining - delta)
+		if _armor_remaining == 0.0:
+			_armor_stacks = 0
 	if Input.is_action_just_pressed("dash"):
 		var input_dir: Vector2 = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
 		var dash_dir: Vector3 = Vector3(input_dir.x, 0, input_dir.y)
@@ -128,11 +137,22 @@ func try_dash(direction: Vector3) -> bool:
 	_iframe_remaining = iframe_duration
 	return true
 
+func apply_armor(stacks: int, duration: float) -> void:
+	_armor_stacks += stacks
+	_armor_remaining = max(_armor_remaining, duration)
+
 func is_invincible() -> bool:
 	return _iframe_remaining > 0.0
 
 func take_damage(amount: int) -> void:
 	if _is_dead or is_invincible():
+		return
+	# Armor absorbs first; one stack consumed per hit (not per damage point)
+	while _armor_stacks > 0 and amount > 0:
+		var absorb: int = min(amount, ARMOR_PER_STACK)
+		amount -= absorb
+		_armor_stacks -= 1
+	if amount <= 0:
 		return
 	hp = max(0, hp - amount)
 	hp_changed.emit(hp)
