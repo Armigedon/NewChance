@@ -3,7 +3,7 @@ extends CharacterBody3D
 const Vfx = preload("res://scripts/effects/vfx.gd")
 
 const MAX_HP_TEST: int = 150
-const MAX_HP_SHIP: int = 400
+const MAX_HP_SHIP: int = 500
 static var MAX_HP: int = MAX_HP_TEST if Debug.FAST_TEST else MAX_HP_SHIP
 const MOVE_SPEED: float = 2.0
 const PHASE_2_HP_PCT: float = 0.66
@@ -94,8 +94,6 @@ func _interval_for_phase() -> float:
 
 func _summon_whelp() -> void:
 	var whelp: CharacterBody3D = BOSS_WHELP_SCENE.instantiate()
-	if _phase == 3 and "max_hp" in whelp:
-		whelp.max_hp = 80
 	var angle: float = randf() * TAU
 	var spawn_pos: Vector3 = global_position + Vector3(cos(angle) * 5.0, 1.0, sin(angle) * 5.0)
 	get_parent().add_child(whelp)

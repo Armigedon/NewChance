@@ -9,9 +9,9 @@ var _age: float = 0.0
 
 func configure(skill: Skill) -> void:
 	modifier_stack = skill.modifier_stack.duplicate()
-	# Same-color minor souls deepen base damage by 30% per stack
+	# Same-color minor souls deepen base damage by 20% per stack
 	var same_color_count: int = skill.modifier_count_for(skill.base_color)
-	base_damage = int(base_damage * (1.0 + 0.3 * same_color_count))
+	base_damage = int(base_damage * (1.0 + 0.2 * same_color_count))
 
 func _process(delta: float) -> void:
 	_age += delta

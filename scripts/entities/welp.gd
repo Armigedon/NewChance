@@ -2,7 +2,7 @@ extends CharacterBody3D
 
 const Vfx = preload("res://scripts/effects/vfx.gd")
 
-@export var max_hp: int = 30
+@export var max_hp: int = 50
 
 @export var move_speed: float = 3.6
 @export var attack_damage: int = 10
