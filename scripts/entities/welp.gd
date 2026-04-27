@@ -68,6 +68,7 @@ func _find_player() -> void:
 
 func _attack_player() -> void:
 	if _player != null and _player.has_method("take_damage"):
+		RunStats.record_damage_from(display_name())
 		_player.take_damage(attack_damage)
 
 func flash_hit(duration: float = 0.12) -> void:
@@ -105,11 +106,19 @@ func take_damage(amount: int) -> void:
 	if hp == 0:
 		_is_dead = true
 		_drop_souls()
+		RunStats.record_kill()
 		HitStop.freeze(_hit_stop_duration())
 		var burst_color: Color = Vfx.COLOR_ALBEDO.get(color, Color(0.5, 0.5, 0.5, 1))
 		Vfx.spawn_death_burst(global_position + Vector3(0, 0.5, 0), burst_color, get_parent())
 		died.emit(self, color)
 		queue_free()
+
+func display_name() -> String:
+	# Used by run-end summary's "Killed by" line.
+	# Format: "<color> <tier>" — e.g., "red welp", "blue dragon", "green elder".
+	if color == "alarm" or color == "boss":
+		return color
+	return "%s %s" % [color, tier]
 
 func _hit_stop_duration() -> float:
 	# Tier-tuned freeze duration for kill weight.

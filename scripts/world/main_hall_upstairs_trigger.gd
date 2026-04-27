@@ -11,4 +11,5 @@ func _on_body_entered(body: Node) -> void:
 		if banner != null:
 			banner.show_specific("The flames have already chosen.", 3.0)
 		return
+	RunStats.reset_run()
 	GameState.transition_to(GameState.Location.UPSTAIRS)

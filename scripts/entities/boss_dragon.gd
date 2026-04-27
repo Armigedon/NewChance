@@ -60,6 +60,7 @@ func _physics_process(delta: float) -> void:
 		velocity.x = 0.0
 		velocity.z = 0.0
 		if _contact_timer <= 0.0 and _player.has_method("take_damage"):
+			RunStats.record_damage_from(display_name())
 			_player.take_damage(contact_damage)
 			_contact_timer = contact_interval
 	if _contact_timer > 0.0:
@@ -123,6 +124,9 @@ func apply_knockback(direction: Vector3, force: float) -> void:
 		return
 	_knockback_velocity += direction.normalized() * force
 
+func display_name() -> String:
+	return "the dragon"
+
 func take_damage(amount: int) -> void:
 	if _is_dead:
 		return
@@ -131,6 +135,7 @@ func take_damage(amount: int) -> void:
 	if hp == 0:
 		_is_dead = true
 		died.emit()
+		RunStats.record_kill()
 		BossFlow.boss_killed()
 		ScreenShake.shake(0.7, 0.6)
 		Vfx.spawn_death_burst(global_position + Vector3(0, 1, 0), Color(0.6, 0.1, 0.1), get_parent())
