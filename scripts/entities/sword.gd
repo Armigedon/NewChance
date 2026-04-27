@@ -3,8 +3,6 @@ extends Area3D
 @export var swing_interval: float = 0.4  # seconds per swing
 @export var base_damage: int = 15
 
-signal hit_enemy(enemy: Node, damage: int)
-
 var _swing_cooldown: float = 0.0
 
 const DamagePipeline = preload("res://scripts/skills/damage_pipeline.gd")
@@ -40,7 +38,6 @@ func _process(delta: float) -> void:
 			var dir: Vector3 = enemy.global_position - global_position
 			var force: float = _knockback_force_for(enemy)
 			enemy.apply_knockback(dir, force)
-		ScreenShake.shake(0.02, 0.04)
 	_swing_cooldown = swing_interval
 
 func _is_enemy(body: Node) -> bool:

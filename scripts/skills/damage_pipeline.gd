@@ -37,6 +37,9 @@ static func apply(target: Node, damage: int, modifier_stack: Array, base_color: 
 		chain_state.budget = _count(modifier_stack, "gold")
 
 	target.take_damage(damage)
+	if target.has_method("flash_hit"):
+		target.flash_hit()
+	ScreenShake.shake(0.02, 0.04)
 	chain_state.hit_set[target.get_instance_id()] = true
 
 	# Burn (red): total duration is additive across base + modifiers per spec §2c
