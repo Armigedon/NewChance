@@ -1,0 +1,153 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/how_to_play.gd" id="1_help"]
+
+[sub_resource type="StyleBoxFlat" id="panel_style"]
+bg_color = Color(0.04, 0.024, 0.031, 0.97)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.78, 0.63, 0.31, 1)
+content_margin_left = 24.0
+content_margin_top = 24.0
+content_margin_right = 24.0
+content_margin_bottom = 24.0
+
+[sub_resource type="StyleBoxFlat" id="back_btn_style"]
+bg_color = Color(0.1, 0.063, 0.078, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.78, 0.63, 0.31, 1)
+content_margin_left = 16.0
+content_margin_top = 8.0
+content_margin_right = 16.0
+content_margin_bottom = 8.0
+
+[node name="HowToPlay" type="CanvasLayer"]
+layer = 10
+script = ExtResource("1_help")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.7)
+mouse_filter = 0
+
+[node name="Center" type="CenterContainer" parent="Backdrop"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="Backdrop/Center"]
+custom_minimum_size = Vector2(640, 480)
+layout_mode = 2
+theme_override_styles/panel = SubResource("panel_style")
+
+[node name="VBox" type="VBoxContainer" parent="Backdrop/Center/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="Backdrop/Center/Panel/VBox"]
+layout_mode = 2
+text = "— How to Play —"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.78, 0.63, 0.31, 1)
+
+[node name="Subtitle" type="Label" parent="Backdrop/Center/Panel/VBox"]
+layout_mode = 2
+text = "\"Pay attention this time.\""
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.35, 0.29, 0.22, 1)
+
+[node name="Sections" type="GridContainer" parent="Backdrop/Center/Panel/VBox"]
+layout_mode = 2
+columns = 2
+theme_override_constants/h_separation = 24
+theme_override_constants/v_separation = 16
+
+[node name="ControlsCol" type="VBoxContainer" parent="Backdrop/Center/Panel/VBox/Sections"]
+layout_mode = 2
+
+[node name="ControlsHeader" type="Label" parent="Backdrop/Center/Panel/VBox/Sections/ControlsCol"]
+layout_mode = 2
+text = "CONTROLS"
+theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.78, 0.63, 0.31, 1)
+
+[node name="ControlsBody" type="RichTextLabel" parent="Backdrop/Center/Panel/VBox/Sections/ControlsCol"]
+custom_minimum_size = Vector2(280, 130)
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+text = "[color=#7a6048]WASD[/color]   move\n[color=#7a6048]SPACE[/color]   dash (i-frames)\n[color=#7a6048]CLICK / hold[/color]   cast active skill\n[color=#7a6048]1 / 2 / 3[/color]   switch active skill\n[color=#7a6048]ESC[/color]   pause / cancel\n\n[i][color=#5a4a38]\"Sword swings on its own. Don't make me explain it twice.\"[/color][/i]"
+
+[node name="LoopCol" type="VBoxContainer" parent="Backdrop/Center/Panel/VBox/Sections"]
+layout_mode = 2
+
+[node name="LoopHeader" type="Label" parent="Backdrop/Center/Panel/VBox/Sections/LoopCol"]
+layout_mode = 2
+text = "THE LOOP"
+theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.78, 0.63, 0.31, 1)
+
+[node name="LoopBody" type="RichTextLabel" parent="Backdrop/Center/Panel/VBox/Sections/LoopCol"]
+custom_minimum_size = Vector2(280, 130)
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+text = "1. [color=#e8d8b0]Descend[/color] from the hub into the open arena.\n2. [color=#e8d8b0]Slay[/color] dragons. Pick up the souls they drop.\n3. [color=#e8d8b0]Extract[/color] back to the hub before you die.\n4. [color=#e8d8b0]Deposit[/color] souls into the pyres.\n5. [color=#e8d8b0]Repeat[/color]. Light all six pyres.\n\n[i][color=#5a4a38]\"Death keeps your souls in the world. Don't die.\"[/color][/i]"
+
+[node name="SoulsCol" type="VBoxContainer" parent="Backdrop/Center/Panel/VBox/Sections"]
+layout_mode = 2
+
+[node name="SoulsHeader" type="Label" parent="Backdrop/Center/Panel/VBox/Sections/SoulsCol"]
+layout_mode = 2
+text = "SOULS"
+theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.78, 0.63, 0.31, 1)
+
+[node name="SoulsBody" type="RichTextLabel" parent="Backdrop/Center/Panel/VBox/Sections/SoulsCol"]
+custom_minimum_size = Vector2(280, 130)
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+text = "Six colors. Each fills one pyre.\n\n[color=#f4d870]Elder souls[/color] count for ten of their own color and matter at the altar.\n\n[i][color=#5a4a38]\"They are not gifts. They are mine. You merely fetch.\"[/color][/i]"
+
+[node name="HubCol" type="VBoxContainer" parent="Backdrop/Center/Panel/VBox/Sections"]
+layout_mode = 2
+
+[node name="HubHeader" type="Label" parent="Backdrop/Center/Panel/VBox/Sections/HubCol"]
+layout_mode = 2
+text = "THE HUB"
+theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.78, 0.63, 0.31, 1)
+
+[node name="HubBody" type="RichTextLabel" parent="Backdrop/Center/Panel/VBox/Sections/HubCol"]
+custom_minimum_size = Vector2(280, 130)
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+text = "[color=#e8d8b0]Soul Altar[/color]: spend pyre fill to start your next run with one skill already unlocked.\n\n[color=#e8d8b0]Cantrip Stones[/color]: spend pyre fill for permanent +HP, +damage, or -dash cooldown.\n\n[color=#e8d8b0]Pyres[/color]: deposit souls. All six lit unlocks the descent.\n\n[i][color=#5a4a38]\"Try not to lose what little progress you make.\"[/color][/i]"
+
+[node name="BackRow" type="HBoxContainer" parent="Backdrop/Center/Panel/VBox"]
+layout_mode = 2
+alignment = 2
+
+[node name="BackBtn" type="Button" parent="Backdrop/Center/Panel/VBox/BackRow"]
+layout_mode = 2
+text = "BACK"
+theme_override_styles/normal = SubResource("back_btn_style")
+theme_override_styles/hover = SubResource("back_btn_style")
+theme_override_styles/pressed = SubResource("back_btn_style")
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.91, 0.85, 0.69, 1)
