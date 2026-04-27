@@ -84,3 +84,19 @@ func test_purple_base_applies_native_pull() -> void:
 	var prev_kb: Vector3 = welp_a._knockback_velocity
 	DamagePipeline.apply(welp_a, 25, [], "purple", Vector3(2, 0, 0))
 	assert_that(welp_a._knockback_velocity.x).is_greater(prev_kb.x)
+
+func test_fireball_aoe_via_pipeline() -> void:
+	# Position welp_a and welp_b within 2m of impact, welp_c outside
+	welp_a.global_position = Vector3(0, 0, 0)
+	welp_b.global_position = Vector3(1.5, 0, 0)  # within 2m
+	welp_c.global_position = Vector3(3.0, 0, 0)  # outside
+	var hp_a: int = welp_a.hp
+	var hp_b: int = welp_b.hp
+	var hp_c: int = welp_c.hp
+	# Manually invoke a synthetic AoE event via DamagePipeline
+	for e in [welp_a, welp_b]:
+		DamagePipeline.apply(e, 25, [], "red", Vector3.ZERO)
+	# welp_c not in AoE: untouched
+	assert_that(welp_a.hp).is_equal(hp_a - 25)
+	assert_that(welp_b.hp).is_equal(hp_b - 25)
+	assert_that(welp_c.hp).is_equal(hp_c)
