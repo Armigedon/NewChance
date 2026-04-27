@@ -7,6 +7,7 @@ class_name DamagePipeline
 # layer plus every modifier's layer. Spawners (green LINGER, white WARD) are
 # fired separately at cast or impact time via fire_*_spawners.
 
+# --- Layer constants (per-event effects) ---
 const CHAIN_RANGE: float = 4.0  # max distance for next chain hop
 const BURN_DPS_FRAC: float = 0.25  # burn damage = 25% of cast damage per second
 const NATIVE_BURN_DURATION: float = 3.0
@@ -14,6 +15,12 @@ const MODIFIER_BURN_DURATION: float = 1.5
 const NATIVE_STUN_DURATION: float = 0.5
 const NATIVE_PULL_IMPULSE: float = 1.5
 const MODIFIER_PULL_IMPULSE: float = 0.8
+
+# --- Spawner constants (cloud LINGER, armor WARD) ---
+const SPAWNER_CLOUD_SCENE: PackedScene = preload("res://scenes/effects/effect_cloud.tscn")
+const SPAWNER_CLOUD_BASE_LIFETIME: float = 3.0
+const SPAWNER_CLOUD_BASE_RADIUS: float = 2.0
+const ARMOR_DURATION: float = 5.0
 
 class ChainState extends RefCounted:
 	var budget: int = 0
@@ -113,11 +120,6 @@ static func _count(stack: Array, color: String) -> int:
 		if c == color:
 			n += 1
 	return n
-
-const SPAWNER_CLOUD_SCENE: PackedScene = preload("res://scenes/effects/effect_cloud.tscn")
-const SPAWNER_CLOUD_BASE_LIFETIME: float = 3.0
-const SPAWNER_CLOUD_BASE_RADIUS: float = 2.0
-const ARMOR_DURATION: float = 5.0
 
 # Fired at cast initiation (player._try_cast). Handles white WARD.
 static func fire_cast_spawners(skill: Skill, caster: Node) -> void:

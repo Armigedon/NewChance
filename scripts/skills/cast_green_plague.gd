@@ -6,6 +6,10 @@ const NATIVE_RADIUS: float = 2.0
 
 @export var direction: Vector3 = Vector3.FORWARD  # unused; kept for player.gd compat
 
+# NOTE: This _ready() reads same_color_count, size_multiplier, base_damage,
+# modifier_stack, and base_color — all populated by CastBase.configure().
+# Player._try_cast must call configure() BEFORE add_child(), since _ready
+# fires on add. If you reorder _try_cast, ensure configure() runs first.
 func _ready() -> void:
 	# Place cloud immediately at this cast's position; cast then frees itself.
 	var cloud: Node3D = EFFECT_CLOUD_SCENE.instantiate()
