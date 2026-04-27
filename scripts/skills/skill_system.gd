@@ -32,6 +32,9 @@ func skill_at(index: int) -> Skill:
 		return null
 	return _skills[index]
 
+func active_index() -> int:
+	return _active_index
+
 func active_skill() -> Skill:
 	return skill_at(_active_index)
 

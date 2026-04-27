@@ -62,6 +62,15 @@ func reset() -> void:
 	if state != State.WON:
 		_set_state(State.IDLE)
 
+func reset_hard() -> void:
+	# Force-reset all state regardless of WON. Used by New Game flow where
+	# the prior victory must not persist.
+	state = State.IDLE
+	state_changed.emit(state)
+	retained_skills.clear()
+	_victory_line_shown = false
+	_pending_banner_line = ""
+
 func is_active() -> bool:
 	return state == State.PENDING or state == State.ACTIVE
 

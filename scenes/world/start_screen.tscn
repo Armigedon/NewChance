@@ -1,0 +1,192 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/start_screen.gd" id="1_start"]
+
+[sub_resource type="StyleBoxFlat" id="hero_btn_style"]
+bg_color = Color(0.16, 0.094, 0.078, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.78, 0.63, 0.31, 1)
+shadow_color = Color(0.78, 0.31, 0.16, 0.3)
+shadow_size = 16
+content_margin_left = 24.0
+content_margin_top = 14.0
+content_margin_right = 24.0
+content_margin_bottom = 14.0
+
+[sub_resource type="StyleBoxFlat" id="sec_btn_style"]
+bg_color = Color(0.058, 0.039, 0.047, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.29, 0.23, 0.16, 1)
+content_margin_left = 16.0
+content_margin_top = 8.0
+content_margin_right = 16.0
+content_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxFlat" id="confirm_panel_style"]
+bg_color = Color(0.04, 0.024, 0.031, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.78, 0.31, 0.16, 1)
+content_margin_left = 24.0
+content_margin_top = 24.0
+content_margin_right = 24.0
+content_margin_bottom = 24.0
+
+[node name="StartScreen" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_start")
+
+[node name="Background" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.024, 0.031, 1)
+
+[node name="Center" type="CenterContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HBox" type="HBoxContainer" parent="Center"]
+custom_minimum_size = Vector2(620, 240)
+layout_mode = 2
+theme_override_constants/separation = 48
+
+[node name="Title" type="VBoxContainer" parent="Center/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TitleText" type="Label" parent="Center/HBox/Title"]
+layout_mode = 2
+text = "New
+Chance"
+theme_override_font_sizes/font_size = 36
+theme_override_colors/font_color = Color(0.78, 0.63, 0.31, 1)
+
+[node name="Subtitle" type="Label" parent="Center/HBox/Title"]
+layout_mode = 2
+text = "a roguelike of disappointment"
+theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.48, 0.38, 0.28, 1)
+
+[node name="Spacer" type="Control" parent="Center/HBox/Title"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+
+[node name="Version" type="Label" parent="Center/HBox/Title"]
+layout_mode = 2
+text = "v0.8-ui-pass"
+theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.29, 0.23, 0.16, 1)
+
+[node name="Buttons" type="VBoxContainer" parent="Center/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="NewGame" type="Button" parent="Center/HBox/Buttons"]
+layout_mode = 2
+text = "NEW GAME"
+theme_override_styles/normal = SubResource("hero_btn_style")
+theme_override_styles/hover = SubResource("hero_btn_style")
+theme_override_styles/pressed = SubResource("hero_btn_style")
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.91, 0.85, 0.69, 1)
+
+[node name="Continue" type="Button" parent="Center/HBox/Buttons"]
+layout_mode = 2
+text = "CONTINUE"
+theme_override_styles/normal = SubResource("sec_btn_style")
+theme_override_styles/hover = SubResource("sec_btn_style")
+theme_override_styles/pressed = SubResource("sec_btn_style")
+theme_override_styles/disabled = SubResource("sec_btn_style")
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.66, 0.55, 0.38, 1)
+
+[node name="HowToPlay" type="Button" parent="Center/HBox/Buttons"]
+layout_mode = 2
+text = "HOW TO PLAY"
+theme_override_styles/normal = SubResource("sec_btn_style")
+theme_override_styles/hover = SubResource("sec_btn_style")
+theme_override_styles/pressed = SubResource("sec_btn_style")
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.66, 0.55, 0.38, 1)
+
+[node name="Quit" type="Button" parent="Center/HBox/Buttons"]
+layout_mode = 2
+text = "QUIT"
+theme_override_styles/normal = SubResource("sec_btn_style")
+theme_override_styles/hover = SubResource("sec_btn_style")
+theme_override_styles/pressed = SubResource("sec_btn_style")
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.66, 0.55, 0.38, 1)
+
+[node name="ConfirmOverwrite" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.7)
+visible = false
+mouse_filter = 0
+
+[node name="Center" type="CenterContainer" parent="ConfirmOverwrite"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="ConfirmOverwrite/Center"]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("confirm_panel_style")
+
+[node name="VBox" type="VBoxContainer" parent="ConfirmOverwrite/Center/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Msg" type="Label" parent="ConfirmOverwrite/Center/Panel/VBox"]
+layout_mode = 2
+text = "A save exists.
+Overwrite it and start fresh?"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.91, 0.85, 0.69, 1)
+
+[node name="Buttons" type="HBoxContainer" parent="ConfirmOverwrite/Center/Panel/VBox"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 12
+
+[node name="Yes" type="Button" parent="ConfirmOverwrite/Center/Panel/VBox/Buttons"]
+layout_mode = 2
+text = "YES"
+theme_override_styles/normal = SubResource("hero_btn_style")
+theme_override_styles/hover = SubResource("hero_btn_style")
+theme_override_styles/pressed = SubResource("hero_btn_style")
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.91, 0.85, 0.69, 1)
+
+[node name="No" type="Button" parent="ConfirmOverwrite/Center/Panel/VBox/Buttons"]
+layout_mode = 2
+text = "NO"
+theme_override_styles/normal = SubResource("sec_btn_style")
+theme_override_styles/hover = SubResource("sec_btn_style")
+theme_override_styles/pressed = SubResource("sec_btn_style")
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.66, 0.55, 0.38, 1)

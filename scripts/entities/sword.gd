@@ -30,7 +30,7 @@ func _process(delta: float) -> void:
 			var dir: Vector3 = enemy.global_position - global_position
 			var force: float = _knockback_force_for(enemy)
 			enemy.apply_knockback(dir, force)
-		ScreenShake.shake(0.10, 0.06)
+		ScreenShake.shake(0.02, 0.04)
 	_swing_cooldown = swing_interval
 
 func _is_enemy(body: Node) -> bool:

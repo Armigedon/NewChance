@@ -23,7 +23,7 @@ func _schedule_unfreeze() -> void:
 		Engine.time_scale = 1.0
 		return
 	# ignore_time_scale=true so the timer fires even at time_scale=0
-	var t: SceneTreeTimer = get_tree().create_timer(remaining, true)
+	var t: SceneTreeTimer = get_tree().create_timer(remaining, true, false, true)
 	t.timeout.connect(_on_freeze_done)
 
 func _on_freeze_done() -> void:

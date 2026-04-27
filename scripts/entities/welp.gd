@@ -67,8 +67,14 @@ func _find_player() -> void:
 		_player = players[0]
 
 func _attack_player() -> void:
-	if _player != null and _player.has_method("take_damage"):
-		_player.take_damage(attack_damage)
+	if _player == null or not _player.has_method("take_damage"):
+		return
+	# Skip recording if the player is i-framed — the hit won't actually land,
+	# and we don't want a near-miss attacker to become the "killed by" name.
+	if _player.has_method("is_invincible") and _player.is_invincible():
+		return
+	RunStats.record_damage_from(display_name())
+	_player.take_damage(attack_damage)
 
 func flash_hit(duration: float = 0.12) -> void:
 	var mesh: MeshInstance3D = get_node_or_null("Mesh") as MeshInstance3D
@@ -105,11 +111,20 @@ func take_damage(amount: int) -> void:
 	if hp == 0:
 		_is_dead = true
 		_drop_souls()
+		RunStats.record_kill()
 		HitStop.freeze(_hit_stop_duration())
 		var burst_color: Color = Vfx.COLOR_ALBEDO.get(color, Color(0.5, 0.5, 0.5, 1))
 		Vfx.spawn_death_burst(global_position + Vector3(0, 0.5, 0), burst_color, get_parent())
 		died.emit(self, color)
 		queue_free()
+
+func display_name() -> String:
+	# Used by run-end summary's "Killed by" line.
+	if color == "alarm":
+		return "an alarm welp"
+	if color == "boss":
+		return "a boss whelp"
+	return "%s %s" % [color, tier]
 
 func _hit_stop_duration() -> float:
 	# Tier-tuned freeze duration for kill weight.

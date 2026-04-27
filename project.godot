@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="New Chance"
-run/main_scene="res://scenes/world/main_hall.tscn"
+run/main_scene="res://scenes/world/start_screen.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
@@ -26,6 +26,8 @@ MetaProgress="*res://scripts/core/meta_progress.gd"
 BossFlow="*res://scripts/core/boss_flow.gd"
 ScreenShake="*res://scripts/world/screen_shake.gd"
 HitStop="*res://scripts/world/hit_stop.gd"
+RunStats="*res://scripts/core/run_stats.gd"
+PauseMenu="*res://scenes/ui/pause_menu.tscn"
 
 [editor_plugins]
 

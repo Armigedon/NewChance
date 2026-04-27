@@ -1,0 +1,183 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="1_pause"]
+
+[sub_resource type="StyleBoxFlat" id="panel_style"]
+bg_color = Color(0.04, 0.024, 0.031, 0.97)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.78, 0.63, 0.31, 1)
+content_margin_left = 32.0
+content_margin_top = 24.0
+content_margin_right = 32.0
+content_margin_bottom = 24.0
+
+[sub_resource type="StyleBoxFlat" id="resume_btn_style"]
+bg_color = Color(0.16, 0.094, 0.078, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.78, 0.63, 0.31, 1)
+content_margin_left = 32.0
+content_margin_top = 10.0
+content_margin_right = 32.0
+content_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxFlat" id="sec_btn_style"]
+bg_color = Color(0.058, 0.039, 0.047, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.29, 0.23, 0.16, 1)
+content_margin_left = 32.0
+content_margin_top = 8.0
+content_margin_right = 32.0
+content_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxFlat" id="restart_btn_style"]
+bg_color = Color(0.058, 0.039, 0.047, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.42, 0.23, 0.16, 1)
+content_margin_left = 32.0
+content_margin_top = 8.0
+content_margin_right = 32.0
+content_margin_bottom = 8.0
+
+[node name="PauseMenu" type="CanvasLayer"]
+layer = 50
+script = ExtResource("1_pause")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.65)
+mouse_filter = 0
+
+[node name="Center" type="CenterContainer" parent="Backdrop"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="Backdrop/Center"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("panel_style")
+
+[node name="VBox" type="VBoxContainer" parent="Backdrop/Center/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Title" type="Label" parent="Backdrop/Center/Panel/VBox"]
+layout_mode = 2
+text = "— PAUSED —"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.78, 0.63, 0.31, 1)
+
+[node name="Spacer" type="Control" parent="Backdrop/Center/Panel/VBox"]
+custom_minimum_size = Vector2(0, 12)
+layout_mode = 2
+
+[node name="Resume" type="Button" parent="Backdrop/Center/Panel/VBox"]
+layout_mode = 2
+text = "RESUME"
+theme_override_styles/normal = SubResource("resume_btn_style")
+theme_override_styles/hover = SubResource("resume_btn_style")
+theme_override_styles/pressed = SubResource("resume_btn_style")
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.91, 0.85, 0.69, 1)
+
+[node name="HowToPlay" type="Button" parent="Backdrop/Center/Panel/VBox"]
+layout_mode = 2
+text = "HOW TO PLAY"
+theme_override_styles/normal = SubResource("sec_btn_style")
+theme_override_styles/hover = SubResource("sec_btn_style")
+theme_override_styles/pressed = SubResource("sec_btn_style")
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.66, 0.55, 0.38, 1)
+
+[node name="RestartRun" type="Button" parent="Backdrop/Center/Panel/VBox"]
+layout_mode = 2
+text = "RESTART RUN"
+theme_override_styles/normal = SubResource("restart_btn_style")
+theme_override_styles/hover = SubResource("restart_btn_style")
+theme_override_styles/pressed = SubResource("restart_btn_style")
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.66, 0.55, 0.38, 1)
+
+[node name="QuitToMenu" type="Button" parent="Backdrop/Center/Panel/VBox"]
+layout_mode = 2
+text = "QUIT TO MENU"
+theme_override_styles/normal = SubResource("sec_btn_style")
+theme_override_styles/hover = SubResource("sec_btn_style")
+theme_override_styles/pressed = SubResource("sec_btn_style")
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.66, 0.55, 0.38, 1)
+
+[node name="ConfirmRestart" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.7)
+visible = false
+mouse_filter = 0
+
+[node name="Center" type="CenterContainer" parent="ConfirmRestart"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="ConfirmRestart/Center"]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("panel_style")
+
+[node name="VBox" type="VBoxContainer" parent="ConfirmRestart/Center/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Msg" type="Label" parent="ConfirmRestart/Center/Panel/VBox"]
+layout_mode = 2
+text = "Discard run?
+Carry souls will be lost."
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.91, 0.85, 0.69, 1)
+
+[node name="Buttons" type="HBoxContainer" parent="ConfirmRestart/Center/Panel/VBox"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 12
+
+[node name="Yes" type="Button" parent="ConfirmRestart/Center/Panel/VBox/Buttons"]
+layout_mode = 2
+text = "YES"
+theme_override_styles/normal = SubResource("restart_btn_style")
+theme_override_styles/hover = SubResource("restart_btn_style")
+theme_override_styles/pressed = SubResource("restart_btn_style")
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.91, 0.85, 0.69, 1)
+
+[node name="No" type="Button" parent="ConfirmRestart/Center/Panel/VBox/Buttons"]
+layout_mode = 2
+text = "NO"
+theme_override_styles/normal = SubResource("sec_btn_style")
+theme_override_styles/hover = SubResource("sec_btn_style")
+theme_override_styles/pressed = SubResource("sec_btn_style")
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.66, 0.55, 0.38, 1)
