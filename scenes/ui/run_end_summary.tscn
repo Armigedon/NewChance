@@ -1,0 +1,173 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/run_end_summary.gd" id="1_summary"]
+
+[sub_resource type="StyleBoxFlat" id="panel_style"]
+bg_color = Color(0.04, 0.024, 0.031, 0.97)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.42, 0.16, 0.16, 1)
+shadow_color = Color(0.47, 0.094, 0.094, 0.3)
+shadow_size = 24
+content_margin_left = 24.0
+content_margin_top = 22.0
+content_margin_right = 24.0
+content_margin_bottom = 22.0
+
+[sub_resource type="StyleBoxFlat" id="continue_btn_style"]
+bg_color = Color(0.16, 0.094, 0.078, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.78, 0.63, 0.31, 1)
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxFlat" id="sec_btn_style"]
+bg_color = Color(0.058, 0.039, 0.047, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.29, 0.23, 0.16, 1)
+content_margin_left = 16.0
+content_margin_top = 8.0
+content_margin_right = 16.0
+content_margin_bottom = 8.0
+
+[node name="RunEndSummary" type="CanvasLayer"]
+layer = 40
+script = ExtResource("1_summary")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.7)
+mouse_filter = 0
+
+[node name="Center" type="CenterContainer" parent="Backdrop"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="Backdrop/Center"]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("panel_style")
+
+[node name="VBox" type="VBoxContainer" parent="Backdrop/Center/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="Backdrop/Center/Panel/VBox"]
+layout_mode = 2
+text = "— You Died —"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.78, 0.25, 0.19, 1)
+
+[node name="Quote" type="Label" parent="Backdrop/Center/Panel/VBox"]
+layout_mode = 2
+text = ""
+horizontal_alignment = 1
+autowrap_mode = 2
+custom_minimum_size = Vector2(312, 0)
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.48, 0.38, 0.28, 1)
+
+[node name="Stats" type="GridContainer" parent="Backdrop/Center/Panel/VBox"]
+layout_mode = 2
+columns = 2
+theme_override_constants/h_separation = 18
+theme_override_constants/v_separation = 6
+
+[node name="TimeLabel" type="Label" parent="Backdrop/Center/Panel/VBox/Stats"]
+layout_mode = 2
+text = "Survived"
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.48, 0.38, 0.28, 1)
+
+[node name="TimeValue" type="Label" parent="Backdrop/Center/Panel/VBox/Stats"]
+layout_mode = 2
+text = "0:00"
+horizontal_alignment = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.91, 0.85, 0.69, 1)
+
+[node name="KillsLabel" type="Label" parent="Backdrop/Center/Panel/VBox/Stats"]
+layout_mode = 2
+text = "Enemies slain"
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.48, 0.38, 0.28, 1)
+
+[node name="KillsValue" type="Label" parent="Backdrop/Center/Panel/VBox/Stats"]
+layout_mode = 2
+text = "0"
+horizontal_alignment = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.91, 0.85, 0.69, 1)
+
+[node name="KillerLabel" type="Label" parent="Backdrop/Center/Panel/VBox/Stats"]
+layout_mode = 2
+text = "Killed by"
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.48, 0.38, 0.28, 1)
+
+[node name="KillerValue" type="Label" parent="Backdrop/Center/Panel/VBox/Stats"]
+layout_mode = 2
+text = "—"
+horizontal_alignment = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.78, 0.25, 0.19, 1)
+
+[node name="SoulsLost" type="VBoxContainer" parent="Backdrop/Center/Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Header" type="Label" parent="Backdrop/Center/Panel/VBox/SoulsLost"]
+layout_mode = 2
+text = "SOULS LOST"
+theme_override_font_sizes/font_size = 9
+theme_override_colors/font_color = Color(0.48, 0.38, 0.28, 1)
+
+[node name="Row" type="HBoxContainer" parent="Backdrop/Center/Panel/VBox/SoulsLost"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Buttons" type="HBoxContainer" parent="Backdrop/Center/Panel/VBox"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 8
+
+[node name="Continue" type="Button" parent="Backdrop/Center/Panel/VBox/Buttons"]
+layout_mode = 2
+text = "CONTINUE"
+size_flags_horizontal = 3
+theme_override_styles/normal = SubResource("continue_btn_style")
+theme_override_styles/hover = SubResource("continue_btn_style")
+theme_override_styles/pressed = SubResource("continue_btn_style")
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.91, 0.85, 0.69, 1)
+
+[node name="QuitToMenu" type="Button" parent="Backdrop/Center/Panel/VBox/Buttons"]
+layout_mode = 2
+text = "QUIT TO MENU"
+size_flags_horizontal = 3
+theme_override_styles/normal = SubResource("sec_btn_style")
+theme_override_styles/hover = SubResource("sec_btn_style")
+theme_override_styles/pressed = SubResource("sec_btn_style")
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.66, 0.55, 0.38, 1)
