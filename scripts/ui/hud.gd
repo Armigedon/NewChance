@@ -15,7 +15,7 @@ extends CanvasLayer
 @onready var _damage_flash: ColorRect = $DamageFlash
 
 var _player: Node = null
-var _skill_system: Node = null
+var _skill_system: SkillSystem = null
 var _flash_tween: Tween = null
 
 const COLOR_TINT_BORDER: Dictionary = {
@@ -25,6 +25,15 @@ const COLOR_TINT_BORDER: Dictionary = {
 	"purple": Color(0.42, 0.22, 0.54, 1),
 	"gold": Color(0.82, 0.65, 0.18, 1),
 	"white": Color(0.94, 0.94, 0.88, 1),
+}
+
+const COLOR_NAME: Dictionary = {
+	"red": "FIRE",
+	"blue": "ICE",
+	"green": "PLAG",
+	"purple": "VOID",
+	"gold": "BOLT",
+	"white": "BONE",
 }
 
 func _ready() -> void:
@@ -40,7 +49,7 @@ func _bind_to_player() -> void:
 			_player.hp_changed.connect(_on_hp_changed)
 		_on_hp_changed(_player.hp)
 		if _player.has_node("SkillSystem"):
-			_skill_system = _player.get_node("SkillSystem")
+			_skill_system = _player.get_node("SkillSystem") as SkillSystem
 			if not _skill_system.active_skill_changed.is_connected(_on_active_skill_changed):
 				_skill_system.active_skill_changed.connect(_on_active_skill_changed)
 			_refresh_skill_slots()
@@ -77,17 +86,19 @@ func _on_active_skill_changed(_index: int) -> void:
 
 func _refresh_skill_slots() -> void:
 	var slots: Array = [_slot1, _slot2, _slot3]
+	var active_idx: int = _skill_system._active_index if _skill_system != null else -1
 	for i in range(3):
 		var slot: Label = slots[i]
-		var skill = _skill_system.skill_at(i) if _skill_system != null else null
+		var skill: Skill = _skill_system.skill_at(i) if _skill_system != null else null
+		var is_active: bool = (i == active_idx)
+		# Resize: active slot is 36×36, others stay at 32×32.
+		slot.custom_minimum_size = Vector2(36, 36) if is_active else Vector2(32, 32)
 		if skill == null:
 			slot.text = str(i + 1)
 			slot.modulate = Color(0.35, 0.29, 0.22, 1)
 			continue
-		var label_text: String = (skill.base_color as String).to_upper().substr(0, 4)
-		slot.text = label_text
+		slot.text = COLOR_NAME.get(skill.base_color, "?")
 		var tint: Color = COLOR_TINT_BORDER.get(skill.base_color, Color.WHITE)
-		var is_active: bool = (i == _skill_system._active_index)
 		slot.modulate = tint if is_active else Color(tint.r * 0.6, tint.g * 0.6, tint.b * 0.6, 1)
 
 func play_damage_flash() -> void:
