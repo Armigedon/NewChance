@@ -7,25 +7,35 @@ signal hit_enemy(enemy: Node, damage: int)
 
 var _swing_cooldown: float = 0.0
 
+const DamagePipeline = preload("res://scripts/skills/damage_pipeline.gd")
+const PASSIVE_ARMOR_INTERVAL: float = 5.0
+
+var _active_color: String = ""
+var _passive_armor_timer: float = 0.0
+
 func _ready() -> void:
 	base_damage += MetaProgress.cantrip_bonus("sword_damage")
 
 func _process(delta: float) -> void:
+	# Passive white WARD: armor stack every 5s while equipped to a white-base skill
+	_passive_armor_timer += delta
+	if _active_color == "white" and _passive_armor_timer >= PASSIVE_ARMOR_INTERVAL:
+		_passive_armor_timer = 0.0
+		var player: Node = get_tree().get_first_node_in_group("player")
+		if player != null and player.has_method("apply_armor"):
+			player.apply_armor(1, 5.0)
 	if _swing_cooldown > 0.0:
 		_swing_cooldown = max(0.0, _swing_cooldown - delta)
 		return
 	var enemies: Array = get_overlapping_bodies().filter(_is_enemy)
 	if enemies.size() == 0:
 		return
-	# Cleave: swing damages every enemy in range, not just the first.
 	for enemy in enemies:
 		if not enemy.has_method("take_damage"):
 			continue
-		enemy.take_damage(base_damage)
-		hit_enemy.emit(enemy, base_damage)
-		# Visual feedback per hit.
-		if enemy.has_method("flash_hit"):
-			enemy.flash_hit()
+		# Sword applies base damage AND the active skill's base color's native
+		# layer (no modifier stack). DamagePipeline with empty stack handles this.
+		DamagePipeline.apply(enemy, base_damage, [], _active_color, global_position)
 		if enemy.has_method("apply_knockback"):
 			var dir: Vector3 = enemy.global_position - global_position
 			var force: float = _knockback_force_for(enemy)
@@ -59,6 +69,8 @@ const COLOR_TINTS: Dictionary = {
 }
 
 func set_active_element(color: String) -> void:
+	_active_color = color
+	_passive_armor_timer = 0.0  # reset on switch
 	if _blade_mesh == null:
 		return
 	var mat: StandardMaterial3D = _blade_mesh.material_override as StandardMaterial3D

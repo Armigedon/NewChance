@@ -40,13 +40,6 @@ func _damage_aoe(center: Vector3, radius: float) -> void:
 		if e.global_position.distance_to(center) <= radius:
 			_hit_target(e, center)
 
-# Temporary parse-compat shim: other cast scripts (blue/green/purple/gold/white)
-# still call this from Phase 9 Tasks 7-11. Keeps the script tree parseable
-# until those casts are rewritten to use _hit_target/_damage_aoe directly.
-# TODO: remove once Tasks 7-11 land.
-func _on_hit_enemy(enemy: Node) -> void:
-	_hit_target(enemy, global_position)
-
 # Knockback helper used by some casts.
 func _knockback_force_for(enemy: Node) -> float:
 	if not "tier" in enemy:
