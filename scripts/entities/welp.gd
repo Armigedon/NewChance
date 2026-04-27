@@ -16,6 +16,20 @@ const SOUL_PICKUP_SCENE: PackedScene = preload("res://scenes/interactables/soul_
 
 const KNOCKBACK_DECAY: float = 12.0  # m/s² — knockback impulse decay rate
 
+# --- Status effect state (Phase 9) ---
+const FREEZE_THRESHOLD: int = 5
+const FREEZE_DURATION: float = 1.5
+const SLOW_PER_CHILL_STACK: float = 0.15  # 15% slow per stack below freeze threshold
+
+var _burn_dps: float = 0.0
+var _burn_remaining: float = 0.0
+var _burn_residual: float = 0.0  # accumulates fractional burn damage between integer applies
+var _chill_stacks: int = 0
+var _frozen_remaining: float = 0.0
+var _slow_pct: float = 0.0
+var _slow_remaining: float = 0.0
+var _stun_remaining: float = 0.0
+
 signal died(welp: Node, color: String)
 
 var hp: int = max_hp
@@ -35,6 +49,14 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if _is_dead:
 		return
+	_tick_status_effects(delta)
+	# Frozen or stunned enemies skip movement and attacks
+	if is_frozen() or is_stunned():
+		velocity.x = 0.0
+		velocity.z = 0.0
+		velocity.y -= 9.8 * delta if not is_on_floor() else 0.0
+		move_and_slide()
+		return
 	if _player == null or not is_instance_valid(_player):
 		_find_player()
 		if _player == null:
@@ -42,9 +64,10 @@ func _physics_process(delta: float) -> void:
 	var to_player: Vector3 = _player.global_position - global_position
 	to_player.y = 0.0
 	var distance: float = to_player.length()
+	var effective_speed: float = move_speed * (1.0 - _slow_pct)
 	if distance > attack_range:
-		velocity.x = to_player.normalized().x * move_speed
-		velocity.z = to_player.normalized().z * move_speed
+		velocity.x = to_player.normalized().x * effective_speed
+		velocity.z = to_player.normalized().z * effective_speed
 	else:
 		velocity.x = 0.0
 		velocity.z = 0.0
@@ -103,6 +126,66 @@ func apply_knockback(direction: Vector3, force: float) -> void:
 	if direction.length() < 0.001:
 		return
 	_knockback_velocity += direction.normalized() * force
+
+# --- Status effect API (Phase 9) ---
+
+func apply_burn(dps: float, duration: float) -> void:
+	_burn_dps = max(_burn_dps, dps)
+	_burn_remaining = max(_burn_remaining, duration)
+
+func apply_chill(stacks: int) -> void:
+	_chill_stacks += stacks
+	if _chill_stacks >= FREEZE_THRESHOLD:
+		_frozen_remaining = FREEZE_DURATION
+		_chill_stacks = 0
+	else:
+		apply_slow(SLOW_PER_CHILL_STACK * float(_chill_stacks), 1.0)
+
+func apply_stun(duration: float) -> void:
+	_stun_remaining = max(_stun_remaining, duration)
+
+func apply_slow(pct: float, duration: float) -> void:
+	_slow_pct = max(_slow_pct, pct)
+	_slow_remaining = max(_slow_remaining, duration)
+
+func apply_pull_toward(target_pos: Vector3, impulse: float) -> void:
+	var dir: Vector3 = target_pos - global_position
+	dir.y = 0.0
+	if dir.length() < 0.001:
+		return
+	_knockback_velocity += dir.normalized() * impulse
+
+func is_frozen() -> bool:
+	return _frozen_remaining > 0.0
+
+func is_stunned() -> bool:
+	return _stun_remaining > 0.0
+
+func _tick_status_effects(delta: float) -> void:
+	# Burn DoT — accumulate fractional damage so e.g. 20dps over 1s deals ~20.
+	if _burn_remaining > 0.0:
+		_burn_residual += _burn_dps * delta
+		_burn_remaining = max(0.0, _burn_remaining - delta)
+		var burn_dmg: int = int(_burn_residual)
+		if burn_dmg > 0:
+			_burn_residual -= float(burn_dmg)
+			# Apply damage directly (avoid re-entry into status from take_damage)
+			if not _is_dead:
+				hp = max(0, hp - burn_dmg)
+				if hp == 0:
+					take_damage(0)  # trigger death path via take_damage's hp==0 branch
+		# Reset residual once burn fully expires to avoid carryover from a stale reapply
+		if _burn_remaining == 0.0:
+			_burn_residual = 0.0
+	# Timers
+	if _frozen_remaining > 0.0:
+		_frozen_remaining = max(0.0, _frozen_remaining - delta)
+	if _stun_remaining > 0.0:
+		_stun_remaining = max(0.0, _stun_remaining - delta)
+	if _slow_remaining > 0.0:
+		_slow_remaining = max(0.0, _slow_remaining - delta)
+		if _slow_remaining == 0.0:
+			_slow_pct = 0.0
 
 func take_damage(amount: int) -> void:
 	if _is_dead:
