@@ -31,10 +31,10 @@ func _on_confirm_yes() -> void:
 	_confirm.visible = false
 	if FileAccess.file_exists("user://save.tres"):
 		DirAccess.remove_absolute("user://save.tres")
-	MetaProgress._init_defaults()
+	MetaProgress.reset_meta()
 	SoulEconomy.reset_meta()
-	BossFlow.reset()
-	BossFlow.clear_retained_skills()
+	Escalation.reset()
+	BossFlow.reset_hard()
 	_start_new_game()
 
 func _on_confirm_no() -> void:

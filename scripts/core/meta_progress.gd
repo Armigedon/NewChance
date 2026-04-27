@@ -37,6 +37,11 @@ func _on_pyre_fill_changed(color: String, new_fill: int) -> void:
 	if pct >= 100.0:
 		on_pyre_full(color)  # also sets milestone to 100
 
+func reset_meta() -> void:
+	# Public alias for _init_defaults — full reset of all meta state.
+	# Use this from outside the class (e.g., start_screen New Game).
+	_init_defaults()
+
 func _init_defaults() -> void:
 	_cantrips.clear()
 	for k in CANTRIP_KEYS:

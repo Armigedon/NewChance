@@ -20,19 +20,6 @@ const COLOR_TINT: Dictionary = {
 	"white": Color(0.94, 0.94, 0.88, 1),
 }
 
-const TAUNT_NORMAL: Array[String] = [
-	"Crawl back to the pyres. The dragons grow restless.",
-	"Pathetic. I expected more from you, even now.",
-	"Death again. As if you have nothing better to do.",
-	"How disappointing. And yet, somehow, predictable.",
-]
-const TAUNT_BOSS: Array[String] = [
-	"You came so far only to die at my feet. Touching.",
-	"All those flames you stole, and still — not enough.",
-	"You should have stayed upstairs, little corpse.",
-	"I made you. Do you really think I cannot unmake you?",
-]
-
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_WHEN_PAUSED
 	visible = false
@@ -42,10 +29,10 @@ func _ready() -> void:
 func show_summary(boss_death: bool) -> void:
 	if boss_death:
 		_title.text = "— Defeated —"
-		_quote.text = TAUNT_BOSS[randi() % TAUNT_BOSS.size()]
+		_quote.text = _pick_line("death_boss")
 	else:
 		_title.text = "— You Died —"
-		_quote.text = TAUNT_NORMAL[randi() % TAUNT_NORMAL.size()]
+		_quote.text = _pick_line("death_normal")
 	_stat_time.text = _format_time(RunStats.elapsed_seconds())
 	_stat_kills.text = str(RunStats.enemies_slain)
 	if RunStats.last_damage_source_name == "":
@@ -59,6 +46,16 @@ func show_summary(boss_death: bool) -> void:
 func _format_time(seconds: float) -> String:
 	var total: int = int(seconds)
 	return "%d:%02d" % [total / 60, total % 60]
+
+func _pick_line(category: String) -> String:
+	# Single source of truth for taunt copy: DialogueBanner.LINES.
+	var banner: CanvasLayer = get_tree().root.find_child("DialogueBanner", true, false) as CanvasLayer
+	if banner == null:
+		return ""
+	var pool = banner.LINES.get(category, [])
+	if pool.is_empty():
+		return ""
+	return pool[randi() % pool.size()]
 
 func _populate_souls_lost() -> void:
 	for child in _souls_row.get_children():
