@@ -22,4 +22,5 @@ func _on_body_entered(body: Node) -> void:
 		return
 	var aoe_radius: float = BASE_AOE_RADIUS * size_multiplier
 	_damage_aoe(global_position, aoe_radius)
+	DamagePipeline.fire_impact_spawners(modifier_stack, base_color, global_position, get_parent(), base_damage)
 	queue_free()

@@ -8,6 +8,7 @@ const CAST_GREEN_PLAGUE: PackedScene = preload("res://scenes/skills/cast_green_p
 const CAST_PURPLE_VOID: PackedScene = preload("res://scenes/skills/cast_purple_void.tscn")
 const CAST_GOLD_LIGHTNING: PackedScene = preload("res://scenes/skills/cast_gold_lightning.tscn")
 const CAST_WHITE_BONE: PackedScene = preload("res://scenes/skills/cast_white_bone.tscn")
+const DamagePipeline = preload("res://scripts/skills/damage_pipeline.gd")
 
 @export var move_speed: float = 5.0
 @export var dash_distance: float = 4.0
@@ -177,6 +178,7 @@ func _try_cast() -> void:
 		return
 	var cast = cast_scene.instantiate()
 	cast.configure(skill)
+	DamagePipeline.fire_cast_spawners(skill, self)
 	# Aim direction: toward mouse cursor on the floor plane (y=1)
 	var cam: Camera3D = get_viewport().get_camera_3d()
 	var aim_dir: Vector3 = Vector3.FORWARD

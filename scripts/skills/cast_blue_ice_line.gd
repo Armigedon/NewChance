@@ -25,3 +25,10 @@ func _on_body_entered(body: Node) -> void:
 	_hit_enemies.append(body)
 	_hit_target(body, global_position)
 	# Pierces — does NOT queue_free; lets lifetime expire
+
+func _process(delta: float) -> void:
+	_age += delta
+	if _age >= lifetime:
+		if _hit_enemies.size() > 0:
+			DamagePipeline.fire_impact_spawners(modifier_stack, base_color, global_position, get_parent(), base_damage)
+		queue_free()

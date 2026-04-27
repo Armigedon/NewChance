@@ -113,3 +113,37 @@ static func _count(stack: Array, color: String) -> int:
 		if c == color:
 			n += 1
 	return n
+
+const SPAWNER_CLOUD_SCENE: PackedScene = preload("res://scenes/effects/effect_cloud.tscn")
+const SPAWNER_CLOUD_BASE_LIFETIME: float = 3.0
+const SPAWNER_CLOUD_BASE_RADIUS: float = 2.0
+const ARMOR_DURATION: float = 5.0
+
+# Fired at cast initiation (player._try_cast). Handles white WARD.
+static func fire_cast_spawners(skill: Skill, caster: Node) -> void:
+	if caster == null or not is_instance_valid(caster):
+		return
+	if not caster.has_method("apply_armor"):
+		return
+	var white_count: int = _count(skill.modifier_stack, "white")
+	if skill.base_color == "white":
+		white_count += 1  # white-base also grants the WARD layer natively
+	if white_count > 0:
+		caster.apply_armor(white_count, ARMOR_DURATION)
+
+# Fired when a non-spawner cast resolves its primary impact. Handles green LINGER.
+# Pass `cast_node` as `world_root_for_spawn` (clouds are added under the cast's parent).
+static func fire_impact_spawners(modifier_stack: Array, base_color: String, impact_pos: Vector3, world: Node, base_damage: int) -> void:
+	if base_color == "green":
+		return  # green-base IS the cloud; don't double-spawn from modifier rule
+	var green_count: int = _count(modifier_stack, "green")
+	if green_count <= 0:
+		return
+	if world == null or not is_instance_valid(world):
+		return
+	var cloud: Node3D = SPAWNER_CLOUD_SCENE.instantiate()
+	var lifetime: float = SPAWNER_CLOUD_BASE_LIFETIME + 1.5 * float(green_count)
+	var tick_dmg: int = max(1, int(float(base_damage) * BURN_DPS_FRAC))
+	cloud.configure(lifetime, SPAWNER_CLOUD_BASE_RADIUS, tick_dmg, modifier_stack, base_color)
+	world.add_child(cloud)
+	cloud.global_position = impact_pos
