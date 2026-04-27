@@ -7,7 +7,7 @@ extends Control
 @export var is_elder: bool = false
 @export var stagger_seconds: float = 0.0
 
-const FLAME_POINTS_LIST = [
+const FLAME_POINTS: PackedVector2Array = [
 	Vector2(11, 2),
 	Vector2(5, 8),
 	Vector2(8, 16),
@@ -53,7 +53,7 @@ func _draw() -> void:
 		scale_y = lerp(min_scale, max_scale, pulse)
 		alpha = lerp(min_alpha, max_alpha, pulse)
 	var pts: PackedVector2Array = PackedVector2Array()
-	for p in FLAME_POINTS_LIST:
+	for p in FLAME_POINTS:
 		pts.append(Vector2(p.x, FLAME_PIVOT_Y - (FLAME_PIVOT_Y - p.y) * scale_y))
 	var c: Color = color
 	c.a *= alpha
