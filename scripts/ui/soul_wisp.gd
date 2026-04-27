@@ -1,3 +1,4 @@
+class_name SoulWisp
 extends Control
 
 # Reusable wispy-soul widget. Custom-draws a flame polygon and pulses it
@@ -32,6 +33,7 @@ func _ready() -> void:
 	custom_minimum_size = Vector2(28, 36)
 	_label = get_node_or_null("Count") as Label
 	_refresh_label()
+	set_process(count > 0)
 
 func _process(delta: float) -> void:
 	_t += delta
@@ -61,6 +63,11 @@ func _draw() -> void:
 
 func set_count(n: int) -> void:
 	count = max(0, n)
+	# Suspend per-frame work when dimmed; resume when count returns positive.
+	set_process(count > 0)
+	# Force one final redraw so the dim/un-dim visual updates immediately
+	# even after process is disabled.
+	queue_redraw()
 	_refresh_label()
 
 func is_dimmed() -> bool:

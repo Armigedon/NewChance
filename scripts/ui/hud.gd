@@ -86,7 +86,7 @@ func _on_active_skill_changed(_index: int) -> void:
 
 func _refresh_skill_slots() -> void:
 	var slots: Array = [_slot1, _slot2, _slot3]
-	var active_idx: int = _skill_system._active_index if _skill_system != null else -1
+	var active_idx: int = _skill_system.active_index() if _skill_system != null else -1
 	for i in range(3):
 		var slot: Label = slots[i]
 		var skill: Skill = _skill_system.skill_at(i) if _skill_system != null else null
