@@ -147,7 +147,8 @@ func is_invincible() -> bool:
 func take_damage(amount: int) -> void:
 	if _is_dead or is_invincible():
 		return
-	# Armor absorbs first; one stack consumed per hit (not per damage point)
+	# Armor absorbs first; stacks drain greedily until the hit is fully
+	# absorbed (each stack absorbs up to ARMOR_PER_STACK damage).
 	while _armor_stacks > 0 and amount > 0:
 		var absorb: int = min(amount, ARMOR_PER_STACK)
 		amount -= absorb
