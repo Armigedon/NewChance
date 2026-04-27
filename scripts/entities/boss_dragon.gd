@@ -58,6 +58,8 @@ func _physics_process(delta: float) -> void:
 	if _is_dead:
 		return
 	_tick_status_effects(delta)
+	if _is_dead:
+		return
 	_advance_taunt_timers(delta)
 	if _should_fire_idle_taunt():
 		_show_taunt("boss_idle")
