@@ -50,6 +50,8 @@ func _physics_process(delta: float) -> void:
 	if _is_dead:
 		return
 	_tick_status_effects(delta)
+	if _is_dead:
+		return  # burn DoT may have killed us mid-tick; skip the rest of this frame
 	# Frozen or stunned enemies skip movement and attacks
 	if is_frozen() or is_stunned():
 		velocity.x = 0.0
@@ -162,22 +164,21 @@ func is_stunned() -> bool:
 	return _stun_remaining > 0.0
 
 func _tick_status_effects(delta: float) -> void:
-	# Burn DoT — accumulate fractional damage so e.g. 20dps over 1s deals ~20.
+	# Burn DoT — residual accumulator pattern (mirrors boss_dragon.gd Task 3 fix).
+	# Floors per-frame would over-deal at high framerate; accumulate fractional
+	# damage and apply integer chunks instead.
 	if _burn_remaining > 0.0:
 		_burn_residual += _burn_dps * delta
-		_burn_remaining = max(0.0, _burn_remaining - delta)
 		var burn_dmg: int = int(_burn_residual)
 		if burn_dmg > 0:
 			_burn_residual -= float(burn_dmg)
-			# Apply damage directly (avoid re-entry into status from take_damage)
 			if not _is_dead:
 				hp = max(0, hp - burn_dmg)
 				if hp == 0:
-					take_damage(0)  # trigger death path via take_damage's hp==0 branch
-		# Reset residual once burn fully expires to avoid carryover from a stale reapply
+					take_damage(0)  # trigger death path via hp==0 branch
+		_burn_remaining = max(0.0, _burn_remaining - delta)
 		if _burn_remaining == 0.0:
 			_burn_residual = 0.0
-	# Timers
 	if _frozen_remaining > 0.0:
 		_frozen_remaining = max(0.0, _frozen_remaining - delta)
 	if _stun_remaining > 0.0:

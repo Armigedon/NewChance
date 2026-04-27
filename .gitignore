@@ -8,5 +8,10 @@
 # GdUnit4 test reports
 reports/
 
+# Test output logs
+*.log
+test_*.txt
+final_test.txt
+
 # Godot resource UID sidecars (regenerated on import)
 *.uid
