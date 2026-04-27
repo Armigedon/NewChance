@@ -10,12 +10,18 @@ func _ready() -> void:
 	var area: Area3D = $HitArea
 	area.body_entered.connect(_on_body_entered)
 	area.monitoring = true
+	var mesh: MeshInstance3D = $Mesh as MeshInstance3D
+	if mesh != null:
+		mesh.scale = Vector3(size_multiplier, 1.0, size_multiplier)
 
 func _physics_process(delta: float) -> void:
 	global_position += direction.normalized() * PROJECTILE_SPEED * delta
 
 func _on_body_entered(body: Node) -> void:
-	if body.is_in_group("enemy") and not (body in _hit_enemies):
-		_hit_enemies.append(body)
-		_on_hit_enemy(body)
-		# Pierces through — does NOT queue_free on hit (let lifetime expire)
+	if not body.is_in_group("enemy"):
+		return
+	if body in _hit_enemies:
+		return
+	_hit_enemies.append(body)
+	_hit_target(body, global_position)
+	# Pierces — does NOT queue_free; lets lifetime expire

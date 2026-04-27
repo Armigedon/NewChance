@@ -100,3 +100,13 @@ func test_pipeline_handles_multiple_sequential_targets() -> void:
 	assert_that(welp_a.hp).is_equal(hp_a - 25)
 	assert_that(welp_b.hp).is_equal(hp_b - 25)
 	assert_that(welp_c.hp).is_equal(hp_c)
+
+func test_ice_line_native_chill() -> void:
+	DamagePipeline.apply(welp_a, 25, [], "blue", Vector3.ZERO)
+	assert_that(welp_a._chill_stacks).is_equal(1)
+	DamagePipeline.apply(welp_a, 25, [], "blue", Vector3.ZERO)
+	DamagePipeline.apply(welp_a, 25, [], "blue", Vector3.ZERO)
+	DamagePipeline.apply(welp_a, 25, [], "blue", Vector3.ZERO)
+	DamagePipeline.apply(welp_a, 25, [], "blue", Vector3.ZERO)
+	# 5 chill stacks → freeze
+	assert_that(welp_a.is_frozen()).is_true()
