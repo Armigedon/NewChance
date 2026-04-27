@@ -26,10 +26,19 @@ func test_red_base_applies_native_burn() -> void:
 	assert_that(welp_a._burn_remaining).is_greater(0.0)
 	assert_that(welp_a._burn_dps).is_greater(0.0)
 
-func test_red_modifier_extends_burn_duration() -> void:
+func test_red_base_burn_duration_is_3_seconds() -> void:
+	DamagePipeline.apply(welp_a, 25, [], "red", Vector3.ZERO)
+	assert_that(welp_a._burn_remaining).is_equal_approx(3.0, 0.01)
+
+func test_red_modifiers_extend_burn_additively() -> void:
+	# Red base (3s) + 2 red modifiers (1.5s each) = 6s total burn
+	DamagePipeline.apply(welp_a, 25, ["red", "red"], "red", Vector3.ZERO)
+	assert_that(welp_a._burn_remaining).is_equal_approx(6.0, 0.01)
+
+func test_red_modifier_on_non_red_base_applies_burn() -> void:
+	# Blue base (no burn native) + 1 red modifier (1.5s) = 1.5s burn
 	DamagePipeline.apply(welp_a, 25, ["red"], "blue", Vector3.ZERO)
-	# Blue base + red modifier: should apply burn from modifier path
-	assert_that(welp_a._burn_remaining).is_greater(0.0)
+	assert_that(welp_a._burn_remaining).is_equal_approx(1.5, 0.01)
 
 func test_blue_base_applies_chill() -> void:
 	DamagePipeline.apply(welp_a, 25, [], "blue", Vector3.ZERO)

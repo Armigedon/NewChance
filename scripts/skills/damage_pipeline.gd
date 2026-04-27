@@ -17,7 +17,7 @@ const MODIFIER_PULL_IMPULSE: float = 0.8
 
 class ChainState extends RefCounted:
 	var budget: int = 0
-	var hit_set: Array = []  # nodes already damaged by this cast's chain
+	var hit_set: Dictionary = {}  # instance_id -> true; targets already damaged by this cast's chain
 
 static func apply(target: Node, damage: int, modifier_stack: Array, base_color: String, source_pos: Vector3, chain_state: ChainState = null) -> void:
 	if target == null or not is_instance_valid(target):
@@ -30,7 +30,16 @@ static func apply(target: Node, damage: int, modifier_stack: Array, base_color: 
 		chain_state.budget = _count(modifier_stack, "gold")
 
 	target.take_damage(damage)
-	chain_state.hit_set.append(target)
+	chain_state.hit_set[target.get_instance_id()] = true
+
+	# Burn (red): total duration is additive across base + modifiers per spec §2c
+	var red_modifier_count: int = _count(modifier_stack, "red")
+	var total_burn_duration: float = 0.0
+	if base_color == "red":
+		total_burn_duration += NATIVE_BURN_DURATION
+	total_burn_duration += float(red_modifier_count) * MODIFIER_BURN_DURATION
+	if total_burn_duration > 0.0 and target.has_method("apply_burn"):
+		target.apply_burn(float(damage) * BURN_DPS_FRAC, total_burn_duration)
 
 	_apply_native_layer(target, base_color, damage, source_pos)
 	for color in modifier_stack:
@@ -44,9 +53,7 @@ static func apply(target: Node, damage: int, modifier_stack: Array, base_color: 
 
 static func _apply_native_layer(target: Node, color: String, damage: int, source_pos: Vector3) -> void:
 	match color:
-		"red":
-			if target.has_method("apply_burn"):
-				target.apply_burn(float(damage) * BURN_DPS_FRAC, NATIVE_BURN_DURATION)
+		# red: handled additively in apply()
 		"blue":
 			if target.has_method("apply_chill"):
 				target.apply_chill(1)
@@ -61,9 +68,7 @@ static func _apply_native_layer(target: Node, color: String, damage: int, source
 
 static func _apply_modifier_layer(target: Node, color: String, damage: int, source_pos: Vector3) -> void:
 	match color:
-		"red":
-			if target.has_method("apply_burn"):
-				target.apply_burn(float(damage) * BURN_DPS_FRAC, MODIFIER_BURN_DURATION)
+		# red: handled additively in apply() (not per-modifier here)
 		"blue":
 			if target.has_method("apply_chill"):
 				target.apply_chill(1)
@@ -77,7 +82,9 @@ static func _apply_modifier_layer(target: Node, color: String, damage: int, sour
 		"white":
 			pass  # player-side — handled in fire_cast_spawners
 
-static func _find_chain_target(prev_target: Node, hit_set: Array, radius: float) -> Node:
+static func _find_chain_target(prev_target: Node, hit_set: Dictionary, radius: float) -> Node:
+	if not is_instance_valid(prev_target):
+		return null
 	var tree: SceneTree = prev_target.get_tree()
 	if tree == null:
 		return null
@@ -88,7 +95,7 @@ static func _find_chain_target(prev_target: Node, hit_set: Array, radius: float)
 	for e in enemies:
 		if e == prev_target:
 			continue
-		if e in hit_set:
+		if e.get_instance_id() in hit_set:
 			continue
 		if not is_instance_valid(e):
 			continue
