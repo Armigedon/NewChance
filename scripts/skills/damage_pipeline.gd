@@ -42,12 +42,13 @@ static func apply(target: Node, damage: int, modifier_stack: Array, base_color: 
 	ScreenShake.shake(0.02, 0.04)
 	chain_state.hit_set[target.get_instance_id()] = true
 
-	# Burn (red): total duration is additive across base + modifiers per spec §2c
+	# Burn (red): diminishing-returns curve. Red base contributes 3s native;
+	# each red modifier extends asymptotically toward +5s via 5.0 * (1 - 0.6^n).
+	# Caps at 8s for red base / 5s for cross-color (red modifier on non-red base).
 	var red_modifier_count: int = _count(modifier_stack, "red")
-	var total_burn_duration: float = 0.0
-	if base_color == "red":
-		total_burn_duration += NATIVE_BURN_DURATION
-	total_burn_duration += float(red_modifier_count) * MODIFIER_BURN_DURATION
+	var burn_base: float = 3.0 if base_color == "red" else 0.0
+	var burn_bonus: float = 5.0 * (1.0 - pow(0.6, red_modifier_count))
+	var total_burn_duration: float = burn_base + burn_bonus
 	if total_burn_duration > 0.0 and target.has_method("apply_burn"):
 		target.apply_burn(float(damage) * BURN_DPS_FRAC, total_burn_duration)
 
@@ -147,7 +148,8 @@ static func fire_impact_spawners(modifier_stack: Array, base_color: String, impa
 	if world == null or not is_instance_valid(world):
 		return
 	var cloud: Node3D = SPAWNER_CLOUD_SCENE.instantiate()
-	var lifetime: float = SPAWNER_CLOUD_BASE_LIFETIME + 1.5 * float(green_count)
+	# Cross-color green modifier: no native lifetime, asymptotic +3s extension
+	var lifetime: float = 3.0 * (1.0 - pow(0.5, green_count))
 	var tick_dmg: int = max(1, int(float(base_damage) * BURN_DPS_FRAC))
 	cloud.configure(lifetime, SPAWNER_CLOUD_BASE_RADIUS, tick_dmg, modifier_stack, base_color)
 	world.add_child(cloud)

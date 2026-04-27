@@ -52,6 +52,7 @@ signal died
 func _ready() -> void:
 	add_to_group("enemy")
 	collision_layer = 2
+	collision_mask = collision_mask | 8  # also block on bone walls (layer 4)
 	_find_player()
 
 func _physics_process(delta: float) -> void:

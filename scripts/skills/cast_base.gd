@@ -17,8 +17,8 @@ func configure(skill: Skill) -> void:
 	modifier_stack = skill.modifier_stack.duplicate()
 	base_color = skill.base_color
 	same_color_count = skill.modifier_count_for(skill.base_color)
-	base_damage = int(base_damage * (1.0 + 0.2 * same_color_count))
-	size_multiplier = 1.0 + 0.2 * same_color_count
+	base_damage = int(base_damage * (1.0 + 1.5 * (1.0 - pow(0.7, same_color_count))))
+	size_multiplier = 1.0 + 0.5 * (1.0 - pow(0.7, same_color_count))
 
 func _process(delta: float) -> void:
 	_age += delta

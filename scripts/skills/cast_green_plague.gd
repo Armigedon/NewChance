@@ -13,7 +13,8 @@ const NATIVE_RADIUS: float = 2.0
 func _ready() -> void:
 	# Place cloud immediately at this cast's position; cast then frees itself.
 	var cloud: Node3D = EFFECT_CLOUD_SCENE.instantiate()
-	var lifetime_total: float = NATIVE_LIFETIME + 1.5 * float(same_color_count)
+	# Green base: 3s native + asymptotic +3s extension = 6s ceiling
+	var lifetime_total: float = NATIVE_LIFETIME + 3.0 * (1.0 - pow(0.5, same_color_count))
 	var radius_total: float = NATIVE_RADIUS * size_multiplier
 	var tick_dmg: int = max(1, int(float(base_damage) * DamagePipeline.BURN_DPS_FRAC))
 	cloud.configure(lifetime_total, radius_total, tick_dmg, modifier_stack, base_color)

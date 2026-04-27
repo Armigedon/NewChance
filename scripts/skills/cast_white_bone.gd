@@ -1,8 +1,8 @@
 extends CastBase
 
 const EFFECT_WALL_SCENE: PackedScene = preload("res://scenes/effects/effect_bone_wall.tscn")
-const NATIVE_HP: int = 100
-const NATIVE_LIFETIME: float = 4.0
+const NATIVE_HP: int = 30
+const NATIVE_LIFETIME: float = 1.5  # base; lifetime caps at 3s via diminishing returns
 const NATIVE_LENGTH: float = 4.0
 
 @export var direction: Vector3 = Vector3.FORWARD
@@ -17,8 +17,8 @@ func _ready() -> void:
 	# the cross product on Y to keep it level.
 	var perp: Vector3 = Vector3(-direction.z, 0.0, direction.x).normalized()
 	var wall: StaticBody3D = EFFECT_WALL_SCENE.instantiate()
-	var hp_total: int = int(float(NATIVE_HP) * size_multiplier)
-	var lifetime_total: float = NATIVE_LIFETIME + 1.0 * float(same_color_count)
+	var hp_total: int = NATIVE_HP  # flat HP — no scaling per playtest balance
+	var lifetime_total: float = 1.5 + 1.5 * (1.0 - pow(0.5, same_color_count))
 	var length_total: float = NATIVE_LENGTH * size_multiplier
 	wall.configure(hp_total, lifetime_total, length_total)
 	get_parent().add_child(wall)

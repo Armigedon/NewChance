@@ -16,7 +16,7 @@ emission_energy_multiplier = 0.6
 
 [node name="EffectBoneWall" type="StaticBody3D"]
 script = ExtResource("1_wall")
-collision_layer = 1
+collision_layer = 8
 collision_mask = 0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]

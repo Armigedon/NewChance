@@ -1,7 +1,7 @@
 extends StaticBody3D
 
-const NATIVE_HP: int = 100
-const NATIVE_LIFETIME: float = 4.0
+const NATIVE_HP: int = 30
+const NATIVE_LIFETIME: float = 1.5
 const NATIVE_LENGTH: float = 4.0
 
 var hp: int = NATIVE_HP
