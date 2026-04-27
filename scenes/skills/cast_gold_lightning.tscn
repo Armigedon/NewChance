@@ -27,5 +27,6 @@ collision_mask = 2
 shape = SubResource("SphereShape3D_strike")
 
 [node name="Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 0)
 mesh = SubResource("CylinderMesh_bolt")
 material_override = SubResource("StandardMaterial3D_bolt")

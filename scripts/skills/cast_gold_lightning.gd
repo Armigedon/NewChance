@@ -20,15 +20,15 @@ func _ready() -> void:
 	# Strike: deal damage immediately to all enemies in radius, then linger briefly for VFX
 	await get_tree().process_frame  # let physics report overlaps
 	var area: Area3D = $HitArea
-	var hit: bool = false
 	if area != null:
 		for body in area.get_overlapping_bodies():
 			if not body.is_in_group("enemy"):
 				continue
 			_hit_target(body, global_position)
-			hit = true
-	if hit:
-		DamagePipeline.fire_impact_spawners(modifier_stack, base_color, global_position, get_parent(), base_damage)
+	# Fire spawners at the strike location regardless of whether enemies were
+	# hit — green LINGER drops a cloud where the cast resolved, not where
+	# damage landed. Matches cast_purple_void's unconditional behavior.
+	DamagePipeline.fire_impact_spawners(modifier_stack, base_color, global_position, get_parent(), base_damage)
 	# Despawn after brief VFX
 	await get_tree().create_timer(VFX_LIFETIME).timeout
 	queue_free()
