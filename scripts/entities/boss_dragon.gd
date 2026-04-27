@@ -60,7 +60,9 @@ func _physics_process(delta: float) -> void:
 		velocity.x = 0.0
 		velocity.z = 0.0
 		if _contact_timer <= 0.0 and _player.has_method("take_damage"):
-			RunStats.record_damage_from(display_name())
+			# Only record damage source if the hit will actually land (not i-framed).
+			if not (_player.has_method("is_invincible") and _player.is_invincible()):
+				RunStats.record_damage_from(display_name())
 			_player.take_damage(contact_damage)
 			_contact_timer = contact_interval
 	if _contact_timer > 0.0:
