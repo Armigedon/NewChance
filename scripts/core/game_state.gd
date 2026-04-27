@@ -40,8 +40,6 @@ static func scene_path_for(location: Location) -> String:
 			return ""
 
 func transition_to(location: Location) -> void:
-	if location == current_location:
-		return
 	current_location = location
 	location_changed.emit(location)
 	# Notify Escalation about upstairs presence (drives time-alarm)

@@ -38,7 +38,7 @@ func _on_hit_enemy(enemy: Node) -> void:
 		var dir: Vector3 = enemy.global_position - source_pos
 		var force: float = _knockback_force_for(enemy)
 		enemy.apply_knockback(dir, force)
-	ScreenShake.shake(0.15, 0.10)
+	ScreenShake.shake(0.04, 0.07)
 
 func _apply_modifier(enemy: Node, _color: String) -> void:
 	# Phase 2 stub: each modifier adds 10% damage. Phase 3+ will add real elemental effects.

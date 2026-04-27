@@ -7,7 +7,7 @@ signal closed
 func _ready() -> void:
 	visible = false
 	_back_btn.pressed.connect(_on_back)
-	process_mode = Node.PROCESS_MODE_WHEN_PAUSED
+	process_mode = Node.PROCESS_MODE_ALWAYS
 
 func show_overlay() -> void:
 	visible = true

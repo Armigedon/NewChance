@@ -139,14 +139,23 @@ func take_damage(amount: int) -> void:
 		died.emit()
 		RunStats.record_kill()
 		BossFlow.boss_killed()
-		ScreenShake.shake(0.7, 0.6)
+		ScreenShake.shake(0.18, 0.4)
 		Vfx.spawn_death_burst(global_position + Vector3(0, 1, 0), Color(0.6, 0.1, 0.1), get_parent())
-		# Slow-mo: 1.0 → 0.3 over 100ms, hold 300ms, → 1.0 over 200ms, then transition.
+		# Speak the dying necromancer's last word in the courtyard so the moment
+		# of triumph happens here, not on the post-transition fade-in. Mark it
+		# shown so main_hall's cutscene controller doesn't replay it.
+		var banner: CanvasLayer = get_tree().root.find_child("DialogueBanner", true, false) as CanvasLayer
+		if banner != null and not BossFlow.has_shown_victory_line():
+			banner.show_line("victory")
+			BossFlow.mark_victory_line_shown()
+		# Slow-mo: 1.0 → 0.15 over 150ms, hold 1.8s on the dying boss, → 1.0
+		# over 400ms, then transition. Long hold gives the victory line time to
+		# read and the death burst time to dissipate.
 		var tw: Tween = create_tween()
 		tw.set_ignore_time_scale(true)
-		tw.tween_property(Engine, "time_scale", 0.3, 0.1)
-		tw.tween_interval(0.3)
-		tw.tween_property(Engine, "time_scale", 1.0, 0.2)
+		tw.tween_property(Engine, "time_scale", 0.15, 0.15)
+		tw.tween_interval(1.8)
+		tw.tween_property(Engine, "time_scale", 1.0, 0.4)
 		tw.tween_callback(func():
 			GameState.transition_to(GameState.Location.MAIN_HALL)
 			queue_free()
@@ -188,7 +197,7 @@ func _check_phase_transition() -> void:
 	if new_phase != _phase:
 		_phase = new_phase
 		phase_changed.emit(_phase)
-		ScreenShake.shake(0.5, 0.4)
+		ScreenShake.shake(0.12, 0.3)
 		# Suppress phase taunts on lethal blow — the victory line will follow.
 		if hp > 0:
 			if _phase == 2:
