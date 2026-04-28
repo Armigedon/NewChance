@@ -3,7 +3,7 @@ extends CharacterBody3D
 const Vfx = preload("res://scripts/effects/vfx.gd")
 
 const MAX_HP_TEST: int = 150
-const MAX_HP_SHIP: int = 500
+const MAX_HP_SHIP: int = 750
 static var MAX_HP: int = MAX_HP_TEST if Debug.FAST_TEST else MAX_HP_SHIP
 const MOVE_SPEED: float = 2.0
 const PHASE_2_HP_PCT: float = 0.66
@@ -47,6 +47,13 @@ var _slow_pct: float = 0.0
 var _slow_remaining: float = 0.0
 var _stun_remaining: float = 0.0
 
+# Damage rate cap — bosses cap incoming DPS to prevent DoT/cloud-spam melts
+const DMG_CAP_PER_TICK: int = 50
+const DMG_TICK_INTERVAL: float = 0.5
+
+var _dmg_taken_this_tick: int = 0
+var _dmg_tick_remaining: float = DMG_TICK_INTERVAL
+
 signal phase_changed(new_phase: int)
 signal died
 
@@ -61,7 +68,12 @@ func _physics_process(delta: float) -> void:
 		return
 	_tick_status_effects(delta)
 	if _is_dead:
-		return
+		return  # burn DoT may have killed us mid-tick; skip the rest of this frame
+	# Damage rate cap tick — reset the per-tick counter when interval elapses
+	_dmg_tick_remaining -= delta
+	if _dmg_tick_remaining <= 0.0:
+		_dmg_taken_this_tick = 0
+		_dmg_tick_remaining = DMG_TICK_INTERVAL
 	_advance_taunt_timers(delta)
 	if _should_fire_idle_taunt():
 		_show_taunt("boss_idle")
@@ -226,7 +238,12 @@ func display_name() -> String:
 func take_damage(amount: int) -> void:
 	if _is_dead:
 		return
-	hp = max(0, hp - amount)
+	# Cap damage taken per DMG_TICK_INTERVAL (default: 50 dmg per 0.5s).
+	# Excess damage is lost — the boss is "resisting" beyond the cap.
+	var allowed: int = max(0, DMG_CAP_PER_TICK - _dmg_taken_this_tick)
+	var actual: int = min(amount, allowed)
+	_dmg_taken_this_tick += actual
+	hp = max(0, hp - actual)
 	_check_phase_transition()
 	if hp == 0:
 		_is_dead = true
