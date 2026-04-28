@@ -196,9 +196,9 @@ func _try_cast() -> void:
 				aim_dir = to_target.normalized()
 	cast.direction = aim_dir
 	cast.target_pos = hit_point
-	# Spawn at welp/enemy height (~0.5m) so the cast actually intersects ground-level enemies
-	# instead of flying over them. The aim direction is XZ-only so this doesn't affect aiming.
-	cast.global_position = Vector3(global_position.x, 0.5, global_position.z) + aim_dir * 1.0
+	# Projectile casts read spawn_pos in _ready; placed casts use target_pos. Setting
+	# global_position here directly errors because the cast isn't in the tree yet.
+	cast.spawn_pos = Vector3(global_position.x, 0.5, global_position.z) + aim_dir * 1.0
 	get_parent().add_child(cast)
 	_cast_cooldown_remaining = cast_cooldown
 

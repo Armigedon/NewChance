@@ -8,6 +8,7 @@ var _hit_enemies: Array[Node] = []
 
 func _ready() -> void:
 	source_tag = "ice_line"
+	global_position = spawn_pos
 	var area: Area3D = $HitArea
 	area.body_entered.connect(_on_body_entered)
 	area.monitoring = true

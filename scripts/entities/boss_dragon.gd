@@ -3,7 +3,7 @@ extends CharacterBody3D
 const Vfx = preload("res://scripts/effects/vfx.gd")
 
 const MAX_HP_TEST: int = 150
-const MAX_HP_SHIP: int = 750
+const MAX_HP_SHIP: int = 3000
 static var MAX_HP: int = MAX_HP_TEST if Debug.FAST_TEST else MAX_HP_SHIP
 const MOVE_SPEED: float = 2.0
 const PHASE_2_HP_PCT: float = 0.66
@@ -47,8 +47,10 @@ var _slow_pct: float = 0.0
 var _slow_remaining: float = 0.0
 var _stun_remaining: float = 0.0
 
-# Damage rate cap — bosses cap incoming DPS to prevent DoT/cloud-spam melts
-const DMG_CAP_PER_TICK: int = 30
+# Damage rate cap — bosses cap incoming DPS to prevent DoT/cloud-spam melts.
+# 15 dmg per 0.5s = 30 dps theoretical ceiling. Combined with 3000 HP this targets
+# ~2 minutes against the heaviest single-skill stack (heavy build measured ~26 actual dps).
+const DMG_CAP_PER_TICK: int = 15
 const DMG_TICK_INTERVAL: float = 0.5
 
 var _dmg_taken_this_tick: int = 0

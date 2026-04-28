@@ -7,6 +7,7 @@ const BASE_AOE_RADIUS: float = 2.0
 
 func _ready() -> void:
 	source_tag = "fireball"
+	global_position = spawn_pos
 	var area: Area3D = $HitArea
 	area.body_entered.connect(_on_body_entered)
 	area.monitoring = true
