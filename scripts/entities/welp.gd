@@ -179,9 +179,7 @@ func _tick_status_effects(delta: float) -> void:
 		if burn_dmg > 0:
 			_burn_residual -= float(burn_dmg)
 			if not _is_dead:
-				hp = max(0, hp - burn_dmg)
-				if hp == 0:
-					take_damage(0)  # trigger death path via hp==0 branch
+				take_damage(burn_dmg)  # routes through normal damage path
 		_burn_remaining = max(0.0, _burn_remaining - delta)
 		if _burn_remaining == 0.0:
 			_burn_residual = 0.0

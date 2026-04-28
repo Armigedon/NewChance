@@ -48,7 +48,7 @@ var _slow_remaining: float = 0.0
 var _stun_remaining: float = 0.0
 
 # Damage rate cap — bosses cap incoming DPS to prevent DoT/cloud-spam melts
-const DMG_CAP_PER_TICK: int = 50
+const DMG_CAP_PER_TICK: int = 30
 const DMG_TICK_INTERVAL: float = 0.5
 
 var _dmg_taken_this_tick: int = 0
@@ -217,9 +217,7 @@ func _tick_status_effects(delta: float) -> void:
 		if burn_dmg > 0:
 			_burn_residual -= float(burn_dmg)
 			if not _is_dead:
-				hp = max(0, hp - burn_dmg)
-				if hp == 0:
-					take_damage(0)  # trigger death path via hp==0 branch
+				take_damage(burn_dmg)  # routes through damage cap
 		_burn_remaining = max(0.0, _burn_remaining - delta)
 		if _burn_remaining == 0.0:
 			_burn_residual = 0.0
@@ -238,7 +236,7 @@ func display_name() -> String:
 func take_damage(amount: int) -> void:
 	if _is_dead:
 		return
-	# Cap damage taken per DMG_TICK_INTERVAL (default: 50 dmg per 0.5s).
+	# Cap damage taken per DMG_TICK_INTERVAL (default: 30 dmg per 0.5s = 60 dps).
 	# Excess damage is lost — the boss is "resisting" beyond the cap.
 	var allowed: int = max(0, DMG_CAP_PER_TICK - _dmg_taken_this_tick)
 	var actual: int = min(amount, allowed)
