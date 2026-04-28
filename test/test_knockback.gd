@@ -25,6 +25,8 @@ func test_apply_knockback_zeroes_y_component() -> void:
 	assert_that(welp._knockback_velocity.y).is_equal_approx(0.0, 0.001)
 
 func test_consecutive_knockbacks_accumulate() -> void:
-	welp.apply_knockback(Vector3.RIGHT, 4.0)
-	welp.apply_knockback(Vector3.RIGHT, 4.0)
-	assert_that(welp._knockback_velocity.x).is_equal_approx(8.0, 0.001)
+	# Welp mass = 1.0, so effective force == force. Two 2.0 pushes → 4.0
+	# (stays under KNOCKBACK_VELOCITY_MAX = 6.0 clamp).
+	welp.apply_knockback(Vector3.RIGHT, 2.0)
+	welp.apply_knockback(Vector3.RIGHT, 2.0)
+	assert_that(welp._knockback_velocity.x).is_equal_approx(4.0, 0.001)

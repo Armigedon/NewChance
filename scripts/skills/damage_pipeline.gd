@@ -9,7 +9,8 @@ class_name DamagePipeline
 
 # --- Layer constants (per-event effects) ---
 const CHAIN_RANGE: float = 4.0  # max distance for next chain hop
-const BURN_DPS_FRAC: float = 0.25  # burn damage = 25% of cast damage per second
+const BURN_DPS_FRAC: float = 0.15  # was 0.25 — DoT damage was too high pre-playtest
+const CLOUD_TICK_FRAC: float = 0.10  # cloud ticks deal less than burn (clouds stack temporally)
 const NATIVE_BURN_DURATION: float = 3.0
 const MODIFIER_BURN_DURATION: float = 1.5
 const NATIVE_STUN_DURATION: float = 0.5
@@ -150,7 +151,7 @@ static func fire_impact_spawners(modifier_stack: Array, base_color: String, impa
 	var cloud: Node3D = SPAWNER_CLOUD_SCENE.instantiate()
 	# Cross-color green modifier: no native lifetime, asymptotic +3s extension
 	var lifetime: float = 3.0 * (1.0 - pow(0.5, green_count))
-	var tick_dmg: int = max(1, int(float(base_damage) * BURN_DPS_FRAC))
+	var tick_dmg: int = max(1, int(float(base_damage) * CLOUD_TICK_FRAC))
 	cloud.configure(lifetime, SPAWNER_CLOUD_BASE_RADIUS, tick_dmg, modifier_stack, base_color)
 	world.add_child(cloud)
 	cloud.global_position = impact_pos

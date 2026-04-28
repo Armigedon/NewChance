@@ -14,7 +14,7 @@ func _ready() -> void:
 	var well: Node3D = EFFECT_WELL_SCENE.instantiate()
 	var lifetime_total: float = NATIVE_LIFETIME * size_multiplier
 	var radius_total: float = NATIVE_RADIUS * size_multiplier
-	var tick_dmg: int = max(1, int(float(base_damage) * DamagePipeline.BURN_DPS_FRAC))
+	var tick_dmg: int = max(1, int(float(base_damage) * DamagePipeline.CLOUD_TICK_FRAC))
 	well.configure(lifetime_total, radius_total, tick_dmg, modifier_stack, base_color)
 	get_parent().add_child(well)
 	well.global_position = global_position

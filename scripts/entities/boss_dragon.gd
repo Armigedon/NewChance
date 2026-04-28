@@ -11,6 +11,7 @@ const PHASE_3_HP_PCT: float = 0.33
 const IDLE_TAUNT_INTERVAL: float = 18.0
 const TAUNT_COOLDOWN_SECONDS: float = 5.0
 const KNOCKBACK_DECAY: float = 12.0
+const KNOCKBACK_VELOCITY_MAX: float = 6.0  # m/s — prevents off-screen yeets
 
 const BOSS_WHELP_SCENE: PackedScene = preload("res://scenes/entities/boss_whelp.tscn")
 
@@ -148,7 +149,9 @@ func apply_knockback(direction: Vector3, force: float) -> void:
 	direction.y = 0.0
 	if direction.length() < 0.001:
 		return
-	_knockback_velocity += direction.normalized() * force
+	var effective_force: float = force / _mass()
+	_knockback_velocity += direction.normalized() * effective_force
+	_clamp_knockback_velocity()
 
 # --- Status effect API (Phase 9) ---
 
@@ -176,7 +179,16 @@ func apply_pull_toward(target_pos: Vector3, impulse: float) -> void:
 	dir.y = 0.0
 	if dir.length() < 0.001:
 		return
-	_knockback_velocity += dir.normalized() * impulse
+	var effective_impulse: float = impulse / _mass()
+	_knockback_velocity += dir.normalized() * effective_impulse
+	_clamp_knockback_velocity()
+
+func _mass() -> float:
+	return 5.0  # boss is heavy
+
+func _clamp_knockback_velocity() -> void:
+	if _knockback_velocity.length() > KNOCKBACK_VELOCITY_MAX:
+		_knockback_velocity = _knockback_velocity.normalized() * KNOCKBACK_VELOCITY_MAX
 
 func is_frozen() -> bool:
 	return _frozen_remaining > 0.0

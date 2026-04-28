@@ -22,13 +22,11 @@ func _on_body_entered(body: Node) -> void:
 		return
 	if body in _hit_enemies:
 		return
+	var is_first_hit: bool = _hit_enemies.is_empty()
 	_hit_enemies.append(body)
 	_hit_target(body, global_position)
-	# Pierces — does NOT queue_free; lets lifetime expire
-
-func _process(delta: float) -> void:
-	_age += delta
-	if _age >= lifetime:
-		if _hit_enemies.size() > 0:
-			DamagePipeline.fire_impact_spawners(modifier_stack, base_color, global_position, get_parent(), base_damage)
-		queue_free()
+	# Fire spawner on first hit, at this position (always on-map). Pierce
+	# continues for the remaining lifetime via CastBase._process.
+	if is_first_hit:
+		DamagePipeline.fire_impact_spawners(modifier_stack, base_color, global_position, get_parent(), base_damage)
+	# Pierces — does NOT queue_free; lets lifetime expire via CastBase._process

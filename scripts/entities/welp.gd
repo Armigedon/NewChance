@@ -15,6 +15,7 @@ const SOUL_PICKUP_SCENE: PackedScene = preload("res://scenes/interactables/soul_
 @export var tier: String = "welp"
 
 const KNOCKBACK_DECAY: float = 12.0  # m/s² — knockback impulse decay rate
+const KNOCKBACK_VELOCITY_MAX: float = 6.0  # m/s — prevents off-screen yeets
 
 # --- Status effect state (Phase 9) ---
 const FREEZE_THRESHOLD: int = 5
@@ -128,7 +129,9 @@ func apply_knockback(direction: Vector3, force: float) -> void:
 	direction.y = 0.0
 	if direction.length() < 0.001:
 		return
-	_knockback_velocity += direction.normalized() * force
+	var effective_force: float = force / _mass()
+	_knockback_velocity += direction.normalized() * effective_force
+	_clamp_knockback_velocity()
 
 # --- Status effect API (Phase 9) ---
 
@@ -156,7 +159,9 @@ func apply_pull_toward(target_pos: Vector3, impulse: float) -> void:
 	dir.y = 0.0
 	if dir.length() < 0.001:
 		return
-	_knockback_velocity += dir.normalized() * impulse
+	var effective_impulse: float = impulse / _mass()
+	_knockback_velocity += dir.normalized() * effective_impulse
+	_clamp_knockback_velocity()
 
 func is_frozen() -> bool:
 	return _frozen_remaining > 0.0
@@ -218,6 +223,18 @@ func _hit_stop_duration() -> float:
 		"dragon": return 0.08
 		"elder": return 0.12
 		_: return 0.05
+
+func _mass() -> float:
+	# Tier-aware mass for pull/knockback resistance.
+	match tier:
+		"welp": return 1.0
+		"dragon": return 2.0
+		"elder": return 3.0
+		_: return 1.0  # alarm, boss-summoned, etc.
+
+func _clamp_knockback_velocity() -> void:
+	if _knockback_velocity.length() > KNOCKBACK_VELOCITY_MAX:
+		_knockback_velocity = _knockback_velocity.normalized() * KNOCKBACK_VELOCITY_MAX
 
 func _drop_souls() -> void:
 	# Special "alarm" welps drop nothing (used by time-alarm spawner in T8)
