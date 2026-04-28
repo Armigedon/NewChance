@@ -27,7 +27,7 @@ class ChainState extends RefCounted:
 	var budget: int = 0
 	var hit_set: Dictionary = {}  # instance_id -> true; targets already damaged by this cast's chain
 
-static func apply(target: Node, damage: int, modifier_stack: Array, base_color: String, source_pos: Vector3, chain_state: ChainState = null) -> void:
+static func apply(target: Node, damage: int, modifier_stack: Array, base_color: String, source_pos: Vector3, source_tag: String = "", chain_state: ChainState = null) -> void:
 	if target == null or not is_instance_valid(target):
 		return
 	if not target.has_method("take_damage"):
@@ -37,7 +37,23 @@ static func apply(target: Node, damage: int, modifier_stack: Array, base_color: 
 		chain_state = ChainState.new()
 		chain_state.budget = _count(modifier_stack, "gold")
 
+	# Damage meter tag — derived from source_tag (caller-provided) or base_color
+	# fallback. Chain procs append "+chain" so we can see chain damage as a
+	# distinct slice in the log.
+	var meter_tag: String = source_tag if source_tag != "" else base_color
+	if chain_state.hit_set.size() > 0:
+		meter_tag = meter_tag + "+chain"
+
+	# Capture hp before/after to record what actually landed (after caps).
+	var hp_before: int = -1
+	if "hp" in target:
+		hp_before = int(target.get("hp"))
 	target.take_damage(damage)
+	var actual: int = damage
+	if hp_before >= 0 and "hp" in target:
+		actual = max(0, hp_before - int(target.get("hp")))
+	DamageMeter.record(target, damage, actual, meter_tag)
+
 	if target.has_method("flash_hit"):
 		target.flash_hit()
 	ScreenShake.shake(0.02, 0.04)
@@ -61,7 +77,7 @@ static func apply(target: Node, damage: int, modifier_stack: Array, base_color: 
 		var next: Node = _find_chain_target(target, chain_state.hit_set, CHAIN_RANGE)
 		if next != null:
 			chain_state.budget -= 1
-			apply(next, damage, modifier_stack, base_color, source_pos, chain_state)
+			apply(next, damage, modifier_stack, base_color, source_pos, source_tag, chain_state)
 
 static func _apply_native_layer(target: Node, color: String, damage: int, source_pos: Vector3) -> void:
 	match color:

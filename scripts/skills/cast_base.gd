@@ -11,6 +11,7 @@ var modifier_stack: Array[String] = []
 var base_color: String = ""
 var same_color_count: int = 0
 var size_multiplier: float = 1.0
+var source_tag: String = ""  # debug instrument: identifies this cast in the damage meter log
 
 var _age: float = 0.0
 
@@ -28,7 +29,7 @@ func _process(delta: float) -> void:
 
 # Hits a single enemy through the unified damage pipeline.
 func _hit_target(target: Node, source_pos: Vector3) -> void:
-	DamagePipeline.apply(target, base_damage, modifier_stack, base_color, source_pos)
+	DamagePipeline.apply(target, base_damage, modifier_stack, base_color, source_pos, source_tag)
 
 # Damages all enemies in a sphere around center; called by AoE casts.
 func _damage_aoe(center: Vector3, radius: float) -> void:

@@ -45,4 +45,4 @@ func _tick_enemies() -> void:
 	for body in area.get_overlapping_bodies():
 		if not body.is_in_group("enemy"):
 			continue
-		DamagePipeline.apply(body, tick_damage, modifier_stack, base_color, global_position)
+		DamagePipeline.apply(body, tick_damage, modifier_stack, base_color, global_position, "cloud")

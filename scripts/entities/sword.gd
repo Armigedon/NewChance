@@ -33,7 +33,7 @@ func _process(delta: float) -> void:
 			continue
 		# Sword applies base damage AND the active skill's base color's native
 		# layer (no modifier stack). DamagePipeline with empty stack handles this.
-		DamagePipeline.apply(enemy, base_damage, [], _active_color, global_position)
+		DamagePipeline.apply(enemy, base_damage, [], _active_color, global_position, "sword")
 		if enemy.has_method("apply_knockback"):
 			var dir: Vector3 = enemy.global_position - global_position
 			var force: float = _knockback_force_for(enemy)

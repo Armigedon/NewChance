@@ -61,6 +61,7 @@ func _ready() -> void:
 	add_to_group("enemy")
 	collision_layer = 2
 	collision_mask = collision_mask | 8  # also block on bone walls (layer 4)
+	DamageMeter.start_for_target(self)
 	_find_player()
 
 func _physics_process(delta: float) -> void:
@@ -217,7 +218,9 @@ func _tick_status_effects(delta: float) -> void:
 		if burn_dmg > 0:
 			_burn_residual -= float(burn_dmg)
 			if not _is_dead:
+				var hp_before: int = hp
 				take_damage(burn_dmg)  # routes through damage cap
+				DamageMeter.record(self, burn_dmg, hp_before - hp, "burn")
 		_burn_remaining = max(0.0, _burn_remaining - delta)
 		if _burn_remaining == 0.0:
 			_burn_residual = 0.0
@@ -245,6 +248,8 @@ func take_damage(amount: int) -> void:
 	_check_phase_transition()
 	if hp == 0:
 		_is_dead = true
+		DamageMeter.dump_log()
+		DamageMeter.stop()
 		died.emit()
 		RunStats.record_kill()
 		BossFlow.boss_killed()

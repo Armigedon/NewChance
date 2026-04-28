@@ -7,6 +7,7 @@ const PROJECTILE_SPEED: float = 18.0
 var _hit_enemies: Array[Node] = []
 
 func _ready() -> void:
+	source_tag = "ice_line"
 	var area: Area3D = $HitArea
 	area.body_entered.connect(_on_body_entered)
 	area.monitoring = true
