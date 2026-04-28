@@ -182,18 +182,20 @@ func _try_cast() -> void:
 	# Aim direction: toward mouse cursor on the floor plane (y=1)
 	var cam: Camera3D = get_viewport().get_camera_3d()
 	var aim_dir: Vector3 = Vector3.FORWARD
+	var hit_point: Vector3 = global_position  # fallback to player pos if no camera/ray
 	if cam != null:
 		var mouse_pos: Vector2 = get_viewport().get_mouse_position()
 		var ray_origin: Vector3 = cam.project_ray_origin(mouse_pos)
 		var ray_dir: Vector3 = cam.project_ray_normal(mouse_pos)
 		if absf(ray_dir.y) > 0.001:
 			var t: float = (1.0 - ray_origin.y) / ray_dir.y
-			var hit_point: Vector3 = ray_origin + ray_dir * t
+			hit_point = ray_origin + ray_dir * t
 			var to_target: Vector3 = hit_point - global_position
 			to_target.y = 0.0
 			if to_target.length() > 0.01:
 				aim_dir = to_target.normalized()
 	cast.direction = aim_dir
+	cast.target_pos = hit_point
 	# Spawn at welp/enemy height (~0.5m) so the cast actually intersects ground-level enemies
 	# instead of flying over them. The aim direction is XZ-only so this doesn't affect aiming.
 	cast.global_position = Vector3(global_position.x, 0.5, global_position.z) + aim_dir * 1.0

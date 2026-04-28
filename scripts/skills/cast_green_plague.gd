@@ -19,5 +19,5 @@ func _ready() -> void:
 	var tick_dmg: int = max(1, int(float(base_damage) * DamagePipeline.CLOUD_TICK_FRAC))
 	cloud.configure(lifetime_total, radius_total, tick_dmg, modifier_stack, base_color)
 	get_parent().add_child(cloud)
-	cloud.global_position = global_position
+	cloud.global_position = Vector3(target_pos.x, 0.5, target_pos.z)
 	queue_free()

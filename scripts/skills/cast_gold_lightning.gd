@@ -10,6 +10,8 @@ const VFX_LIFETIME: float = 0.2  # how long the bolt visual stays before despawn
 # Player._try_cast must call configure() BEFORE add_child(), since _ready
 # fires on add. If you reorder _try_cast, ensure configure() runs first.
 func _ready() -> void:
+	# Reposition strike to cursor target (was previously at player+aim_dir*1m)
+	global_position = Vector3(target_pos.x, 0.5, target_pos.z)
 	var radius_total: float = NATIVE_STRIKE_RADIUS * size_multiplier
 	# Resize HitArea collision
 	var shape: CollisionShape3D = $HitArea/CollisionShape3D

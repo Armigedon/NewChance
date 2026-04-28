@@ -22,12 +22,12 @@ func _ready() -> void:
 	var length_total: float = NATIVE_LENGTH * size_multiplier
 	wall.configure(hp_total, lifetime_total, length_total)
 	get_parent().add_child(wall)
-	wall.global_position = global_position
+	wall.global_position = Vector3(target_pos.x, 0.5, target_pos.z)
 	# Orient the wall: its X-axis (length) aligns with `perp`
 	if perp.length() > 0.001:
-		wall.look_at(global_position + perp, Vector3.UP)
+		wall.look_at(wall.global_position + perp, Vector3.UP)
 		wall.rotate_object_local(Vector3.UP, PI / 2.0)
 	# Fire green LINGER if a green modifier is in the stack (white-base + green
 	# modifier should spawn a cloud at the wall placement position).
-	DamagePipeline.fire_impact_spawners(modifier_stack, base_color, global_position, get_parent(), base_damage)
+	DamagePipeline.fire_impact_spawners(modifier_stack, base_color, wall.global_position, get_parent(), base_damage)
 	queue_free()

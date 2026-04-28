@@ -160,15 +160,14 @@ func apply_burn(dps: float, duration: float) -> void:
 	_burn_remaining = max(_burn_remaining, duration)
 
 func apply_chill(stacks: int) -> void:
-	_chill_stacks += stacks
-	if _chill_stacks >= FREEZE_THRESHOLD:
-		_frozen_remaining = FREEZE_DURATION
-		_chill_stacks = 0
-	else:
-		apply_slow(SLOW_PER_CHILL_STACK * float(_chill_stacks), 1.0)
+	# Boss is immune to freeze. Chill stacks still drive slow (capped just
+	# below freeze threshold so they never tip over).
+	_chill_stacks = mini(_chill_stacks + stacks, FREEZE_THRESHOLD - 1)
+	apply_slow(SLOW_PER_CHILL_STACK * float(_chill_stacks), 1.0)
 
-func apply_stun(duration: float) -> void:
-	_stun_remaining = max(_stun_remaining, duration)
+func apply_stun(_duration: float) -> void:
+	# Boss is immune to stun. Hard CC is for trash mobs.
+	pass
 
 func apply_slow(pct: float, duration: float) -> void:
 	_slow_pct = max(_slow_pct, pct)

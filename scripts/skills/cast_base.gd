@@ -5,6 +5,7 @@ const DamagePipeline = preload("res://scripts/skills/damage_pipeline.gd")
 
 @export var base_damage: int = 25
 @export var lifetime: float = 3.0
+@export var target_pos: Vector3 = Vector3.ZERO  # cursor position on floor; placed casts spawn here
 
 var modifier_stack: Array[String] = []
 var base_color: String = ""

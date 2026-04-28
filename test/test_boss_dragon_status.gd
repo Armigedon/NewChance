@@ -21,15 +21,15 @@ func test_burn_ticks_damage() -> void:
 		boss._tick_status_effects(1.0 / 60.0)
 	assert_that(initial_hp - boss.hp).is_greater_equal(15)
 
-func test_chill_at_5_stacks_freezes() -> void:
+func test_chill_does_not_freeze_boss() -> void:
+	# Boss is CC-immune; chill stacks accumulate but cap below freeze threshold
 	boss.apply_chill(5)
-	assert_that(boss.is_frozen()).is_true()
+	assert_that(boss.is_frozen()).is_false()
+	assert_that(boss._chill_stacks).is_less(5)
 
-func test_stun_then_expires() -> void:
-	boss.apply_stun(0.1)
-	assert_that(boss.is_stunned()).is_true()
-	for i in range(20):
-		boss._tick_status_effects(1.0 / 60.0)
+func test_stun_does_not_apply_to_boss() -> void:
+	# Boss is CC-immune to stun
+	boss.apply_stun(0.5)
 	assert_that(boss.is_stunned()).is_false()
 
 func test_pull_adds_knockback_velocity() -> void:
