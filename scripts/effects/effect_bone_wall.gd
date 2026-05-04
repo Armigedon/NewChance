@@ -8,8 +8,13 @@ var hp: int = NATIVE_HP
 var lifetime: float = NATIVE_LIFETIME
 var length: float = NATIVE_LENGTH
 var _age: float = 0.0
+var spawn_time_msec: int = 0
 
 signal wall_broken
+
+func _ready() -> void:
+	spawn_time_msec = Time.get_ticks_msec()
+	add_to_group("bone_wall")
 
 func configure(p_hp: int, p_lifetime: float, p_length: float) -> void:
 	hp = p_hp

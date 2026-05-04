@@ -1,6 +1,7 @@
 extends CastBase
 
 const EFFECT_WALL_SCENE: PackedScene = preload("res://scenes/effects/effect_bone_wall.tscn")
+const MAX_CONCURRENT_WALLS: int = 2
 const NATIVE_HP: int = 30
 const NATIVE_LIFETIME: float = 1.5  # base; lifetime caps at 3s via diminishing returns
 const NATIVE_LENGTH: float = 4.0
@@ -12,6 +13,11 @@ const NATIVE_LENGTH: float = 4.0
 # Player._try_cast must call configure() BEFORE add_child(), since _ready
 # fires on add. If you reorder _try_cast, ensure configure() runs first.
 func _ready() -> void:
+	# Enforce concurrent wall cap before spawning new wall
+	var existing: Array = get_tree().get_nodes_in_group("bone_wall")
+	if existing.size() >= MAX_CONCURRENT_WALLS:
+		existing.sort_custom(func(a, b): return a.spawn_time_msec < b.spawn_time_msec)
+		existing[0].queue_free()
 	# Place wall perpendicular to player→cursor line. We use the cast's `direction`
 	# (set by player._try_cast = aim_dir) as the player→cursor axis; wall axis is
 	# the cross product on Y to keep it level.
