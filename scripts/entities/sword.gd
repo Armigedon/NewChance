@@ -81,7 +81,11 @@ func set_active_element(color: String, white_modifier_count: int = 0) -> void:
 	mat.emission = tint
 	mat.emission_energy_multiplier = 2.0 if color != "" else 0.0
 
+const WHITE_DECAY: float = 0.7
+const WHITE_ASYMPTOTE_MULT: float = 2.0  # asymptote of 2.0× base damage
+
 func scaled_damage() -> int:
 	var n: int = _white_count + (1 if _active_color == "white" else 0)
-	var multiplier: float = 1.0 + 1.0 * (1.0 - pow(0.7, n))
-	return int(base_damage * multiplier)
+	# 2.0 - 0.7^n is mathematically equivalent to 1.0 + 1.0*(1.0 - 0.7^n).
+	# See spec §5 — diminishing-returns curve, asymptote 2× base.
+	return int(base_damage * (WHITE_ASYMPTOTE_MULT - pow(WHITE_DECAY, n)))

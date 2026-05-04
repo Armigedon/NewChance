@@ -56,6 +56,7 @@ func add_minor(color: String) -> int:
 	if active.locked:
 		return AddResult.NOOP
 	active.add_modifier(color)
+	active_skill_changed.emit(_active_index)
 	return AddResult.MODIFIED
 
 func add_elder(color: String) -> int:

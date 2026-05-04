@@ -27,3 +27,22 @@ func test_sword_dmg_caps_at_2x() -> void:
 	# Very high n approaches 2.0x -> floor(30) = 30
 	sword.set_active_element("red", 100)
 	assert_that(sword.scaled_damage()).is_equal(29)
+
+func test_sword_white_count_refreshes_when_modifier_added_to_active_skill() -> void:
+	# Build a player with skill system, sword, and a white-base skill.
+	# Pick up a white minor; sword's scaled_damage must reflect the new n.
+	var PlayerScene: PackedScene = preload("res://scenes/entities/player.tscn")
+	var player: CharacterBody3D = auto_free(PlayerScene.instantiate())
+	add_child(player)
+	await get_tree().process_frame
+	var ss: SkillSystem = player.get_node("SkillSystem")
+	var sword: Area3D = player.get_node("Sword")
+	# Add white-base (n_effective = 1, sword = 19)
+	ss.add_minor("white")
+	await get_tree().process_frame
+	assert_int(sword.scaled_damage()).is_equal(19)
+	# Add a white modifier to the active skill (n_effective = 2, sword = 22)
+	ss.add_minor("white")
+	await get_tree().process_frame
+	# n=2: mult = 1 + 1*(1 - 0.7^2) = 1.51, floor(15*1.51) = 22
+	assert_int(sword.scaled_damage()).is_equal(22)
