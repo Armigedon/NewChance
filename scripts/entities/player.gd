@@ -43,8 +43,12 @@ func _on_active_skill_changed(_index: int) -> void:
 	if _skill_system == null:
 		return
 	var element: String = _skill_system.active_element()
+	var white_count: int = 0
+	var skill: Skill = _skill_system.active_skill()
+	if skill != null:
+		white_count = skill.modifier_count_for("white")
 	if has_node("Sword"):
-		$Sword.set_active_element(element)
+		$Sword.set_active_element(element, white_count)
 
 func _on_run_ended(_outcome: int) -> void:
 	if _skill_system != null:
@@ -52,7 +56,7 @@ func _on_run_ended(_outcome: int) -> void:
 	# Any normal end-of-run also drops the boss-flow skill snapshot.
 	BossFlow.clear_retained_skills()
 	if has_node("Sword"):
-		$Sword.set_active_element("")
+		$Sword.set_active_element("", 0)
 
 var _pending_incoming_color: String = ""
 

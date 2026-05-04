@@ -9,6 +9,7 @@ const DamagePipeline = preload("res://scripts/skills/damage_pipeline.gd")
 const PASSIVE_ARMOR_INTERVAL: float = 5.0
 
 var _active_color: String = ""
+var _white_count: int = 0  # white modifiers on the active skill (excludes implicit base-color +1)
 var _passive_armor_timer: float = 0.0
 
 func _ready() -> void:
@@ -33,7 +34,7 @@ func _process(delta: float) -> void:
 			continue
 		# Sword applies base damage AND the active skill's base color's native
 		# layer (no modifier stack). DamagePipeline with empty stack handles this.
-		DamagePipeline.apply(enemy, base_damage, [], _active_color, global_position, "sword")
+		DamagePipeline.apply(enemy, scaled_damage(), [], _active_color, global_position, "sword")
 		if enemy.has_method("apply_knockback"):
 			var dir: Vector3 = enemy.global_position - global_position
 			var force: float = _knockback_force_for(enemy)
@@ -65,8 +66,9 @@ const COLOR_TINTS: Dictionary = {
 	"white": Color(0.95, 0.95, 0.9, 1),
 }
 
-func set_active_element(color: String) -> void:
+func set_active_element(color: String, white_modifier_count: int = 0) -> void:
 	_active_color = color
+	_white_count = white_modifier_count
 	_passive_armor_timer = 0.0  # reset on switch
 	if _blade_mesh == null:
 		return
@@ -78,3 +80,8 @@ func set_active_element(color: String) -> void:
 	mat.emission_enabled = (color != "")
 	mat.emission = tint
 	mat.emission_energy_multiplier = 2.0 if color != "" else 0.0
+
+func scaled_damage() -> int:
+	var n: int = _white_count + (1 if _active_color == "white" else 0)
+	var multiplier: float = 1.0 + 1.0 * (1.0 - pow(0.7, n))
+	return int(base_damage * multiplier)
