@@ -23,6 +23,7 @@ func _ready() -> void:
 	_telegraph.execution_ended.connect(_on_execution_end)
 	_boss = get_parent()
 
+@warning_ignore("unused_parameter")
 func tick(delta: float, current_phase: int) -> void:
 	_telegraph.windup_duration = windup_duration
 	_telegraph.execution_duration = execution_duration
