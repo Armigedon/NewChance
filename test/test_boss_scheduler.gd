@@ -10,15 +10,17 @@ func before_test() -> void:
 	add_child(boss)
 	await get_tree().process_frame
 
-func test_boss_starts_with_empty_mechanic_list() -> void:
-	# Scheduler exists but mechanics added in subsequent tasks
+func test_boss_starts_with_mechanic_list() -> void:
+	# Boss registers built-in mechanics (e.g. slam) in _ready.
 	assert_object(boss._mechanics).is_not_null()
+	assert_int(boss._mechanics.size()).is_greater_equal(1)
 
 func test_register_mechanic_adds_to_list() -> void:
+	var before_size: int = boss._mechanics.size()
 	var m: Node = BossMechanic.new()
 	m.unlock_phase = 1
 	boss._register_mechanic(m)
-	assert_int(boss._mechanics.size()).is_equal(1)
+	assert_int(boss._mechanics.size()).is_equal(before_size + 1)
 
 func test_busy_check_returns_true_when_any_mechanic_busy() -> void:
 	var m: Node = BossMechanic.new()

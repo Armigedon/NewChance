@@ -1,6 +1,7 @@
 extends CharacterBody3D
 
 const Vfx = preload("res://scripts/effects/vfx.gd")
+const MechanicSlam = preload("res://scripts/entities/boss_mechanics/mechanic_slam.gd")
 
 const MAX_HP_TEST: int = 150
 const MAX_HP_SHIP: int = 3000
@@ -66,6 +67,7 @@ func _ready() -> void:
 	collision_mask = collision_mask | 8  # also block on bone walls (layer 4)
 	DamageMeter.start_for_target(self)
 	_find_player()
+	_register_mechanic(MechanicSlam.new())
 
 func _physics_process(delta: float) -> void:
 	if _is_dead:
