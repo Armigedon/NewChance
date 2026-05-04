@@ -10,9 +10,16 @@ var unlock_phase: int = 1
 var cooldowns_by_phase: Dictionary = {1: 5.0, 2: 4.0, 3: 3.0}
 var windup_duration: float = 0.6
 var execution_duration: float = 0.0
-var is_big: bool = true  # mutual-exclusivity flag
+var is_big: bool = true  # read by boss_dragon scheduler to enforce one-big-mechanic-at-a-time
 
+# Telegraph is typed RefCounted (not BossTelegraph) because Godot 4.6 hard-fails
+# parsing `var x: BossTelegraph` when global_script_class_cache.cfg lacks the
+# entry. Opening the editor regenerates the cache; we keep RefCounted as the
+# resilient declaration. Enum access goes via TelegraphScript.State.IDLE.
 var _telegraph: RefCounted
+# Cooldown ticks down only while the telegraph is IDLE — i.e., it runs concurrently
+# with windup+execution, then continues counting once we're back to IDLE. So a 5s
+# cooldown with 0.6s windup + 0.5s execution gives ~3.9s between executions.
 var _cooldown_remaining: float = 0.0
 var _boss: Node = null
 
