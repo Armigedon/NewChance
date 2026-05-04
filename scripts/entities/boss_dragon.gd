@@ -27,6 +27,7 @@ var _summon_timer: float = 0.0
 var _contact_timer: float = 0.0
 var _phase: int = 1
 var _is_dead: bool = false
+var _mechanics: Array[Node] = []
 var _idle_taunt_timer: float = 0.0
 var _taunt_cooldown: float = 0.0
 var _knockback_velocity: Vector3 = Vector3.ZERO
@@ -72,6 +73,7 @@ func _physics_process(delta: float) -> void:
 	_tick_status_effects(delta)
 	if _is_dead:
 		return  # burn DoT may have killed us mid-tick; skip the rest of this frame
+	_tick_mechanics(delta)
 	# Damage rate cap tick — reset the per-tick counter when interval elapses
 	_dmg_tick_remaining -= delta
 	if _dmg_tick_remaining <= 0.0:
@@ -234,6 +236,35 @@ func _tick_status_effects(delta: float) -> void:
 		_slow_remaining = max(0.0, _slow_remaining - delta)
 		if _slow_remaining == 0.0:
 			_slow_pct = 0.0
+
+# --- Mechanic registry + per-frame scheduler ---
+
+func _register_mechanic(m: Node) -> void:
+	add_child(m)
+	_mechanics.append(m)
+
+func _any_mechanic_busy() -> bool:
+	for m in _mechanics:
+		if m.is_busy():
+			return true
+	return false
+
+func _tick_mechanics(delta: float) -> void:
+	var phase: int = _phase
+	for m in _mechanics:
+		m.tick(delta, phase)
+	if _any_mechanic_busy():
+		return
+	# Pick one ready mechanic to fire
+	var ready: Array[Node] = []
+	for m in _mechanics:
+		if m.is_ready(phase):
+			ready.append(m)
+	if ready.is_empty():
+		return
+	# Random selection from ready set
+	var pick: Node = ready[randi() % ready.size()]
+	pick.trigger(phase)
 
 func display_name() -> String:
 	return "the dragon"
