@@ -67,9 +67,14 @@ const COLOR_TINTS: Dictionary = {
 }
 
 func set_active_element(color: String, white_modifier_count: int = 0) -> void:
+	# Reset passive armor timer only when color actually changes. Modifier
+	# pickups on the active skill also call this (via active_skill_changed),
+	# and we don't want to delay the next passive armor stack on every pickup.
+	var color_changed: bool = (color != _active_color)
 	_active_color = color
 	_white_count = white_modifier_count
-	_passive_armor_timer = 0.0  # reset on switch
+	if color_changed:
+		_passive_armor_timer = 0.0
 	if _blade_mesh == null:
 		return
 	var mat: StandardMaterial3D = _blade_mesh.material_override as StandardMaterial3D
