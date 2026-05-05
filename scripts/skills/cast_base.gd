@@ -1,52 +1,50 @@
 extends Node3D
 class_name CastBase
 
+const DamagePipeline = preload("res://scripts/skills/damage_pipeline.gd")
+
 @export var base_damage: int = 25
 @export var lifetime: float = 3.0
+@export var target_pos: Vector3 = Vector3.ZERO  # cursor position on floor; placed casts spawn here
+var spawn_pos: Vector3 = Vector3.ZERO  # initial spawn position for projectile casts; set by caller before add_child
 
 var modifier_stack: Array[String] = []
+var base_color: String = ""
+var same_color_count: int = 0
+var size_multiplier: float = 1.0
+var source_tag: String = ""  # debug instrument: identifies this cast in the damage meter log
+
 var _age: float = 0.0
 
 func configure(skill: Skill) -> void:
 	modifier_stack = skill.modifier_stack.duplicate()
-	# Same-color minor souls deepen base damage by 30% per stack
-	var same_color_count: int = skill.modifier_count_for(skill.base_color)
-	base_damage = int(base_damage * (1.0 + 0.3 * same_color_count))
+	base_color = skill.base_color
+	same_color_count = skill.modifier_count_for(skill.base_color)
+	base_damage = int(base_damage * (1.0 + 1.5 * (1.0 - pow(0.7, same_color_count))))
+	size_multiplier = 1.0 + 0.5 * (1.0 - pow(0.7, same_color_count))
 
 func _process(delta: float) -> void:
 	_age += delta
 	if _age >= lifetime:
 		queue_free()
 
-func _on_hit_enemy(enemy: Node) -> void:
-	if not enemy.has_method("take_damage"):
-		return
-	enemy.take_damage(base_damage)
-	for color in modifier_stack:
-		_apply_modifier(enemy, color)
-	# Visual feedback per skill hit.
-	if enemy.has_method("flash_hit"):
-		enemy.flash_hit()
-	if enemy.has_method("apply_knockback"):
-		# Knockback direction = away from the player (the attacker), not from
-		# the cast's instantaneous position (which is co-located with the
-		# enemy at impact and produces an unstable direction vector).
-		var source_pos: Vector3 = global_position
-		var player: Node = get_tree().get_first_node_in_group("player")
-		if player != null:
-			source_pos = player.global_position
-		var dir: Vector3 = enemy.global_position - source_pos
-		var force: float = _knockback_force_for(enemy)
-		enemy.apply_knockback(dir, force)
-	ScreenShake.shake(0.04, 0.07)
+# Hits a single enemy through the unified damage pipeline.
+func _hit_target(target: Node, source_pos: Vector3) -> void:
+	DamagePipeline.apply(target, base_damage, modifier_stack, base_color, source_pos, source_tag)
 
-func _apply_modifier(enemy: Node, _color: String) -> void:
-	# Phase 2 stub: each modifier adds 10% damage. Phase 3+ will add real elemental effects.
-	if enemy.has_method("take_damage"):
-		enemy.take_damage(int(base_damage * 0.1))
+# Damages all enemies in a sphere around center; called by AoE casts.
+func _damage_aoe(center: Vector3, radius: float) -> void:
+	var enemies: Array = get_tree().get_nodes_in_group("enemy")
+	for e in enemies:
+		if not is_instance_valid(e):
+			continue
+		if "_is_dead" in e and e._is_dead:
+			continue
+		if e.global_position.distance_to(center) <= radius:
+			_hit_target(e, center)
 
+# Knockback helper used by some casts.
 func _knockback_force_for(enemy: Node) -> float:
-	# Boss has no "tier" property; treat as boss → 2.0
 	if not "tier" in enemy:
 		return 2.0
 	match enemy.tier:

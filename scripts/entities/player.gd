@@ -8,6 +8,7 @@ const CAST_GREEN_PLAGUE: PackedScene = preload("res://scenes/skills/cast_green_p
 const CAST_PURPLE_VOID: PackedScene = preload("res://scenes/skills/cast_purple_void.tscn")
 const CAST_GOLD_LIGHTNING: PackedScene = preload("res://scenes/skills/cast_gold_lightning.tscn")
 const CAST_WHITE_BONE: PackedScene = preload("res://scenes/skills/cast_white_bone.tscn")
+const DamagePipeline = preload("res://scripts/skills/damage_pipeline.gd")
 
 @export var move_speed: float = 5.0
 @export var dash_distance: float = 4.0
@@ -42,8 +43,12 @@ func _on_active_skill_changed(_index: int) -> void:
 	if _skill_system == null:
 		return
 	var element: String = _skill_system.active_element()
+	var white_count: int = 0
+	var skill: Skill = _skill_system.active_skill()
+	if skill != null:
+		white_count = skill.modifier_count_for("white")
 	if has_node("Sword"):
-		$Sword.set_active_element(element)
+		$Sword.set_active_element(element, white_count)
 
 func _on_run_ended(_outcome: int) -> void:
 	if _skill_system != null:
@@ -51,7 +56,7 @@ func _on_run_ended(_outcome: int) -> void:
 	# Any normal end-of-run also drops the boss-flow skill snapshot.
 	BossFlow.clear_retained_skills()
 	if has_node("Sword"):
-		$Sword.set_active_element("")
+		$Sword.set_active_element("", 0)
 
 var _pending_incoming_color: String = ""
 
@@ -79,6 +84,11 @@ var _dash_velocity: Vector3 = Vector3.ZERO
 var _dash_time_remaining: float = 0.0
 var _cast_cooldown_remaining: float = 0.0
 
+# --- Armor stacks (Phase 9, white WARD layer) ---
+const ARMOR_PER_STACK: int = 5
+var _armor_stacks: int = 0
+var _armor_remaining: float = 0.0
+
 func _process(delta: float) -> void:
 	if _cast_cooldown_remaining > 0.0:
 		_cast_cooldown_remaining = max(0.0, _cast_cooldown_remaining - delta)
@@ -88,6 +98,10 @@ func _process(delta: float) -> void:
 		_iframe_remaining = max(0.0, _iframe_remaining - delta)
 	if _dash_time_remaining > 0.0:
 		_dash_time_remaining = max(0.0, _dash_time_remaining - delta)
+	if _armor_remaining > 0.0:
+		_armor_remaining = max(0.0, _armor_remaining - delta)
+		if _armor_remaining == 0.0:
+			_armor_stacks = 0
 	if Input.is_action_just_pressed("dash"):
 		var input_dir: Vector2 = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
 		var dash_dir: Vector3 = Vector3(input_dir.x, 0, input_dir.y)
@@ -128,11 +142,23 @@ func try_dash(direction: Vector3) -> bool:
 	_iframe_remaining = iframe_duration
 	return true
 
+func apply_armor(stacks: int, duration: float) -> void:
+	_armor_stacks += stacks
+	_armor_remaining = max(_armor_remaining, duration)
+
 func is_invincible() -> bool:
 	return _iframe_remaining > 0.0
 
 func take_damage(amount: int) -> void:
 	if _is_dead or is_invincible():
+		return
+	# Armor absorbs first; stacks drain greedily until the hit is fully
+	# absorbed (each stack absorbs up to ARMOR_PER_STACK damage).
+	while _armor_stacks > 0 and amount > 0:
+		var absorb: int = min(amount, ARMOR_PER_STACK)
+		amount -= absorb
+		_armor_stacks -= 1
+	if amount <= 0:
 		return
 	hp = max(0, hp - amount)
 	hp_changed.emit(hp)
@@ -156,24 +182,27 @@ func _try_cast() -> void:
 		return
 	var cast = cast_scene.instantiate()
 	cast.configure(skill)
+	DamagePipeline.fire_cast_spawners(skill, self)
 	# Aim direction: toward mouse cursor on the floor plane (y=1)
 	var cam: Camera3D = get_viewport().get_camera_3d()
 	var aim_dir: Vector3 = Vector3.FORWARD
+	var hit_point: Vector3 = global_position  # fallback to player pos if no camera/ray
 	if cam != null:
 		var mouse_pos: Vector2 = get_viewport().get_mouse_position()
 		var ray_origin: Vector3 = cam.project_ray_origin(mouse_pos)
 		var ray_dir: Vector3 = cam.project_ray_normal(mouse_pos)
 		if absf(ray_dir.y) > 0.001:
 			var t: float = (1.0 - ray_origin.y) / ray_dir.y
-			var hit_point: Vector3 = ray_origin + ray_dir * t
+			hit_point = ray_origin + ray_dir * t
 			var to_target: Vector3 = hit_point - global_position
 			to_target.y = 0.0
 			if to_target.length() > 0.01:
 				aim_dir = to_target.normalized()
 	cast.direction = aim_dir
-	# Spawn at welp/enemy height (~0.5m) so the cast actually intersects ground-level enemies
-	# instead of flying over them. The aim direction is XZ-only so this doesn't affect aiming.
-	cast.global_position = Vector3(global_position.x, 0.5, global_position.z) + aim_dir * 1.0
+	cast.target_pos = hit_point
+	# Projectile casts read spawn_pos in _ready; placed casts use target_pos. Setting
+	# global_position here directly errors because the cast isn't in the tree yet.
+	cast.spawn_pos = Vector3(global_position.x, 0.5, global_position.z) + aim_dir * 1.0
 	get_parent().add_child(cast)
 	_cast_cooldown_remaining = cast_cooldown
 

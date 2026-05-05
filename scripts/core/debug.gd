@@ -4,4 +4,4 @@ extends Node
 # Flip to false before any release build.
 # NOTE: Change requires editor/game restart — downstream static var initializers
 # bake this value at script parse time.
-const FAST_TEST: bool = true
+const FAST_TEST: bool = false

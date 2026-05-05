@@ -1,0 +1,27 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/effects/effect_bone_wall.gd" id="1_wall"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wall"]
+size = Vector3(4.0, 1.5, 0.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_wall"]
+size = Vector3(4.0, 1.5, 0.4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wall"]
+albedo_color = Color(0.95, 0.92, 0.8, 1)
+emission_enabled = true
+emission = Color(0.7, 0.65, 0.5, 1)
+emission_energy_multiplier = 0.6
+
+[node name="EffectBoneWall" type="StaticBody3D"]
+script = ExtResource("1_wall")
+collision_layer = 8
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_wall")
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_wall")
+material_override = SubResource("StandardMaterial3D_wall")

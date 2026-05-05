@@ -9,8 +9,12 @@ func _process(delta: float) -> void:
 	if _remaining <= 0.0:
 		return
 	_remaining -= delta
-	if _camera == null or not is_instance_valid(_camera):
+	# is_instance_valid alone misses the case where the camera was removed from
+	# the tree (e.g. scene transition) but not yet freed. Setting global_position
+	# on a not-in-tree node errors at get_global_transform.
+	if _camera == null or not is_instance_valid(_camera) or not _camera.is_inside_tree():
 		_remaining = 0.0
+		_camera = null
 		return
 	if _remaining <= 0.0:
 		_camera.global_position = _resting_origin
