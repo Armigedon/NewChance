@@ -14,6 +14,7 @@ const IDLE_TAUNT_INTERVAL: float = 18.0
 const TAUNT_COOLDOWN_SECONDS: float = 5.0
 const KNOCKBACK_DECAY: float = 12.0
 const KNOCKBACK_VELOCITY_MAX: float = 6.0  # m/s — prevents off-screen yeets
+const CONE_REDIRECT_PER_PULL_DEG: float = 15.0
 
 const BOSS_WHELP_SCENE: PackedScene = preload("res://scenes/entities/boss_whelp.tscn")
 
@@ -205,6 +206,13 @@ func apply_pull_toward(target_pos: Vector3, impulse: float) -> void:
 	dir.y = 0.0
 	if dir.length() < 0.001:
 		return
+	# Forward to any breath mechanic in windup for cone redirect.
+	# Mechanics self-filter via is_in_windup(); mutual exclusivity ensures
+	# at most one breath-style mechanic is in windup at a time.
+	for m in _mechanics:
+		if not m.has_method("on_pull_during_windup"):
+			continue
+		m.on_pull_during_windup(target_pos, CONE_REDIRECT_PER_PULL_DEG)
 	var effective_impulse: float = impulse / _mass()
 	_knockback_velocity += dir.normalized() * effective_impulse
 	_clamp_knockback_velocity()
