@@ -218,9 +218,10 @@ func apply_chill(stacks: int) -> void:
 	var added: int = _chill_stacks - prior_stacks
 	apply_slow(SLOW_PER_CHILL_STACK * float(_chill_stacks), 1.0)
 	for m in _mechanics:
-		if not m.has_method("on_chill_applied"):
-			continue
-		m.on_chill_applied(added)
+		if m.has_method("on_chill_applied"):
+			m.on_chill_applied(added)
+		if m.has_method("on_chill_during_charge"):
+			m.on_chill_during_charge(added)
 
 func apply_stun(_duration: float) -> void:
 	# Boss is immune to stun. Hard CC is for trash mobs.
@@ -239,9 +240,10 @@ func apply_pull_toward(target_pos: Vector3, impulse: float) -> void:
 	# Mechanics self-filter via is_in_windup(); mutual exclusivity ensures
 	# at most one breath-style mechanic is in windup at a time.
 	for m in _mechanics:
-		if not m.has_method("on_pull_during_windup"):
-			continue
-		m.on_pull_during_windup(target_pos, CONE_REDIRECT_PER_PULL_DEG)
+		if m.has_method("on_pull_during_windup"):
+			m.on_pull_during_windup(target_pos, CONE_REDIRECT_PER_PULL_DEG)
+		if m.has_method("on_pull_during_charge"):
+			m.on_pull_during_charge(target_pos, impulse)
 	var effective_impulse: float = impulse / _mass()
 	_knockback_velocity += dir.normalized() * effective_impulse
 	_clamp_knockback_velocity()
