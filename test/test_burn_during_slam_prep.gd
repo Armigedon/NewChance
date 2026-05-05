@@ -11,6 +11,8 @@ func before_test() -> void:
 		z.queue_free()
 	for w in get_tree().get_nodes_in_group("bone_wall"):
 		w.queue_free()
+	for c in get_tree().get_nodes_in_group("damage_cloud"):
+		c.queue_free()
 	await get_tree().process_frame
 	boss = auto_free(BossScene.instantiate())
 	add_child(boss)
@@ -21,6 +23,9 @@ func before_test() -> void:
 	slam = FlyingSlamScript.new()
 	boss._register_mechanic(slam)
 	slam._cooldown_remaining = 99.0
+	# Reset damage cap state so the test's cap window starts fresh.
+	boss._dmg_taken_this_tick = 0
+	boss._dmg_tick_remaining = boss.DMG_TICK_INTERVAL
 	await get_tree().process_frame
 
 func test_burn_does_1_5x_damage_during_slam_prep() -> void:
