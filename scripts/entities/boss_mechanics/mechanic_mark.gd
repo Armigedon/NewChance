@@ -29,3 +29,16 @@ func _on_execution_start() -> void:
 	_boss.get_parent().add_child(mark_zone)
 	mark_zone.global_position = p.global_position
 	mark_zone.configure(RADIUS, DELAY, DAMAGE)
+	mark_zone.wall_absorb_check = func(pos: Vector3, r: float, dmg: int) -> bool:
+		return _wall_absorbs_at(pos, r, dmg)
+
+func _wall_absorbs_at(pos: Vector3, radius: float, dmg: int) -> bool:
+	var walls: Array = get_tree().get_nodes_in_group("bone_wall")
+	for w in walls:
+		if not is_instance_valid(w):
+			continue
+		if w.global_position.distance_to(pos) <= radius:
+			if w.has_method("take_damage"):
+				w.take_damage(dmg)
+			return true
+	return false
