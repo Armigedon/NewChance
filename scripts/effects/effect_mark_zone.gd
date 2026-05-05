@@ -41,11 +41,15 @@ func _process(delta: float) -> void:
 func _strike() -> void:
 	if wall_absorb_check.is_valid() and wall_absorb_check.call(global_position, radius, damage):
 		return
+	# Flat top-down distance check: ignore Y so gravity-induced height differences
+	# (player falling, jumping, on a slope) don't let the mark miss its target.
+	var center_flat: Vector2 = Vector2(global_position.x, global_position.z)
 	var players: Array = get_tree().get_nodes_in_group("player")
 	for p in players:
 		if not is_instance_valid(p):
 			continue
-		if p.global_position.distance_to(global_position) <= radius:
+		var p_flat: Vector2 = Vector2(p.global_position.x, p.global_position.z)
+		if p_flat.distance_to(center_flat) <= radius:
 			if p.has_method("take_damage"):
 				p.take_damage(damage)
 	ScreenShake.shake(0.06, 0.12)

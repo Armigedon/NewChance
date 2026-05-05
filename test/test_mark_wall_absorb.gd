@@ -11,6 +11,14 @@ var wall: StaticBody3D
 var mark: Node
 
 func before_test() -> void:
+	# Free any stale zones/walls from prior tests BEFORE awaiting any frame —
+	# their _process callbacks could otherwise fire during the await and damage
+	# the new test's player.
+	for z in get_tree().get_nodes_in_group("mark_zone"):
+		z.queue_free()
+	for w in get_tree().get_nodes_in_group("bone_wall"):
+		w.queue_free()
+	await get_tree().process_frame  # let queued frees actually take effect
 	boss = auto_free(BossScene.instantiate())
 	player = auto_free(PlayerScene.instantiate())
 	wall = auto_free(WallScene.instantiate())
@@ -20,8 +28,6 @@ func before_test() -> void:
 	wall.configure(30, 5.0, 4.0)  # hp, lifetime (>2.5s mark delay), length
 	await get_tree().process_frame
 	boss._player = player
-	for z in get_tree().get_nodes_in_group("mark_zone"):
-		z.queue_free()
 	for m in boss._mechanics.duplicate():
 		m.queue_free()
 	boss._mechanics.clear()
