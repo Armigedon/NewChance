@@ -34,6 +34,18 @@ func _on_execution_start() -> void:
 	_boss.get_parent().add_child(_cone)
 	_cone.configure(_boss.global_position, _aim_dir, CONE_LENGTH, CONE_ANGLE_DEG, execution_duration, TICK_DAMAGE)
 
+func _on_execution_end() -> void:
+	if _cone != null and is_instance_valid(_cone):
+		_cone.queue_free()
+	_cone = null
+
+func tick(delta: float, current_phase: int) -> void:
+	super.tick(delta, current_phase)
+	# Track boss position so the cone stays anchored to the dragon's mouth
+	# even if the boss continues moving during the 0.8s execution.
+	if is_in_execution() and _cone != null and is_instance_valid(_cone) and _boss != null:
+		_cone.global_position = _boss.global_position
+
 func current_aim() -> Vector3:
 	return _aim_dir
 

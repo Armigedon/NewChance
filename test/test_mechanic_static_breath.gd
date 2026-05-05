@@ -46,3 +46,17 @@ func test_breath_damages_player_in_cone() -> void:
 	for i in range(60):  # ~1s, longer than 0.8s lifetime
 		await get_tree().physics_frame
 	assert_int(player.hp).is_less(initial_hp)
+
+func test_cone_freed_and_reference_cleared_after_execution() -> void:
+	# Regression: _on_execution_end must free the cone and null _cone, otherwise
+	# a second trigger leaks the first cone.
+	boss.global_position = Vector3.ZERO
+	player.global_position = Vector3(0, 0, 3)
+	await get_tree().physics_frame
+	breath.trigger(1)
+	var ticked: float = 0.0
+	while ticked < 2.0:  # past windup (1.0s) + full execution (0.8s)
+		breath.tick(1.0 / 60.0, 1)
+		ticked += 1.0 / 60.0
+	await get_tree().physics_frame
+	assert_object(breath._cone).is_null()
