@@ -15,19 +15,22 @@ var _struck: bool = false
 # wall absorbed the strike (no player damage applied).
 var wall_absorb_check: Callable = Callable()
 
+func _ready() -> void:
+	add_to_group("mark_zone")
+
 func configure(p_radius: float, p_delay: float, p_damage: int) -> void:
 	radius = p_radius
 	delay = p_delay
 	damage = p_damage
-	add_to_group("mark_zone")
 	var mesh: MeshInstance3D = get_node_or_null("Mesh") as MeshInstance3D
 	if mesh != null:
+		# Base CylinderMesh has top/bottom radius 2.0; scale proportionally.
 		mesh.scale = Vector3.ONE * (radius / 2.0)
 
 func _process(delta: float) -> void:
 	_age += delta
 	var mesh: MeshInstance3D = get_node_or_null("Mesh") as MeshInstance3D
-	if mesh != null and mesh.material_override is StandardMaterial3D:
+	if mesh != null and mesh.material_override is StandardMaterial3D and delay > 0.0:
 		var mat: StandardMaterial3D = mesh.material_override
 		mat.albedo_color.a = clampf(_age / delay, 0.2, 0.9)
 	if _age >= delay and not _struck:

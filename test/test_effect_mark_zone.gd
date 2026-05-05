@@ -34,3 +34,15 @@ func test_mark_freed_after_strike() -> void:
 	for i in range(15):
 		await get_tree().physics_frame
 	assert_bool(is_instance_valid(mark)).is_false()
+
+func test_wall_absorb_check_prevents_damage() -> void:
+	# Task 15 hook: a callable returning true means the strike was absorbed by
+	# a wall and no player damage should be applied.
+	mark.configure(2.0, 0.1, 30)
+	mark.wall_absorb_check = func(_pos: Vector3, _r: float, _dmg: int) -> bool:
+		return true
+	player.global_position = Vector3.ZERO  # in zone
+	var initial_hp: int = player.hp
+	for i in range(15):
+		await get_tree().physics_frame
+	assert_int(player.hp).is_equal(initial_hp)
