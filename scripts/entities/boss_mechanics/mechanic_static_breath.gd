@@ -100,11 +100,15 @@ func on_pull_during_windup(pull_origin: Vector3, rotation_deg: float) -> void:
 	if to_pull.length() < 0.01:
 		return
 	# Rotate aim toward the pull origin's side. Cross sign tells us which way.
+	# When the pull is parallel or anti-parallel to aim (cross_z near zero) there's
+	# no meaningful "side", so no rotation is applied — pulling from directly in
+	# front of or behind the cone is a wash.
 	var aim_2d: Vector2 = Vector2(_aim_dir.x, _aim_dir.z)
 	var pull_2d: Vector2 = Vector2(to_pull.x, to_pull.z).normalized()
 	var cross_z: float = aim_2d.cross(pull_2d)
-	var sign: float = signf(cross_z) if absf(cross_z) > 0.001 else 1.0
-	set_aim(_aim_dir.rotated(Vector3.UP, deg_to_rad(rotation_deg) * sign))
+	if absf(cross_z) < 0.001:
+		return
+	set_aim(_aim_dir.rotated(Vector3.UP, deg_to_rad(rotation_deg) * signf(cross_z)))
 
 func on_chill_applied(stacks_added: int) -> void:
 	if not is_in_windup():
