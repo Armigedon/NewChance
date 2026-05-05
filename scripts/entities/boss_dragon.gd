@@ -307,7 +307,7 @@ func _tick_status_effects(delta: float) -> void:
 			_burn_residual -= float(burn_dmg)
 			if not _is_dead:
 				var hp_before: int = hp
-				take_damage(burn_dmg)  # routes through damage cap
+				take_damage_with_source(burn_dmg, "burn")  # burn pierces armor wings (Task 20)
 				DamageMeter.record(self, burn_dmg, hp_before - hp, "burn")
 		_burn_remaining = max(0.0, _burn_remaining - delta)
 		if _burn_remaining == 0.0:
@@ -376,12 +376,16 @@ func display_name() -> String:
 	return "the dragon"
 
 func take_damage(amount: int) -> void:
+	take_damage_with_source(amount, "")
+
+func take_damage_with_source(amount: int, source_tag: String) -> void:
 	if _is_dead:
 		return
-	# Apply armor wings reduction before cap (Task 19)
-	var reduction: float = _armor_wings_reduction()
-	if reduction > 0.0:
-		amount = int(float(amount) * (1.0 - reduction))
+	# Apply armor wings reduction unless the source is "burn" (red burn pierces wings).
+	if source_tag != "burn":
+		var reduction: float = _armor_wings_reduction()
+		if reduction > 0.0:
+			amount = int(float(amount) * (1.0 - reduction))
 	# Cap damage taken per DMG_TICK_INTERVAL (default: 30 dmg per 0.5s = 60 dps).
 	# Excess damage is lost — the boss is "resisting" beyond the cap.
 	var allowed: int = max(0, DMG_CAP_PER_TICK - _dmg_taken_this_tick)

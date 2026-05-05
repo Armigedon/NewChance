@@ -48,7 +48,10 @@ static func apply(target: Node, damage: int, modifier_stack: Array, base_color: 
 	var hp_before: int = -1
 	if "hp" in target:
 		hp_before = int(target.get("hp"))
-	target.take_damage(damage)
+	if target.has_method("take_damage_with_source"):
+		target.take_damage_with_source(damage, meter_tag)
+	else:
+		target.take_damage(damage)
 	var actual: int = damage
 	if hp_before >= 0 and "hp" in target:
 		actual = max(0, hp_before - int(target.get("hp")))
