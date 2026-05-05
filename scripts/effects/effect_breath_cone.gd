@@ -25,6 +25,7 @@ func configure(origin: Vector3, dir: Vector3, p_length: float, p_angle_deg: floa
 	cone_angle_deg = p_angle_deg
 	lifetime = p_lifetime
 	tick_damage = p_tick_damage
+	_update_visual_orientation()
 
 func _process(delta: float) -> void:
 	_age += delta
@@ -65,3 +66,10 @@ func _in_cone(target_pos: Vector3) -> bool:
 
 func set_direction(dir: Vector3) -> void:
 	direction = dir.normalized()
+	_update_visual_orientation()
+
+func _update_visual_orientation() -> void:
+	# Mesh is built so node's -Z axis is the cone's facing; align that with direction.
+	if direction.length_squared() < 0.0001:
+		return
+	look_at(global_position + direction, Vector3.UP)
