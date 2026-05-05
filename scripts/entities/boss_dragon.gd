@@ -2,6 +2,7 @@ extends CharacterBody3D
 
 const Vfx = preload("res://scripts/effects/vfx.gd")
 const MechanicSlam = preload("res://scripts/entities/boss_mechanics/mechanic_slam.gd")
+const MechanicStaticBreath = preload("res://scripts/entities/boss_mechanics/mechanic_static_breath.gd")
 
 const MAX_HP_TEST: int = 150
 const MAX_HP_SHIP: int = 3000
@@ -68,6 +69,7 @@ func _ready() -> void:
 	DamageMeter.start_for_target(self)
 	_find_player()
 	_register_mechanic(MechanicSlam.new())
+	_register_mechanic(MechanicStaticBreath.new())
 
 func _physics_process(delta: float) -> void:
 	if _is_dead:
