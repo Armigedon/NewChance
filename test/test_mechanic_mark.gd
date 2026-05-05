@@ -17,6 +17,10 @@ func before_test() -> void:
 	# Explicitly bind boss._player to this test's player, bypassing any stale
 	# group-query result from prior test suites that left player nodes in the tree.
 	boss._player = player
+	# Clean up any mark zones still alive from earlier tests so their delayed
+	# strikes don't fire during this one.
+	for z in get_tree().get_nodes_in_group("mark_zone"):
+		z.queue_free()
 	for m in boss._mechanics.duplicate():
 		m.queue_free()
 	boss._mechanics.clear()
@@ -26,6 +30,20 @@ func before_test() -> void:
 	await get_tree().process_frame
 	boss.global_position = Vector3.ZERO
 	player.global_position = Vector3(3, 0, 0)
+
+func test_mechanic_is_locked_below_unlock_phase() -> void:
+	mark._cooldown_remaining = 0.0
+	assert_bool(mark.is_ready(0)).is_false()
+
+func test_mechanic_unlocks_at_phase_1() -> void:
+	mark._cooldown_remaining = 0.0
+	assert_bool(mark.is_ready(1)).is_true()
+
+func test_mechanic_is_big() -> void:
+	assert_bool(mark.is_big).is_true()
+
+func test_default_cooldown_phase_1() -> void:
+	assert_float(mark.cooldowns_by_phase[1]).is_equal_approx(10.0, 0.001)
 
 func test_mark_spawns_at_player_position_at_trigger() -> void:
 	mark.trigger(1)
