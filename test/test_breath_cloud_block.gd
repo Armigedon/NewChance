@@ -11,6 +11,15 @@ var cloud: Node3D
 var breath: Node
 
 func before_test() -> void:
+	# Clean up stale group nodes BEFORE awaiting any frame so their _process
+	# callbacks don't fire and damage the new player during setup.
+	for z in get_tree().get_nodes_in_group("mark_zone"):
+		z.queue_free()
+	for w in get_tree().get_nodes_in_group("bone_wall"):
+		w.queue_free()
+	for c in get_tree().get_nodes_in_group("damage_cloud"):
+		c.queue_free()
+	await get_tree().process_frame
 	boss = auto_free(BossScene.instantiate())
 	player = auto_free(PlayerScene.instantiate())
 	cloud = auto_free(CloudScene.instantiate())

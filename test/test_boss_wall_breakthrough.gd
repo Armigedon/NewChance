@@ -32,8 +32,11 @@ func before_test() -> void:
 	boss._player = player
 
 func test_walking_boss_damages_overlapping_wall() -> void:
-	# Position boss into the wall.
+	# Position boss INTO the wall and player at the same position, so the boss
+	# stays in melee range (distance < 2.5m) and doesn't move away from the wall
+	# during the 60-frame await.
 	boss.global_position = Vector3(0, 0, 1.5)
+	player.global_position = Vector3(0, 0, 1.5)
 	var initial_wall_hp: int = wall.hp
 	for i in range(60):
 		await get_tree().physics_frame

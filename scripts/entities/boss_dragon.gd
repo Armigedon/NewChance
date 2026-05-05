@@ -55,7 +55,7 @@ const FREEZE_THRESHOLD: int = 5
 const FREEZE_DURATION: float = 1.5
 const SLOW_PER_CHILL_STACK: float = 0.15
 
-var _wall_contact_residual: float = 0.0
+var _wall_contact_residuals: Dictionary = {}  # instance_id -> fractional dmg accumulator
 
 var _burn_dps: float = 0.0
 var _burn_remaining: float = 0.0
@@ -248,21 +248,40 @@ func _clamp_knockback_velocity() -> void:
 		_knockback_velocity = _knockback_velocity.normalized() * KNOCKBACK_VELOCITY_MAX
 
 func _apply_wall_contact_damage(delta: float) -> void:
+	# NOTE(spec §4): spec describes a 30-damage one-shot break + 1s slow burst.
+	# Plan opted for a 10 dmg/sec bleed + persistent slow while in contact. The
+	# bleed approach gives finer-grained interaction with breath-blocked wall
+	# damage but is mechanically softer than the spec implies. Defer reconciliation
+	# to Task 27 / spec amendment.
+	# TODO(Task 27): wall slow currently multiplies post-knockback velocity, so it
+	# stacks multiplicatively with chill (4-stack chill + wall = 0.28× base, not
+	# 0.10× base as additive composition would imply).
 	var walls: Array = get_tree().get_nodes_in_group("bone_wall")
 	var slowed: bool = false
 	var boss_flat: Vector2 = Vector2(global_position.x, global_position.z)
+	var seen_ids: Dictionary = {}
 	for w in walls:
 		if not is_instance_valid(w):
 			continue
 		var wall_flat: Vector2 = Vector2(w.global_position.x, w.global_position.z)
 		if boss_flat.distance_to(wall_flat) <= 1.0:
-			_wall_contact_residual += float(WALL_CONTACT_DAMAGE_PER_SECOND) * delta
-			var integer_dmg: int = int(_wall_contact_residual)
+			# Per-wall residual so multi-wall contact damages each at the configured
+			# rate independently (instead of all walls sharing one fractional bucket).
+			var wid: int = w.get_instance_id()
+			seen_ids[wid] = true
+			var residual: float = _wall_contact_residuals.get(wid, 0.0)
+			residual += float(WALL_CONTACT_DAMAGE_PER_SECOND) * delta
+			var integer_dmg: int = int(residual)
 			if integer_dmg > 0:
-				_wall_contact_residual -= float(integer_dmg)
+				residual -= float(integer_dmg)
 				if w.has_method("take_damage"):
 					w.take_damage(integer_dmg)
+			_wall_contact_residuals[wid] = residual
 			slowed = true
+	# Drop residuals for walls no longer in contact so they don't accumulate forever.
+	for wid in _wall_contact_residuals.keys():
+		if not seen_ids.has(wid):
+			_wall_contact_residuals.erase(wid)
 	if slowed:
 		velocity.x *= (1.0 - WALL_CONTACT_SLOW_PCT)
 		velocity.z *= (1.0 - WALL_CONTACT_SLOW_PCT)
