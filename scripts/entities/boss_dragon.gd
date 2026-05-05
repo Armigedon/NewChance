@@ -5,6 +5,7 @@ const MechanicSlam = preload("res://scripts/entities/boss_mechanics/mechanic_sla
 const MechanicStaticBreath = preload("res://scripts/entities/boss_mechanics/mechanic_static_breath.gd")
 const MechanicMark = preload("res://scripts/entities/boss_mechanics/mechanic_mark.gd")
 const MechanicJump = preload("res://scripts/entities/boss_mechanics/mechanic_jump.gd")
+const MechanicSweepingBreath = preload("res://scripts/entities/boss_mechanics/mechanic_sweeping_breath.gd")
 
 const MAX_HP_TEST: int = 150
 const MAX_HP_SHIP: int = 3000
@@ -88,6 +89,7 @@ func _ready() -> void:
 	_register_mechanic(MechanicStaticBreath.new())
 	_register_mechanic(MechanicMark.new())
 	_register_mechanic(MechanicJump.new())
+	_register_mechanic(MechanicSweepingBreath.new())
 
 func _physics_process(delta: float) -> void:
 	if _is_dead:
