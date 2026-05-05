@@ -55,3 +55,10 @@ func test_boss_dies_at_zero_hp() -> void:
 	boss.take_damage(100)  # capped to 15 by DMG_CAP_PER_TICK, still lethal (hp=1→0)
 	assert_int(boss.hp).is_equal(0)
 	assert_bool(boss._is_dead).is_true()
+	# The boss death sequence creates a tween that mutates Engine.time_scale for
+	# a slow-mo effect. The tween runs over ~2.35s real time and continues
+	# updating Engine.time_scale every frame. If we don't kill it here, it bleeds
+	# into subsequent test files and corrupts physics-driven timing assertions.
+	for tw in get_tree().get_processed_tweens():
+		tw.kill()
+	Engine.time_scale = 1.0

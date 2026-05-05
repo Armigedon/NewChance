@@ -43,7 +43,7 @@ func test_non_burn_damage_still_reduced() -> void:
 		await get_tree().physics_frame
 	var hp_before: int = boss.hp
 	boss.take_damage_with_source(10, "fireball")
+	var dmg: int = hp_before - boss.hp
 	# Reduction ~0.6 applied: 10 * 0.4 = 4 actual (subject to cap, well under 15).
 	# Allow ±1 tolerance for decay timing slack.
-	var dmg: int = hp_before - boss.hp
 	assert_int(dmg).is_between(3, 5)
