@@ -44,6 +44,9 @@ func _should_trigger() -> bool:
 func _on_windup_start() -> void:
 	if _boss == null or not is_instance_valid(_boss):
 		return
+	# TODO(spec §4): validate target is in-arena and not overlapping a bone wall.
+	# Deferred — needs an arena-boundary API; current code can land anywhere on
+	# the XZ plane.
 	var angle: float = randf() * TAU
 	var dist: float = randf_range(MIN_HOP_DISTANCE, MAX_HOP_DISTANCE)
 	_jump_target = _boss.global_position + Vector3(cos(angle) * dist, 0, sin(angle) * dist)
@@ -51,6 +54,10 @@ func _on_windup_start() -> void:
 func _on_execution_start() -> void:
 	if _boss == null or not is_instance_valid(_boss):
 		return
+	# TODO(spec §3): cancel any in-progress big mechanic so its lingering effects
+	# (breath cone, mark zone, etc.) don't keep ticking from the boss's old
+	# position. Deferred — boss_telegraph needs a cancel() path that frees the
+	# associated effect scene without firing _on_execution_end damage.
 	_boss.global_position = _jump_target
 	var players: Array = get_tree().get_nodes_in_group("player")
 	for p in players:
