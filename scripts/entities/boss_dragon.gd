@@ -22,7 +22,7 @@ const IDLE_TAUNT_INTERVAL: float = 18.0
 const TAUNT_COOLDOWN_SECONDS: float = 5.0
 const KNOCKBACK_DECAY: float = 12.0
 const KNOCKBACK_VELOCITY_MAX: float = 6.0  # m/s — prevents off-screen yeets
-const CONE_REDIRECT_PER_PULL_DEG: float = 15.0
+const CONE_REDIRECT_PER_PULL_DEG: float = 8.0
 
 const WALL_CONTACT_DAMAGE_PER_SECOND: int = 10
 const WALL_CONTACT_SLOW_PCT: float = 0.3
@@ -281,7 +281,7 @@ func apply_pull_toward(target_pos: Vector3, impulse: float) -> void:
 	_clamp_knockback_velocity()
 
 func _mass() -> float:
-	return 5.0  # boss is heavy
+	return 8.0  # boss is heavy — bumped from 5 to dampen pull knockback
 
 func _clamp_knockback_velocity() -> void:
 	if _knockback_velocity.length() > KNOCKBACK_VELOCITY_MAX:
