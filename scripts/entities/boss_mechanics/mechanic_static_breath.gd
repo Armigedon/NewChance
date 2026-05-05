@@ -33,6 +33,19 @@ func _on_execution_start() -> void:
 	_cone = BreathConeScene.instantiate()
 	_boss.get_parent().add_child(_cone)
 	_cone.configure(_boss.global_position, _aim_dir, CONE_LENGTH, CONE_ANGLE_DEG, execution_duration, TICK_DAMAGE)
+	_cone.blocking_walls_check = func(target_pos: Vector3) -> bool:
+		return _segment_blocked_by_wall(_boss.global_position, target_pos)
+
+func _segment_blocked_by_wall(from: Vector3, to: Vector3) -> bool:
+	var walls: Array = get_tree().get_nodes_in_group("bone_wall")
+	for w in walls:
+		if not is_instance_valid(w):
+			continue
+		if w.has_method("blocks_segment") and w.blocks_segment(from, to):
+			if w.has_method("take_damage"):
+				w.take_damage(1)
+			return true
+	return false
 
 func _on_execution_end() -> void:
 	if _cone != null and is_instance_valid(_cone):

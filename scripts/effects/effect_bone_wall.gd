@@ -39,3 +39,24 @@ func take_damage(amount: int) -> void:
 	if hp == 0:
 		wall_broken.emit()
 		queue_free()
+
+func blocks_segment(from: Vector3, to: Vector3) -> bool:
+	# Treat the wall as a thin plane at its position with its X-axis as the
+	# length direction and Z-axis as the facing normal. Returns true if the
+	# segment from→to crosses the wall plane within the wall's length.
+	var wall_pos: Vector3 = global_position
+	var wall_axis: Vector3 = global_transform.basis.x.normalized()
+	var wall_normal: Vector3 = global_transform.basis.z.normalized()
+	var segment_dir: Vector3 = to - from
+	var seg_len: float = segment_dir.length()
+	if seg_len < 0.001:
+		return false
+	var d_from: float = (from - wall_pos).dot(wall_normal)
+	var d_to: float = (to - wall_pos).dot(wall_normal)
+	if (d_from >= 0 and d_to >= 0) or (d_from <= 0 and d_to <= 0):
+		return false
+	var t: float = d_from / (d_from - d_to)
+	var hit: Vector3 = from + segment_dir * t
+	var along: float = (hit - wall_pos).dot(wall_axis)
+	var half_length: float = length * 0.5
+	return absf(along) <= half_length
