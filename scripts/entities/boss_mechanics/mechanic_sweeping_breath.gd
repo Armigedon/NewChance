@@ -12,6 +12,8 @@ var _aim_dir: Vector3 = Vector3.FORWARD
 var _sweep_dir_sign: float = 1.0
 var _sweep_progress: float = 0.0
 var _aim_locked_at_windup: Vector3 = Vector3.FORWARD  # the "center" aim direction
+# Boss origin snapshot at execution start — see mechanic_static_breath.gd for why.
+var _origin_snapshot: Vector3 = Vector3.ZERO
 
 func _init() -> void:
 	unlock_phase = 2
@@ -38,24 +40,24 @@ func _on_windup_start() -> void:
 func _on_execution_start() -> void:
 	if _boss == null or not is_instance_valid(_boss):
 		return
+	_origin_snapshot = _boss.global_position
 	# Start cone aimed at -half_arc * sign (so the sweep ends at +half_arc * sign).
 	var start_aim: Vector3 = _aim_locked_at_windup.rotated(Vector3.UP, deg_to_rad(SWEEP_TOTAL_DEG * 0.5 * -_sweep_dir_sign))
 	_cone = BreathConeScene.instantiate()
 	_boss.get_parent().add_child(_cone)
 	_cone.configure(_boss.global_position, start_aim, CONE_LENGTH, CONE_ANGLE_DEG, execution_duration, TICK_DAMAGE)
 	_cone.blocking_walls_check = func(target_pos: Vector3) -> bool:
-		if not is_instance_valid(_boss):
-			return false
-		return _segment_blocked_by_wall(_boss.global_position, target_pos)
+		return _segment_blocked_by_wall(_origin_snapshot, target_pos)
 	_cone.blocking_clouds_check = func(target_pos: Vector3) -> bool:
-		if not is_instance_valid(_boss):
-			return false
-		return _segment_blocked_by_cloud(_boss.global_position, target_pos)
+		return _segment_blocked_by_cloud(_origin_snapshot, target_pos)
 
 func _on_execution_end() -> void:
 	if _cone != null and is_instance_valid(_cone):
 		_cone.queue_free()
 	_cone = null
+
+func cleanup() -> void:
+	_on_execution_end()
 
 func tick(delta: float, current_phase: int) -> void:
 	super.tick(delta, current_phase)
@@ -67,29 +69,6 @@ func tick(delta: float, current_phase: int) -> void:
 		var live_aim: Vector3 = _aim_locked_at_windup.rotated(Vector3.UP, deg_to_rad(current_offset_deg))
 		_cone.set_direction(live_aim)
 		_cone.global_position = _boss.global_position
-
-func _segment_blocked_by_wall(from: Vector3, to: Vector3) -> bool:
-	var walls: Array = get_tree().get_nodes_in_group("bone_wall")
-	for w in walls:
-		if not is_instance_valid(w):
-			continue
-		if w.has_method("blocks_segment") and w.blocks_segment(from, to):
-			if w.has_method("take_damage"):
-				w.take_damage(1)
-			return true
-	return false
-
-func _segment_blocked_by_cloud(from: Vector3, to: Vector3) -> bool:
-	var clouds: Array = get_tree().get_nodes_in_group("damage_cloud")
-	for c in clouds:
-		if not is_instance_valid(c):
-			continue
-		# Spec §4: only green clouds block breath; other colors pass through.
-		if c.get("base_color") != "green":
-			continue
-		if c.has_method("blocks_segment") and c.blocks_segment(from, to):
-			return true
-	return false
 
 func on_chill_applied(stacks_added: int) -> void:
 	if not is_in_windup():

@@ -17,8 +17,10 @@ var execution_duration: float = 0.0
 var _timer: float = 0.0
 
 func start_windup() -> void:
+	# Calling during WINDUP/EXECUTION is a benign no-op (e.g., scheduler edge case
+	# where two ticks decide to fire before the first transition lands). The
+	# scheduler self-filters via is_busy(), so this is just a defensive guard.
 	if state != State.IDLE:
-		push_warning("BossTelegraph.start_windup called while state=%s" % state)
 		return
 	state = State.WINDUP
 	_timer = windup_duration

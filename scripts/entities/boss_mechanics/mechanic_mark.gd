@@ -5,6 +5,10 @@ const RADIUS: float = 2.0
 const DELAY: float = 2.5
 const DAMAGE: int = 30
 
+# Tracked so cleanup() can free a still-pending mark when the boss dies before
+# the delayed strike would land.
+var _pending_mark: Node3D = null
+
 func _init() -> void:
 	unlock_phase = 1
 	is_big = true
@@ -31,6 +35,14 @@ func _on_execution_start() -> void:
 	mark_zone.configure(RADIUS, DELAY, DAMAGE)
 	mark_zone.wall_absorb_check = func(pos: Vector3, r: float, dmg: int) -> bool:
 		return _wall_absorbs_at(pos, r, dmg)
+	_pending_mark = mark_zone
+	mark_zone.tree_exited.connect(func(): _pending_mark = null)
+
+func cleanup() -> void:
+	# Boss died — cancel any pending mark so it doesn't strike from the grave.
+	if _pending_mark != null and is_instance_valid(_pending_mark):
+		_pending_mark.queue_free()
+	_pending_mark = null
 
 func _wall_absorbs_at(pos: Vector3, radius: float, dmg: int) -> bool:
 	var walls: Array = get_tree().get_nodes_in_group("bone_wall")

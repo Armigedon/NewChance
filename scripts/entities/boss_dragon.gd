@@ -26,6 +26,13 @@ const CONE_REDIRECT_PER_PULL_DEG: float = 8.0
 
 const WALL_CONTACT_DAMAGE_PER_SECOND: int = 10
 const WALL_CONTACT_SLOW_PCT: float = 0.3
+# Boss collision is 3x3x5 (X,Y,Z half-extent 2.5 along Z). Wall thickness is 0.4m
+# (half 0.2m). When the boss is physically pressed against a wall, the minimum
+# center-to-center XZ distance is roughly 2.7m (boss half-Z + wall half-thickness).
+# A 1.0m threshold here would mean the wall-bleed never fires in real physics —
+# only via charge teleport or test bypass. 3.0m gives a small contact band that
+# matches what move_and_slide actually produces.
+const WALL_CONTACT_DISTANCE: float = 3.0
 
 const POSITION_HISTORY_WINDOW: float = 2.0
 const POSITION_HISTORY_INTERVAL: float = 0.1
@@ -55,6 +62,7 @@ var _taunt_cooldown: float = 0.0
 var _knockback_velocity: Vector3 = Vector3.ZERO
 var _flash_resting_albedo: Color = Color(0, 0, 0, 0)
 var _flash_tween: Tween = null
+var _dialogue_banner_cached: CanvasLayer = null
 
 # --- Position-history + damage tracking (Task 16) ---
 var _position_history: Array = []  # [{time_msec: int, pos: Vector3}, ...]
@@ -268,17 +276,19 @@ func apply_pull_toward(target_pos: Vector3, impulse: float) -> void:
 	dir.y = 0.0
 	if dir.length() < 0.001:
 		return
-	# Forward to any breath mechanic in windup for cone redirect.
-	# Mechanics self-filter via is_in_windup(); mutual exclusivity ensures
-	# at most one breath-style mechanic is in windup at a time.
+	# Forward to any breath mechanic in windup for cone redirect, and to charge
+	# for trajectory deflection. Mechanics self-filter via is_in_windup() /
+	# is_in_execution(); mutual exclusivity ensures at most one breath-style
+	# mechanic is in windup at a time.
 	for m in _mechanics:
 		if m.has_method("on_pull_during_windup"):
 			m.on_pull_during_windup(target_pos, CONE_REDIRECT_PER_PULL_DEG)
 		if m.has_method("on_pull_during_charge"):
 			m.on_pull_during_charge(target_pos, impulse)
-	var effective_impulse: float = impulse / _mass()
-	_knockback_velocity += dir.normalized() * effective_impulse
-	_clamp_knockback_velocity()
+	# Boss is CC immune (Spec §3): the cone-redirect / charge-deflect side effects
+	# above are the *intended* purple interaction. The raw knockback impulse here
+	# would otherwise drag the boss around at ~3 m/s while a gravity well overlaps
+	# it — a softer CC than freeze, but still CC. Drop the impulse for self.
 
 func _mass() -> float:
 	return 8.0  # boss is heavy — bumped from 5 to dampen pull knockback
@@ -304,7 +314,7 @@ func _apply_wall_contact_damage(delta: float) -> void:
 		if not is_instance_valid(w):
 			continue
 		var wall_flat: Vector2 = Vector2(w.global_position.x, w.global_position.z)
-		if boss_flat.distance_to(wall_flat) <= 1.0:
+		if boss_flat.distance_to(wall_flat) <= WALL_CONTACT_DISTANCE:
 			# Per-wall residual so multi-wall contact damages each at the configured
 			# rate independently (instead of all walls sharing one fractional bucket).
 			var wid: int = w.get_instance_id()
@@ -361,6 +371,10 @@ func _tick_status_effects(delta: float) -> void:
 		_slow_remaining = max(0.0, _slow_remaining - delta)
 		if _slow_remaining == 0.0:
 			_slow_pct = 0.0
+			# Chill stacks decay with the slow they drove. Without this, a 4-stack
+			# chill window stays "primed" forever and the next single chill cast
+			# would push the boss to FREEZE_THRESHOLD-1 instead of starting at 1.
+			_chill_stacks = 0
 
 # --- Mechanic registry + per-frame scheduler ---
 
@@ -433,7 +447,14 @@ func take_damage(amount: int) -> void:
 func take_damage_with_source(amount: int, source_tag: String) -> void:
 	if _is_dead:
 		return
-	# Apply armor wings reduction unless the source is "burn" (red burn pierces wings).
+	# Damage mitigation order (intentional):
+	#   1. Source-tag pierce (burn ignores armor wings) — Spec §3 / Task 20.
+	#   2. Armor wings reduction (multiplicative).
+	#   3. Per-tick rate cap (DMG_CAP_PER_TICK every DMG_TICK_INTERVAL).
+	# The cap subtracts AFTER reductions, so wings still meaningfully shapes
+	# the damage profile of small/frequent hits even though large hits are
+	# dominated by the cap. Future mitigations (parry, resist) should slot in
+	# before the cap.
 	if source_tag != "burn":
 		var reduction: float = _armor_wings_reduction()
 		if reduction > 0.0:
@@ -449,6 +470,11 @@ func take_damage_with_source(amount: int, source_tag: String) -> void:
 	_check_phase_transition()
 	if hp == 0:
 		_is_dead = true
+		# Free any in-flight mechanic effects (cones, mark zones) so they don't
+		# tick damage during the death tween or strike after the boss is gone.
+		for m in _mechanics:
+			if m.has_method("cleanup"):
+				m.cleanup()
 		DamageMeter.dump_log()
 		DamageMeter.stop()
 		died.emit()
@@ -459,7 +485,7 @@ func take_damage_with_source(amount: int, source_tag: String) -> void:
 		# Speak the dying necromancer's last word in the courtyard so the moment
 		# of triumph happens here, not on the post-transition fade-in. Mark it
 		# shown so main_hall's cutscene controller doesn't replay it.
-		var banner: CanvasLayer = get_tree().root.find_child("DialogueBanner", true, false) as CanvasLayer
+		var banner: CanvasLayer = _find_dialogue_banner()
 		if banner != null and not BossFlow.has_shown_victory_line():
 			banner.show_line("victory")
 			BossFlow.mark_victory_line_shown()
@@ -472,6 +498,10 @@ func take_damage_with_source(amount: int, source_tag: String) -> void:
 		tw.tween_interval(1.8)
 		tw.tween_property(Engine, "time_scale", 1.0, 0.4)
 		tw.tween_callback(func():
+			# Defensive: belt-and-suspenders ensure time_scale is restored even if
+			# the prior tween_property didn't complete (test isolation, scene tear-
+			# down racing the tween). Otherwise main_hall could load in slow-mo.
+			Engine.time_scale = 1.0
 			GameState.transition_to(GameState.Location.MAIN_HALL)
 			queue_free()
 		)
@@ -497,7 +527,12 @@ func _record_taunt_fired() -> void:
 	_taunt_cooldown = TAUNT_COOLDOWN_SECONDS
 
 func _find_dialogue_banner() -> CanvasLayer:
-	return get_tree().root.find_child("DialogueBanner", true, false) as CanvasLayer
+	# Cache the lookup — this can be called every taunt + on death, and the deep
+	# tree scan is non-trivial. Re-scan if the cached instance was freed.
+	if _dialogue_banner_cached != null and is_instance_valid(_dialogue_banner_cached):
+		return _dialogue_banner_cached
+	_dialogue_banner_cached = get_tree().root.find_child("DialogueBanner", true, false) as CanvasLayer
+	return _dialogue_banner_cached
 
 func _show_taunt(category: String) -> void:
 	# Always record the attempt so timers reset, even if the banner is missing.
