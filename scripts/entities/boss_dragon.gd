@@ -31,10 +31,13 @@ const POSITION_HISTORY_WINDOW: float = 2.0
 const POSITION_HISTORY_INTERVAL: float = 0.1
 
 const BOSS_WHELP_SCENE: PackedScene = preload("res://scenes/entities/boss_whelp.tscn")
+const BOSS_DRAGON_MINION_SCENE: PackedScene = preload("res://scenes/entities/dragon.tscn")
+const PHASE_2_DRAGON_INTERVAL: float = 12.0
+const PHASE_3_DRAGON_INTERVAL: float = 8.0
 
-@export var phase_1_summon_interval: float = 3.0
-@export var phase_2_summon_interval: float = 2.0
-@export var phase_3_summon_interval: float = 4.0
+@export var phase_1_summon_interval: float = 4.0
+@export var phase_2_summon_interval: float = 2.5
+@export var phase_3_summon_interval: float = 1.5
 @export var contact_damage: int = 30
 @export var contact_interval: float = 1.5
 
@@ -42,6 +45,7 @@ var hp: int = MAX_HP
 var _player: Node = null
 var _last_charge_or_slam_msec: int = -10000
 var _summon_timer: float = 0.0
+var _dragon_summon_timer: float = 0.0
 var _contact_timer: float = 0.0
 var _phase: int = 1
 var _is_dead: bool = false
@@ -154,6 +158,7 @@ func _physics_process(delta: float) -> void:
 	if _summon_timer >= interval:
 		_summon_timer = 0.0
 		_summon_whelp()
+	_maybe_summon_dragon(delta)
 	# Apply knockback impulse on top of tracking velocity, then decay.
 	if _knockback_velocity.length() > 0.01:
 		velocity.x += _knockback_velocity.x
@@ -181,6 +186,28 @@ func _summon_whelp() -> void:
 	var spawn_pos: Vector3 = global_position + Vector3(cos(angle) * 5.0, 1.0, sin(angle) * 5.0)
 	get_parent().add_child(whelp)
 	whelp.global_position = spawn_pos
+
+func _dragon_interval_for_phase() -> float:
+	match _phase:
+		2: return PHASE_2_DRAGON_INTERVAL
+		3: return PHASE_3_DRAGON_INTERVAL
+		_: return 0.0  # P1: no dragon summon
+
+func _maybe_summon_dragon(delta: float) -> void:
+	var interval: float = _dragon_interval_for_phase()
+	if interval <= 0.0:
+		return
+	_dragon_summon_timer += delta
+	if _dragon_summon_timer >= interval:
+		_dragon_summon_timer = 0.0
+		_summon_dragon()
+
+func _summon_dragon() -> void:
+	var d: CharacterBody3D = BOSS_DRAGON_MINION_SCENE.instantiate()
+	var angle: float = randf() * TAU
+	var spawn_pos: Vector3 = global_position + Vector3(cos(angle) * 6.0, 1.0, sin(angle) * 6.0)
+	get_parent().add_child(d)
+	d.global_position = spawn_pos
 
 func flash_hit(duration: float = 0.18) -> void:
 	var mesh: MeshInstance3D = get_node_or_null("Mesh") as MeshInstance3D
