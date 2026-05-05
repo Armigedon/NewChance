@@ -54,3 +54,45 @@ func test_wall_takes_damage_from_blocked_breath() -> void:
 		await get_tree().physics_frame
 	if is_instance_valid(wall):
 		assert_int(wall.hp).is_less(initial_wall_hp)
+
+func test_wall_off_to_side_does_not_block() -> void:
+	wall.global_position = Vector3(10, 0, 2)  # off the boss→player segment
+	await get_tree().physics_frame
+	var initial_hp: int = player.hp
+	breath.trigger(1)
+	var ticked: float = 0.0
+	while ticked < 1.05:
+		breath.tick(1.0 / 60.0, 1)
+		ticked += 1.0 / 60.0
+	for i in range(60):
+		await get_tree().physics_frame
+	assert_int(player.hp).is_less(initial_hp)
+
+func test_wall_behind_player_does_not_block() -> void:
+	wall.global_position = Vector3(0, 0, 6)  # past player at z=4
+	await get_tree().physics_frame
+	var initial_hp: int = player.hp
+	breath.trigger(1)
+	var ticked: float = 0.0
+	while ticked < 1.05:
+		breath.tick(1.0 / 60.0, 1)
+		ticked += 1.0 / 60.0
+	for i in range(60):
+		await get_tree().physics_frame
+	assert_int(player.hp).is_less(initial_hp)
+
+func test_wall_parallel_to_segment_does_not_block() -> void:
+	# Rotate wall 90° around Y so its normal aligns with the X axis instead of Z.
+	# Segment from (0,0,0) → (0,0,4) is along Z; both endpoints have x=0, same side
+	# of the rotated wall plane.
+	wall.rotate_y(PI / 2.0)
+	await get_tree().physics_frame
+	var initial_hp: int = player.hp
+	breath.trigger(1)
+	var ticked: float = 0.0
+	while ticked < 1.05:
+		breath.tick(1.0 / 60.0, 1)
+		ticked += 1.0 / 60.0
+	for i in range(60):
+		await get_tree().physics_frame
+	assert_int(player.hp).is_less(initial_hp)

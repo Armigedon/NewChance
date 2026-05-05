@@ -34,6 +34,8 @@ func _on_execution_start() -> void:
 	_boss.get_parent().add_child(_cone)
 	_cone.configure(_boss.global_position, _aim_dir, CONE_LENGTH, CONE_ANGLE_DEG, execution_duration, TICK_DAMAGE)
 	_cone.blocking_walls_check = func(target_pos: Vector3) -> bool:
+		if not is_instance_valid(_boss):
+			return false
 		return _segment_blocked_by_wall(_boss.global_position, target_pos)
 
 func _segment_blocked_by_wall(from: Vector3, to: Vector3) -> bool:

@@ -41,22 +41,34 @@ func take_damage(amount: int) -> void:
 		queue_free()
 
 func blocks_segment(from: Vector3, to: Vector3) -> bool:
-	# Treat the wall as a thin plane at its position with its X-axis as the
-	# length direction and Z-axis as the facing normal. Returns true if the
-	# segment from→to crosses the wall plane within the wall's length.
+	# Project everything onto the XZ plane to match the breath cone's flat
+	# top-down treatment. The cone's `_in_cone` ignores Y; the wall block check
+	# does the same so that gravity-induced Y drift on the player or boss does
+	# not let breath sneak past a wall that visually obstructs the line.
+	var flat_from: Vector3 = Vector3(from.x, 0.0, from.z)
+	var flat_to: Vector3 = Vector3(to.x, 0.0, to.z)
 	var wall_pos: Vector3 = global_position
-	var wall_axis: Vector3 = global_transform.basis.x.normalized()
-	var wall_normal: Vector3 = global_transform.basis.z.normalized()
-	var segment_dir: Vector3 = to - from
-	var seg_len: float = segment_dir.length()
-	if seg_len < 0.001:
+	wall_pos.y = 0.0
+	var wall_axis: Vector3 = global_transform.basis.x
+	wall_axis.y = 0.0
+	wall_axis = wall_axis.normalized()
+	var wall_normal: Vector3 = global_transform.basis.z
+	wall_normal.y = 0.0
+	var nlen: float = wall_normal.length()
+	if nlen < 0.0001:
+		return false  # wall is edge-on; cannot determine sides
+	wall_normal /= nlen
+	var segment_dir: Vector3 = flat_to - flat_from
+	if segment_dir.length() < 0.001:
 		return false
-	var d_from: float = (from - wall_pos).dot(wall_normal)
-	var d_to: float = (to - wall_pos).dot(wall_normal)
+	var d_from: float = (flat_from - wall_pos).dot(wall_normal)
+	var d_to: float = (flat_to - wall_pos).dot(wall_normal)
 	if (d_from >= 0 and d_to >= 0) or (d_from <= 0 and d_to <= 0):
 		return false
-	var t: float = d_from / (d_from - d_to)
-	var hit: Vector3 = from + segment_dir * t
+	var denom: float = d_from - d_to
+	if absf(denom) < 0.0001:
+		return false
+	var t: float = d_from / denom
+	var hit: Vector3 = flat_from + segment_dir * t
 	var along: float = (hit - wall_pos).dot(wall_axis)
-	var half_length: float = length * 0.5
-	return absf(along) <= half_length
+	return absf(along) <= length * 0.5
