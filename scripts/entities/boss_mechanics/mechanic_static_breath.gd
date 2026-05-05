@@ -37,6 +37,19 @@ func _on_execution_start() -> void:
 		if not is_instance_valid(_boss):
 			return false
 		return _segment_blocked_by_wall(_boss.global_position, target_pos)
+	_cone.blocking_clouds_check = func(target_pos: Vector3) -> bool:
+		if not is_instance_valid(_boss):
+			return false
+		return _segment_blocked_by_cloud(_boss.global_position, target_pos)
+
+func _segment_blocked_by_cloud(from: Vector3, to: Vector3) -> bool:
+	var clouds: Array = get_tree().get_nodes_in_group("damage_cloud")
+	for c in clouds:
+		if not is_instance_valid(c):
+			continue
+		if c.has_method("blocks_segment") and c.blocks_segment(from, to):
+			return true
+	return false
 
 func _segment_blocked_by_wall(from: Vector3, to: Vector3) -> bool:
 	var walls: Array = get_tree().get_nodes_in_group("bone_wall")

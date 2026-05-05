@@ -8,6 +8,9 @@ const TICK_INTERVAL: float = 0.5  # ticks per second = 2
 @export var radius: float = 2.0
 @export var tick_damage: int = 6  # 25% of cast base damage default
 
+func _ready() -> void:
+	add_to_group("damage_cloud")
+
 var modifier_stack: Array = []
 var base_color: String = ""
 
@@ -46,3 +49,16 @@ func _tick_enemies() -> void:
 		if not body.is_in_group("enemy"):
 			continue
 		DamagePipeline.apply(body, tick_damage, modifier_stack, base_color, global_position, "cloud")
+
+func blocks_segment(from: Vector3, to: Vector3) -> bool:
+	# Project to XZ plane to match the breath cone's flat top-down treatment.
+	var flat_from: Vector3 = Vector3(from.x, 0.0, from.z)
+	var flat_to: Vector3 = Vector3(to.x, 0.0, to.z)
+	var center: Vector3 = Vector3(global_position.x, 0.0, global_position.z)
+	var seg: Vector3 = flat_to - flat_from
+	var seg_len_sq: float = seg.length_squared()
+	if seg_len_sq < 0.0001:
+		return flat_from.distance_to(center) <= radius
+	var t: float = clampf((center - flat_from).dot(seg) / seg_len_sq, 0.0, 1.0)
+	var closest: Vector3 = flat_from + seg * t
+	return closest.distance_to(center) <= radius
