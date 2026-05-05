@@ -310,7 +310,12 @@ func _tick_status_effects(delta: float) -> void:
 	# Floors per-frame would over-deal at high framerate; accumulate fractional
 	# damage and apply integer chunks instead.
 	if _burn_remaining > 0.0:
-		_burn_residual += _burn_dps * delta
+		var burn_dps_effective: float = _burn_dps
+		for m in _mechanics:
+			if m.has_method("burn_damage_multiplier") and m.has_method("is_in_prep") and m.is_in_prep():
+				burn_dps_effective *= m.burn_damage_multiplier()
+				break
+		_burn_residual += burn_dps_effective * delta
 		var burn_dmg: int = int(_burn_residual)
 		if burn_dmg > 0:
 			_burn_residual -= float(burn_dmg)
