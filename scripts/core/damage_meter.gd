@@ -44,6 +44,10 @@ func record(target: Node, requested: int, actual: int, source: String) -> void:
 	})
 
 func dump_log() -> void:
+	# Debug instrumentation — release builds shouldn't dump a multi-line log to
+	# stdout on every boss kill. Editor / debug runs still get the full report.
+	if not OS.is_debug_build():
+		return
 	print("\n=== DamageMeter Log ===")
 	if _events.is_empty():
 		print("(no events recorded)")

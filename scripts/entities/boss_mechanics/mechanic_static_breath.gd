@@ -8,6 +8,10 @@ const CHILL_EXTEND_PER_STACK: float = 0.15
 
 var _cone: Node3D = null
 var _aim_dir: Vector3 = Vector3.FORWARD
+# Boss origin snapshot at execution start — wall-block segments use this fixed
+# point so the boss walking past a wall mid-cone doesn't change which walls
+# block the line of fire. Cone visual still tracks the boss's mouth in tick().
+var _origin_snapshot: Vector3 = Vector3.ZERO
 
 func _init() -> void:
 	unlock_phase = 1
@@ -31,45 +35,26 @@ func _on_windup_start() -> void:
 func _on_execution_start() -> void:
 	if _boss == null or not is_instance_valid(_boss):
 		return
+	_origin_snapshot = _boss.global_position
 	_cone = BreathConeScene.instantiate()
 	_boss.get_parent().add_child(_cone)
 	_cone.configure(_boss.global_position, _aim_dir, CONE_LENGTH, CONE_ANGLE_DEG, execution_duration, TICK_DAMAGE)
+	# Wall + cloud block checks use the snapshotted origin (not live boss pos) so
+	# the wall-block interaction stays anchored to where the dragon's mouth was
+	# when the cone fired — otherwise walking past a wall mid-cone toggles block.
 	_cone.blocking_walls_check = func(target_pos: Vector3) -> bool:
-		if not is_instance_valid(_boss):
-			return false
-		return _segment_blocked_by_wall(_boss.global_position, target_pos)
+		return _segment_blocked_by_wall(_origin_snapshot, target_pos)
 	_cone.blocking_clouds_check = func(target_pos: Vector3) -> bool:
-		if not is_instance_valid(_boss):
-			return false
-		return _segment_blocked_by_cloud(_boss.global_position, target_pos)
-
-func _segment_blocked_by_cloud(from: Vector3, to: Vector3) -> bool:
-	var clouds: Array = get_tree().get_nodes_in_group("damage_cloud")
-	for c in clouds:
-		if not is_instance_valid(c):
-			continue
-		# Spec §4: only green clouds block breath; other colors pass through.
-		if c.get("base_color") != "green":
-			continue
-		if c.has_method("blocks_segment") and c.blocks_segment(from, to):
-			return true
-	return false
-
-func _segment_blocked_by_wall(from: Vector3, to: Vector3) -> bool:
-	var walls: Array = get_tree().get_nodes_in_group("bone_wall")
-	for w in walls:
-		if not is_instance_valid(w):
-			continue
-		if w.has_method("blocks_segment") and w.blocks_segment(from, to):
-			if w.has_method("take_damage"):
-				w.take_damage(1)
-			return true
-	return false
+		return _segment_blocked_by_cloud(_origin_snapshot, target_pos)
 
 func _on_execution_end() -> void:
 	if _cone != null and is_instance_valid(_cone):
 		_cone.queue_free()
 	_cone = null
+
+func cleanup() -> void:
+	# Boss died mid-execution — kill the cone so it stops ticking damage.
+	_on_execution_end()
 
 func tick(delta: float, current_phase: int) -> void:
 	super.tick(delta, current_phase)

@@ -11,6 +11,17 @@ const MIN_HOP_DISTANCE: float = 4.0
 const MAX_HOP_DISTANCE: float = 8.0
 const LAND_DAMAGE: int = 15
 const LAND_RADIUS: float = 1.0
+# Arena bounds — matches the courtyard scene's floor cylinder (radius 18, centered
+# at origin). Boss must land at least ARENA_MARGIN inside the edge so it isn't
+# clipping the wall meshes.
+const ARENA_CENTER: Vector3 = Vector3.ZERO
+const ARENA_RADIUS: float = 18.0
+const ARENA_MARGIN: float = 1.5
+# Stay clear of bone walls so we don't teleport on top of one and clip its collider.
+const WALL_AVOIDANCE_DISTANCE: float = 1.5
+# Cap rejection sampling so a wall-cluttered arena can't infinite-loop.
+const SAMPLE_RETRIES: int = 8
+const RETRY_COOLDOWN_S: float = 0.5
 
 var _last_jump_time_msec: int = -10000
 var _jump_target: Vector3 = Vector3.ZERO
@@ -28,7 +39,7 @@ func tick(delta: float, current_phase: int) -> void:
 		if _should_trigger():
 			trigger(current_phase)
 		else:
-			_cooldown_remaining = 0.5
+			_cooldown_remaining = RETRY_COOLDOWN_S
 
 func _should_trigger() -> bool:
 	if _boss == null or not is_instance_valid(_boss):
@@ -44,12 +55,41 @@ func _should_trigger() -> bool:
 func _on_windup_start() -> void:
 	if _boss == null or not is_instance_valid(_boss):
 		return
-	# TODO(spec §4): validate target is in-arena and not overlapping a bone wall.
-	# Deferred — needs an arena-boundary API; current code can land anywhere on
-	# the XZ plane.
-	var angle: float = randf() * TAU
-	var dist: float = randf_range(MIN_HOP_DISTANCE, MAX_HOP_DISTANCE)
-	_jump_target = _boss.global_position + Vector3(cos(angle) * dist, 0, sin(angle) * dist)
+	_jump_target = _pick_jump_target()
+
+func _pick_jump_target() -> Vector3:
+	# Rejection-sample a target within the arena and clear of bone walls.
+	# Falls through to the last candidate (clamped to arena) if all retries fail
+	# rather than infinite-looping or returning an out-of-bounds position.
+	var origin: Vector3 = _boss.global_position
+	var candidate: Vector3 = origin
+	for _i in range(SAMPLE_RETRIES):
+		var angle: float = randf() * TAU
+		var dist: float = randf_range(MIN_HOP_DISTANCE, MAX_HOP_DISTANCE)
+		candidate = origin + Vector3(cos(angle) * dist, 0, sin(angle) * dist)
+		candidate = _clamp_to_arena(candidate)
+		if not _overlaps_bone_wall(candidate):
+			return candidate
+	return _clamp_to_arena(candidate)
+
+func _clamp_to_arena(pos: Vector3) -> Vector3:
+	var max_dist: float = ARENA_RADIUS - ARENA_MARGIN
+	var offset: Vector3 = pos - ARENA_CENTER
+	offset.y = 0.0
+	if offset.length() <= max_dist:
+		return Vector3(pos.x, ARENA_CENTER.y, pos.z)
+	var clamped: Vector3 = ARENA_CENTER + offset.normalized() * max_dist
+	return Vector3(clamped.x, ARENA_CENTER.y, clamped.z)
+
+func _overlaps_bone_wall(pos: Vector3) -> bool:
+	var pos_flat: Vector2 = Vector2(pos.x, pos.z)
+	for w in get_tree().get_nodes_in_group("bone_wall"):
+		if not is_instance_valid(w):
+			continue
+		var w_flat: Vector2 = Vector2(w.global_position.x, w.global_position.z)
+		if pos_flat.distance_to(w_flat) <= WALL_AVOIDANCE_DISTANCE:
+			return true
+	return false
 
 func _on_execution_start() -> void:
 	if _boss == null or not is_instance_valid(_boss):

@@ -16,6 +16,9 @@ var is_big: bool = true  # read by boss_dragon scheduler to enforce one-big-mech
 # parsing `var x: BossTelegraph` when global_script_class_cache.cfg lacks the
 # entry. Opening the editor regenerates the cache; we keep RefCounted as the
 # resilient declaration. Enum access goes via TelegraphScript.State.IDLE.
+# TODO: tighten to `BossTelegraph` once the class cache is reliably regenerated
+# in CI / on fresh checkouts. Subclasses currently reach into `_telegraph._timer`
+# directly (e.g. tests) and lose IDE goto-definition because of this scar.
 var _telegraph: RefCounted
 # Cooldown ticks down only while the telegraph is IDLE — i.e., it runs concurrently
 # with windup+execution, then continues counting once we're back to IDLE. So a 5s
@@ -67,3 +70,36 @@ func is_in_execution() -> bool:
 func _on_windup_start() -> void: pass
 func _on_execution_start() -> void: pass
 func _on_execution_end() -> void: pass
+
+# Called by boss_dragon on death so mechanics with persistent effect scenes
+# (cones, mark zones) can free them — _on_execution_end won't fire if the boss
+# dies mid-execution, so without this hook the cone keeps ticking damage from
+# beyond the grave and the mark still strikes after the death tween.
+func cleanup() -> void: pass
+
+# Shared breath helpers — both static and sweeping breath check whether the
+# segment from boss-mouth to a candidate target is blocked by a bone wall or
+# green damage cloud. Lifted to the base class so a future third breath
+# mechanic can't fall out of sync.
+func _segment_blocked_by_wall(from: Vector3, to: Vector3) -> bool:
+	var walls: Array = get_tree().get_nodes_in_group("bone_wall")
+	for w in walls:
+		if not is_instance_valid(w):
+			continue
+		if w.has_method("blocks_segment") and w.blocks_segment(from, to):
+			if w.has_method("take_damage"):
+				w.take_damage(1)
+			return true
+	return false
+
+func _segment_blocked_by_cloud(from: Vector3, to: Vector3) -> bool:
+	var clouds: Array = get_tree().get_nodes_in_group("damage_cloud")
+	for c in clouds:
+		if not is_instance_valid(c):
+			continue
+		# Spec §4: only green clouds block breath; other colors pass through.
+		if c.get("base_color") != "green":
+			continue
+		if c.has_method("blocks_segment") and c.blocks_segment(from, to):
+			return true
+	return false

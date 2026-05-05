@@ -32,7 +32,12 @@ func test_stun_does_not_apply_to_boss() -> void:
 	boss.apply_stun(0.5)
 	assert_that(boss.is_stunned()).is_false()
 
-func test_pull_adds_knockback_velocity() -> void:
+func test_pull_does_not_drag_boss() -> void:
+	# Boss is CC-immune (Spec §3): purple pull's intended interaction is the
+	# cone-redirect / charge-deflect side effects; the raw movement impulse
+	# is suppressed for the boss so a gravity well placed under it can't
+	# slow-drag the boss out of position.
 	boss.global_position = Vector3(5, 0, 0)
+	var prior_kb: Vector3 = boss._knockback_velocity
 	boss.apply_pull_toward(Vector3.ZERO, 2.0)
-	assert_that(boss._knockback_velocity.x).is_less(0.0)
+	assert_that(boss._knockback_velocity).is_equal(prior_kb)
