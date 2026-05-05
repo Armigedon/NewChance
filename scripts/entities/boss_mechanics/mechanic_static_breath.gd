@@ -47,6 +47,9 @@ func _segment_blocked_by_cloud(from: Vector3, to: Vector3) -> bool:
 	for c in clouds:
 		if not is_instance_valid(c):
 			continue
+		# Spec §4: only green clouds block breath; other colors pass through.
+		if c.get("base_color") != "green":
+			continue
 		if c.has_method("blocks_segment") and c.blocks_segment(from, to):
 			return true
 	return false

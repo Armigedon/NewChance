@@ -53,3 +53,36 @@ func test_cloud_off_to_side_does_not_block() -> void:
 	for i in range(60):
 		await get_tree().physics_frame
 	assert_int(player.hp).is_less(initial_hp)
+
+func test_non_green_cloud_does_not_block() -> void:
+	# Spec §4: only green clouds block breath. A red cloud in the same path
+	# should let breath through.
+	cloud.configure(10.0, 2.0, 6, [], "red")
+	await get_tree().physics_frame
+	var initial_hp: int = player.hp
+	breath.trigger(1)
+	var ticked: float = 0.0
+	while ticked < 1.05:
+		breath.tick(1.0 / 60.0, 1)
+		ticked += 1.0 / 60.0
+	for i in range(60):
+		await get_tree().physics_frame
+	assert_int(player.hp).is_less(initial_hp)
+
+func test_multiple_clouds_one_blocking() -> void:
+	# Off-path cloud + on-path cloud: blocking still detected via second cloud.
+	cloud.global_position = Vector3(10, 0, 2)  # cloud (off-path)
+	var blocking_cloud: Node3D = auto_free(CloudScene.instantiate())
+	add_child(blocking_cloud)
+	blocking_cloud.global_position = Vector3(0, 0, 2)
+	blocking_cloud.configure(10.0, 2.0, 6, [], "green")
+	await get_tree().physics_frame
+	var initial_hp: int = player.hp
+	breath.trigger(1)
+	var ticked: float = 0.0
+	while ticked < 1.05:
+		breath.tick(1.0 / 60.0, 1)
+		ticked += 1.0 / 60.0
+	for i in range(60):
+		await get_tree().physics_frame
+	assert_int(player.hp).is_equal(initial_hp)
