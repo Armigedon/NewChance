@@ -21,7 +21,7 @@ func test_cone_configures_with_origin_direction_length_angle() -> void:
 
 func test_cone_ticks_damage_to_player_in_cone() -> void:
 	cone.configure(Vector3.ZERO, Vector3.FORWARD, 5.0, 60.0, 0.8, 10)
-	player.global_position = Vector3(0, 0, 2)  # forward 2m
+	player.global_position = Vector3(0, 0, -2)  # Vector3.FORWARD is (0,0,-1), so 2m forward is (0,0,-2)
 	await get_tree().process_frame
 	var initial_hp: int = player.hp
 	# Advance for 0.5s in physics frames; expect 2-3 ticks of 10

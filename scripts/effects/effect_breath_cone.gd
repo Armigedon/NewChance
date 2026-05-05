@@ -56,10 +56,7 @@ func _in_cone(target_pos: Vector3) -> bool:
 	var dist: float = to_target.length()
 	if dist > length or dist < 0.01:
 		return false
-	# Negate: direction stores a Godot 4 bearing (e.g. FORWARD = (0,0,-1)); the
-	# actual arena-facing vector is the opposite sign (dragon at origin facing +Z
-	# when dir=FORWARD). Callers pass the node's -basis.z facing convention.
-	var dir_flat: Vector3 = -direction
+	var dir_flat: Vector3 = direction
 	dir_flat.y = 0.0
 	dir_flat = dir_flat.normalized()
 	var to_target_norm: Vector3 = to_target.normalized()
