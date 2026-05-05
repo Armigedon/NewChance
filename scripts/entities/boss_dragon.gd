@@ -4,6 +4,7 @@ const Vfx = preload("res://scripts/effects/vfx.gd")
 const MechanicSlam = preload("res://scripts/entities/boss_mechanics/mechanic_slam.gd")
 const MechanicStaticBreath = preload("res://scripts/entities/boss_mechanics/mechanic_static_breath.gd")
 const MechanicMark = preload("res://scripts/entities/boss_mechanics/mechanic_mark.gd")
+const MechanicJump = preload("res://scripts/entities/boss_mechanics/mechanic_jump.gd")
 
 const MAX_HP_TEST: int = 150
 const MAX_HP_SHIP: int = 3000
@@ -16,6 +17,9 @@ const TAUNT_COOLDOWN_SECONDS: float = 5.0
 const KNOCKBACK_DECAY: float = 12.0
 const KNOCKBACK_VELOCITY_MAX: float = 6.0  # m/s — prevents off-screen yeets
 const CONE_REDIRECT_PER_PULL_DEG: float = 15.0
+
+const POSITION_HISTORY_WINDOW: float = 2.0
+const POSITION_HISTORY_INTERVAL: float = 0.1
 
 const BOSS_WHELP_SCENE: PackedScene = preload("res://scenes/entities/boss_whelp.tscn")
 
@@ -37,6 +41,11 @@ var _taunt_cooldown: float = 0.0
 var _knockback_velocity: Vector3 = Vector3.ZERO
 var _flash_resting_albedo: Color = Color(0, 0, 0, 0)
 var _flash_tween: Tween = null
+
+# --- Position-history + damage tracking (Task 16) ---
+var _position_history: Array = []  # [{time_msec: int, pos: Vector3}, ...]
+var _damage_in_window_msec: int = 0  # last time damage was taken (msec)
+var _position_history_timer: float = 0.0
 
 # --- Status effect state (Phase 9) ---
 const FREEZE_THRESHOLD: int = 5
@@ -73,6 +82,7 @@ func _ready() -> void:
 	_register_mechanic(MechanicSlam.new())
 	_register_mechanic(MechanicStaticBreath.new())
 	_register_mechanic(MechanicMark.new())
+	_register_mechanic(MechanicJump.new())
 
 func _physics_process(delta: float) -> void:
 	if _is_dead:
@@ -81,6 +91,11 @@ func _physics_process(delta: float) -> void:
 	if _is_dead:
 		return  # burn DoT may have killed us mid-tick; skip the rest of this frame
 	_tick_mechanics(delta)
+	# Position history sampling for jump-trigger detection (Task 16)
+	_position_history_timer += delta
+	if _position_history_timer >= POSITION_HISTORY_INTERVAL:
+		_position_history_timer = 0.0
+		_record_position_history(global_position)
 	# Damage rate cap tick — reset the per-tick counter when interval elapses
 	_dmg_tick_remaining -= delta
 	if _dmg_tick_remaining <= 0.0:
@@ -259,13 +274,34 @@ func _tick_status_effects(delta: float) -> void:
 
 # --- Mechanic registry + per-frame scheduler ---
 
+func _record_position_history(pos: Vector3) -> void:
+	var now_msec: int = Time.get_ticks_msec()
+	_position_history.append({"time_msec": now_msec, "pos": pos})
+	var cutoff_msec: int = now_msec - int(POSITION_HISTORY_WINDOW * 1000.0)
+	while not _position_history.is_empty() and _position_history[0].time_msec < cutoff_msec:
+		_position_history.pop_front()
+
+func _record_damage_taken(_amt: int) -> void:
+	_damage_in_window_msec = Time.get_ticks_msec()
+
+func position_change_in_window() -> float:
+	if _position_history.size() < 2:
+		return 0.0
+	var first: Vector3 = _position_history[0].pos
+	var last: Vector3 = _position_history[-1].pos
+	return first.distance_to(last)
+
+func damage_taken_within(window_seconds: float) -> bool:
+	var cutoff_msec: int = Time.get_ticks_msec() - int(window_seconds * 1000.0)
+	return _damage_in_window_msec >= cutoff_msec
+
 func _register_mechanic(m: Node) -> void:
 	add_child(m)
 	_mechanics.append(m)
 
 func _any_mechanic_busy() -> bool:
 	for m in _mechanics:
-		if m.is_busy():
+		if m.is_busy() and m.is_big:
 			return true
 	return false
 
@@ -275,10 +311,11 @@ func _tick_mechanics(delta: float) -> void:
 		m.tick(delta, phase)
 	if _any_mechanic_busy():
 		return
-	# Pick one ready mechanic to fire
+	# Pick one ready big mechanic to fire — non-big mechanics (e.g. triggered jump)
+	# self-trigger via their own tick() and are intentionally excluded here.
 	var ready: Array[Node] = []
 	for m in _mechanics:
-		if m.is_ready(phase):
+		if m.is_big and m.is_ready(phase):
 			ready.append(m)
 	if ready.is_empty():
 		return
@@ -298,6 +335,8 @@ func take_damage(amount: int) -> void:
 	var actual: int = min(amount, allowed)
 	_dmg_taken_this_tick += actual
 	hp = max(0, hp - actual)
+	if actual > 0:
+		_record_damage_taken(actual)
 	_check_phase_transition()
 	if hp == 0:
 		_is_dead = true
