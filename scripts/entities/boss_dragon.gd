@@ -6,6 +6,7 @@ const MechanicStaticBreath = preload("res://scripts/entities/boss_mechanics/mech
 const MechanicMark = preload("res://scripts/entities/boss_mechanics/mechanic_mark.gd")
 const MechanicJump = preload("res://scripts/entities/boss_mechanics/mechanic_jump.gd")
 const MechanicSweepingBreath = preload("res://scripts/entities/boss_mechanics/mechanic_sweeping_breath.gd")
+const MechanicArmorWings = preload("res://scripts/entities/boss_mechanics/mechanic_armor_wings.gd")
 
 const MAX_HP_TEST: int = 150
 const MAX_HP_SHIP: int = 3000
@@ -90,6 +91,7 @@ func _ready() -> void:
 	_register_mechanic(MechanicMark.new())
 	_register_mechanic(MechanicJump.new())
 	_register_mechanic(MechanicSweepingBreath.new())
+	_register_mechanic(MechanicArmorWings.new())
 
 func _physics_process(delta: float) -> void:
 	if _is_dead:
@@ -376,6 +378,10 @@ func display_name() -> String:
 func take_damage(amount: int) -> void:
 	if _is_dead:
 		return
+	# Apply armor wings reduction before cap (Task 19)
+	var reduction: float = _armor_wings_reduction()
+	if reduction > 0.0:
+		amount = int(float(amount) * (1.0 - reduction))
 	# Cap damage taken per DMG_TICK_INTERVAL (default: 30 dmg per 0.5s = 60 dps).
 	# Excess damage is lost — the boss is "resisting" beyond the cap.
 	var allowed: int = max(0, DMG_CAP_PER_TICK - _dmg_taken_this_tick)
@@ -413,6 +419,14 @@ func take_damage(amount: int) -> void:
 			GameState.transition_to(GameState.Location.MAIN_HALL)
 			queue_free()
 		)
+
+func _armor_wings_reduction() -> float:
+	for m in _mechanics:
+		if m.has_method("current_reduction_pct"):
+			var r: float = m.current_reduction_pct()
+			if r > 0.0:
+				return r
+	return 0.0
 
 func _advance_taunt_timers(delta: float) -> void:
 	_idle_taunt_timer += delta
