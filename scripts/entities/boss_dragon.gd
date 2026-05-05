@@ -8,6 +8,9 @@ const MechanicJump = preload("res://scripts/entities/boss_mechanics/mechanic_jum
 const MechanicSweepingBreath = preload("res://scripts/entities/boss_mechanics/mechanic_sweeping_breath.gd")
 const MechanicArmorWings = preload("res://scripts/entities/boss_mechanics/mechanic_armor_wings.gd")
 const MechanicCharge = preload("res://scripts/entities/boss_mechanics/mechanic_charge.gd")
+const MechanicFlyingSlam = preload("res://scripts/entities/boss_mechanics/mechanic_flying_slam.gd")
+
+const CHARGE_SLAM_SHARED_FLOOR_S: float = 6.0
 
 const MAX_HP_TEST: int = 150
 const MAX_HP_SHIP: int = 3000
@@ -37,6 +40,7 @@ const BOSS_WHELP_SCENE: PackedScene = preload("res://scenes/entities/boss_whelp.
 
 var hp: int = MAX_HP
 var _player: Node = null
+var _last_charge_or_slam_msec: int = -10000
 var _summon_timer: float = 0.0
 var _contact_timer: float = 0.0
 var _phase: int = 1
@@ -94,6 +98,7 @@ func _ready() -> void:
 	_register_mechanic(MechanicSweepingBreath.new())
 	_register_mechanic(MechanicArmorWings.new())
 	_register_mechanic(MechanicCharge.new())
+	_register_mechanic(MechanicFlyingSlam.new())
 
 func _physics_process(delta: float) -> void:
 	if _is_dead:
@@ -368,13 +373,24 @@ func _tick_mechanics(delta: float) -> void:
 	# self-trigger via their own tick() and are intentionally excluded here.
 	var ready: Array[Node] = []
 	for m in _mechanics:
-		if m.is_big and m.is_ready(phase):
-			ready.append(m)
+		if not (m.is_big and m.is_ready(phase)):
+			continue
+		# Charge/flying-slam mutual lockout for 6s after either fires
+		var s: Script = m.get_script()
+		if (s == MechanicCharge or s == MechanicFlyingSlam) and is_charge_or_slam_locked():
+			continue
+		ready.append(m)
 	if ready.is_empty():
 		return
 	# Random selection from ready set
 	var pick: Node = ready[randi() % ready.size()]
 	pick.trigger(phase)
+
+func _bump_shared_cooldown() -> void:
+	_last_charge_or_slam_msec = Time.get_ticks_msec()
+
+func is_charge_or_slam_locked() -> bool:
+	return Time.get_ticks_msec() - _last_charge_or_slam_msec < int(CHARGE_SLAM_SHARED_FLOOR_S * 1000.0)
 
 func display_name() -> String:
 	return "the dragon"

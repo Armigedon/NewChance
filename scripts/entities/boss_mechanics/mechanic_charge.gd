@@ -36,6 +36,8 @@ func _on_windup_start() -> void:
 		_charge_dir = to_p.normalized()
 	_velocity_modifier = 1.0
 	_hit_player_this_charge = false
+	if _boss != null and _boss.has_method("_bump_shared_cooldown"):
+		_boss._bump_shared_cooldown()
 
 func _on_execution_start() -> void:
 	if _boss == null or not is_instance_valid(_boss):
