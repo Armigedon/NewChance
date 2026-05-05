@@ -4,6 +4,7 @@ const BreathConeScene: PackedScene = preload("res://scenes/effects/effect_breath
 const CONE_LENGTH: float = 5.0
 const CONE_ANGLE_DEG: float = 60.0
 const TICK_DAMAGE: int = 10
+const CHILL_EXTEND_PER_STACK: float = 0.15
 
 var _cone: Node3D = null
 var _aim_dir: Vector3 = Vector3.FORWARD
@@ -88,3 +89,10 @@ func set_aim(new_dir: Vector3) -> void:
 	_aim_dir = new_dir.normalized()
 	if _cone != null and is_instance_valid(_cone):
 		_cone.set_direction(_aim_dir)
+
+func on_chill_applied(stacks_added: int) -> void:
+	if not is_in_windup():
+		return
+	if stacks_added <= 0:
+		return
+	extend_windup(CHILL_EXTEND_PER_STACK * float(stacks_added))

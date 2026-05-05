@@ -183,8 +183,14 @@ func apply_burn(dps: float, duration: float) -> void:
 func apply_chill(stacks: int) -> void:
 	# Boss is immune to freeze. Chill stacks still drive slow (capped just
 	# below freeze threshold so they never tip over).
+	var prior_stacks: int = _chill_stacks
 	_chill_stacks = mini(_chill_stacks + stacks, FREEZE_THRESHOLD - 1)
+	var added: int = _chill_stacks - prior_stacks
 	apply_slow(SLOW_PER_CHILL_STACK * float(_chill_stacks), 1.0)
+	for m in _mechanics:
+		if not m.has_method("on_chill_applied"):
+			continue
+		m.on_chill_applied(added)
 
 func apply_stun(_duration: float) -> void:
 	# Boss is immune to stun. Hard CC is for trash mobs.
