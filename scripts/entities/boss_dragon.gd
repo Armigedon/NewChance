@@ -18,6 +18,9 @@ const KNOCKBACK_DECAY: float = 12.0
 const KNOCKBACK_VELOCITY_MAX: float = 6.0  # m/s — prevents off-screen yeets
 const CONE_REDIRECT_PER_PULL_DEG: float = 15.0
 
+const WALL_CONTACT_DAMAGE_PER_SECOND: int = 10
+const WALL_CONTACT_SLOW_PCT: float = 0.3
+
 const POSITION_HISTORY_WINDOW: float = 2.0
 const POSITION_HISTORY_INTERVAL: float = 0.1
 
@@ -51,6 +54,8 @@ var _position_history_timer: float = 0.0
 const FREEZE_THRESHOLD: int = 5
 const FREEZE_DURATION: float = 1.5
 const SLOW_PER_CHILL_STACK: float = 0.15
+
+var _wall_contact_residual: float = 0.0
 
 var _burn_dps: float = 0.0
 var _burn_remaining: float = 0.0
@@ -144,6 +149,7 @@ func _physics_process(delta: float) -> void:
 		velocity.z += _knockback_velocity.z
 		_knockback_velocity = _knockback_velocity.move_toward(Vector3.ZERO, KNOCKBACK_DECAY * delta)
 	velocity.y -= 9.8 * delta if not is_on_floor() else 0.0
+	_apply_wall_contact_damage(delta)
 	move_and_slide()
 
 func _find_player() -> void:
@@ -240,6 +246,26 @@ func _mass() -> float:
 func _clamp_knockback_velocity() -> void:
 	if _knockback_velocity.length() > KNOCKBACK_VELOCITY_MAX:
 		_knockback_velocity = _knockback_velocity.normalized() * KNOCKBACK_VELOCITY_MAX
+
+func _apply_wall_contact_damage(delta: float) -> void:
+	var walls: Array = get_tree().get_nodes_in_group("bone_wall")
+	var slowed: bool = false
+	var boss_flat: Vector2 = Vector2(global_position.x, global_position.z)
+	for w in walls:
+		if not is_instance_valid(w):
+			continue
+		var wall_flat: Vector2 = Vector2(w.global_position.x, w.global_position.z)
+		if boss_flat.distance_to(wall_flat) <= 1.0:
+			_wall_contact_residual += float(WALL_CONTACT_DAMAGE_PER_SECOND) * delta
+			var integer_dmg: int = int(_wall_contact_residual)
+			if integer_dmg > 0:
+				_wall_contact_residual -= float(integer_dmg)
+				if w.has_method("take_damage"):
+					w.take_damage(integer_dmg)
+			slowed = true
+	if slowed:
+		velocity.x *= (1.0 - WALL_CONTACT_SLOW_PCT)
+		velocity.z *= (1.0 - WALL_CONTACT_SLOW_PCT)
 
 func is_frozen() -> bool:
 	return _frozen_remaining > 0.0
