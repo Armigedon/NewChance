@@ -113,3 +113,24 @@ func test_skill_unlocked_signal() -> void:
 	var monitor := monitor_signals(ss)
 	ss.add_minor("red")
 	await assert_signal(ss).is_emitted("skill_unlocked", [0])
+
+func test_skill_starts_with_no_elder_modifiers() -> void:
+	var s := Skill.new("red")
+	assert_int(s.elder_modifier_count()).is_equal(0)
+
+func test_apply_elder_modifier_adds_to_stack() -> void:
+	var s := Skill.new("red")
+	s.apply_elder_modifier("ignite_all_hits")
+	assert_int(s.elder_modifier_count()).is_equal(1)
+	assert_int(s.elder_modifier_stack_count("ignite_all_hits")).is_equal(1)
+
+func test_repeat_elder_modifier_compounds() -> void:
+	var s := Skill.new("red")
+	s.apply_elder_modifier("ignite_all_hits")
+	s.apply_elder_modifier("ignite_all_hits")
+	# Two distinct entries OR one entry with stack=2 — we use stack count.
+	assert_int(s.elder_modifier_stack_count("ignite_all_hits")).is_equal(2)
+	# Distinct modifier ids count as 1 each (with their own stack count).
+	s.apply_elder_modifier("cinder_trail")
+	assert_int(s.elder_modifier_count()).is_equal(2)
+	assert_int(s.elder_modifier_stack_count("cinder_trail")).is_equal(1)
