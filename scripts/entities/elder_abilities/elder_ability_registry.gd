@@ -11,10 +11,12 @@ func _ready() -> void:
 	_register_all()
 
 func _register_all() -> void:
-	# Subclasses are registered in Task B2; for now, the registry is empty.
-	# Welp.gd queries get_for_color(); empty result means "no ability" and the
-	# elder behaves as a stat-buffed welp (the pre-Phase-B behavior).
-	pass
+	_register(ElderAbilityRedFirePool.new())
+	_register(ElderAbilityBlueChillAura.new())
+	_register(ElderAbilityGreenPoisonTrail.new())
+	_register(ElderAbilityPurplePullOnHit.new())
+	_register(ElderAbilityGoldChainOnHit.new())
+	_register(ElderAbilityWhiteBoneWall.new())
 
 func _register(ability: ElderAbility) -> void:
 	_by_color[ability.color] = ability
