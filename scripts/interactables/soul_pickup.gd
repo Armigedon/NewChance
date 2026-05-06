@@ -54,12 +54,8 @@ func _process(delta: float) -> void:
 func _on_body_entered(body: Node) -> void:
 	if not body.is_in_group("player"):
 		return
+	# Phase 9 redesign: pickups bank to SoulEconomy carry only. The direct
+	# SkillSystem mutation is gone — minors are pure meta currency, elders
+	# trigger an ElderDraft flow in soul_pickup.gd Task 8.
 	SoulEconomy.add_to_carry(color, tier, 1)
-	# Wire into player's SkillSystem so pickups actually unlock/modify skills.
-	if body.has_node("SkillSystem"):
-		var ss: SkillSystem = body.get_node("SkillSystem")
-		if tier == "elder":
-			ss.add_elder(color)
-		else:
-			ss.add_minor(color)
 	queue_free()
