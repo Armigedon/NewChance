@@ -243,7 +243,13 @@ func _drop_souls() -> void:
 	# - welp: nothing (was 1 minor)
 	# - dragon: 1-2 minor (was 2-3)
 	# - elder: 1 elder, no minors (was 1 elder + 2-3 minor)
+	# Phase 10 tuning (May 2026): first whelp kill of the run drops 1 minor
+	# so the player can unlock their starting wand from sword-only. Subsequent
+	# whelps drop nothing.
 	if tier == "welp":
+		if not RunStats.first_whelp_kill_completed:
+			RunStats.mark_first_whelp_kill()
+			_spawn_pickup("minor", _random_offset())
 		return
 	if tier == "dragon":
 		var minor_count: int = 1 + (1 if randf() < 0.5 else 0)

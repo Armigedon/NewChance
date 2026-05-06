@@ -28,11 +28,13 @@ func _ready() -> void:
 		_skill_system.elder_modifier_applied.connect(_on_elder_modifier_applied)
 	GameState.run_ended.connect(_on_run_ended)
 	# Boss-flow skill retention: if BossFlow has a snapshot, restore it.
-	# Otherwise seed the run's default wand (Task 13 will hook in Wand Choice).
+	# With Wand Choice unlocked, the run starts with the chosen color.
+	# Otherwise the run starts wandless; first minor pickup unlocks the wand
+	# (see soul_pickup.gd → SkillSystem.unlock_first_wand).
 	if not BossFlow.retained_skills.is_empty() and _skill_system != null:
 		_skill_system.from_dict(BossFlow.retained_skills)
-	elif _skill_system != null:
-		_skill_system.start_default_wand("red")
+	elif _skill_system != null and MetaShop.has_structural("wand_choice"):
+		_skill_system.start_default_wand(MetaShop.starting_wand_color())
 	# Phase 9 redesign: stats now sourced from MetaShop (cantrips migrated in Task 12).
 	max_hp = int(float(max_hp) * (1.0 + MetaShop.stat_value("vitality")))
 	hp = max_hp

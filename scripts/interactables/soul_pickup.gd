@@ -60,9 +60,14 @@ func _process(delta: float) -> void:
 func _on_body_entered(body: Node) -> void:
 	if not body.is_in_group("player"):
 		return
-	# Phase 9 redesign: pickups bank to SoulEconomy carry only. The direct
-	# SkillSystem mutation is gone — minors are pure meta currency, elders
-	# trigger an ElderDraft flow.
+	# Phase 10 tuning: minor pickup unlocks first wand if player has none.
+	# This is the OLD first-kill mechanic restored, narrowed so it only fires
+	# when the player has no wand yet (Wand Choice unlock pre-seeds a wand
+	# and skips this path).
+	if tier == "minor" and body.has_node("SkillSystem"):
+		var ss: SkillSystem = body.get_node("SkillSystem")
+		if ss.skill_count() == 0:
+			ss.unlock_first_wand(color)
 	SoulEconomy.add_to_carry(color, tier, 1)
 	# Phase 9: elder pickups also trigger an in-run modifier draft.
 	if tier == "elder" and body.has_node("SkillSystem"):
