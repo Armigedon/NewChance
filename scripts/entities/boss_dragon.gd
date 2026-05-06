@@ -211,6 +211,9 @@ func _maybe_summon_dragon(delta: float) -> void:
 		_summon_dragon()
 
 func _summon_dragon() -> void:
+	# Boss-summoned dragons intentionally bypass Escalation.can_spawn_tier — the
+	# tier floor scopes corner spawners only. Boss summons are paced by their
+	# own per-phase interval (PHASE_2_DRAGON_INTERVAL / PHASE_3_DRAGON_INTERVAL).
 	var d: CharacterBody3D = BOSS_DRAGON_MINION_SCENE.instantiate()
 	var angle: float = randf() * TAU
 	var spawn_pos: Vector3 = global_position + Vector3(cos(angle) * 6.0, 1.0, sin(angle) * 6.0)
@@ -271,18 +274,18 @@ func apply_slow(pct: float, duration: float) -> void:
 	_slow_pct = max(_slow_pct, pct)
 	_slow_remaining = max(_slow_remaining, duration)
 
-func apply_pull_toward(target_pos: Vector3, impulse: float) -> void:
+func apply_pull_toward(target_pos: Vector3, impulse: float, source: Node = null) -> void:
 	var dir: Vector3 = target_pos - global_position
 	dir.y = 0.0
 	if dir.length() < 0.001:
 		return
 	# Forward to any breath mechanic in windup for cone redirect, and to charge
-	# for trajectory deflection. Mechanics self-filter via is_in_windup() /
-	# is_in_execution(); mutual exclusivity ensures at most one breath-style
-	# mechanic is in windup at a time.
+	# for trajectory deflection. The optional `source` is the gravity well that
+	# triggered this pull — breath mechanics call source.consume_for_redirect()
+	# after applying the redirect (subsystem C burn-through for wells).
 	for m in _mechanics:
 		if m.has_method("on_pull_during_windup"):
-			m.on_pull_during_windup(target_pos, CONE_REDIRECT_PER_PULL_DEG)
+			m.on_pull_during_windup(target_pos, CONE_REDIRECT_PER_PULL_DEG, source)
 		if m.has_method("on_pull_during_charge"):
 			m.on_pull_during_charge(target_pos, impulse)
 	# Boss is CC immune (Spec §3): the cone-redirect / charge-deflect side effects

@@ -60,3 +60,10 @@ func test_cone_freed_and_reference_cleared_after_execution() -> void:
 		ticked += 1.0 / 60.0
 	await get_tree().physics_frame
 	assert_object(breath._cone).is_null()
+
+func test_static_breath_cone_size_subsystem_c() -> void:
+	# Subsystem C (May 2026 revisit): cone reach 12m, angle 100° so the
+	# cone is gameplay-relevant and not just sidestep-able.
+	var script = preload("res://scripts/entities/boss_mechanics/mechanic_static_breath.gd")
+	assert_float(script.CONE_LENGTH).is_equal(12.0)
+	assert_float(script.CONE_ANGLE_DEG).is_equal(100.0)

@@ -53,3 +53,9 @@ func test_sweep_damages_player_in_path() -> void:
 	for i in range(150):  # ~2.5s, longer than 2.0s execution
 		await get_tree().physics_frame
 	assert_int(player.hp).is_less(initial_hp)
+
+func test_sweeping_breath_cone_size_subsystem_c() -> void:
+	# Subsystem C (May 2026 revisit): same cone size as static breath.
+	var script = preload("res://scripts/entities/boss_mechanics/mechanic_sweeping_breath.gd")
+	assert_float(script.CONE_LENGTH).is_equal(12.0)
+	assert_float(script.CONE_ANGLE_DEG).is_equal(100.0)

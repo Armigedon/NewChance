@@ -5,6 +5,8 @@ const HEAT_BUILD_PER_SEC: float = 5.0
 const HEAT_DECAY_PER_SEC: float = 2.0
 const HEAT_CAP: float = 100.0
 const TIME_ALARM_FULL_SECONDS: float = 300.0  # 5 minutes
+const DRAGON_FLOOR_S: float = 20.0
+const ELDER_FLOOR_S: float = 45.0
 
 var _heat: Dictionary = {}
 var _player_in_corner: String = ""
@@ -15,6 +17,8 @@ var _upstairs_time: float = 0.0
 # at 0 for the lifetime of the run; enemy_hp_factor / spawn_rate_factor / reset
 # still reference it as 0, leaving their formulas intact for future use.
 var _in_run_elders: int = 0
+var _last_dragon_spawn_msec: int = -1
+var _last_elder_spawn_msec: int = -1
 
 func _ready() -> void:
 	reset()
@@ -67,6 +71,21 @@ func roll_tier(heat: float) -> String:
 		return "dragon"
 	return "welp"
 
+func record_tier_spawn(tier: String) -> void:
+	var now: int = Time.get_ticks_msec()
+	if tier == "dragon":
+		_last_dragon_spawn_msec = now
+	elif tier == "elder":
+		_last_elder_spawn_msec = now
+
+func can_spawn_tier(tier: String) -> bool:
+	var now: int = Time.get_ticks_msec()
+	if tier == "dragon":
+		return _last_dragon_spawn_msec < 0 or now - _last_dragon_spawn_msec >= int(DRAGON_FLOOR_S * 1000.0)
+	if tier == "elder":
+		return _last_elder_spawn_msec < 0 or now - _last_elder_spawn_msec >= int(ELDER_FLOOR_S * 1000.0)
+	return true  # welps and unknown tiers always spawnable
+
 func time_alarm_factor() -> float:
 	return min(1.0, _upstairs_time / TIME_ALARM_FULL_SECONDS)
 
@@ -78,3 +97,5 @@ func reset() -> void:
 	_player_upstairs = false
 	_upstairs_time = 0.0
 	_in_run_elders = 0
+	_last_dragon_spawn_msec = -1
+	_last_elder_spawn_msec = -1

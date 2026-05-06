@@ -40,10 +40,13 @@ var _is_dead: bool = false
 var _knockback_velocity: Vector3 = Vector3.ZERO
 var _flash_resting_albedo: Color = Color(0, 0, 0, 0)  # sentinel: alpha 0 = "not yet captured"
 var _flash_tween: Tween = null
+var _elder_ability: ElderAbility = null
 
 func _ready() -> void:
 	hp = max_hp
 	add_to_group("enemy")
+	if tier == "elder":
+		_elder_ability = ElderAbilityRegistry.get_for_color(color)
 	collision_layer = 2  # match Sword mask
 	collision_mask = collision_mask | 8  # also block on bone walls (layer 4)
 	_find_player()
@@ -86,6 +89,10 @@ func _physics_process(delta: float) -> void:
 		velocity.z += _knockback_velocity.z
 		_knockback_velocity = _knockback_velocity.move_toward(Vector3.ZERO, KNOCKBACK_DECAY * delta)
 	velocity.y -= 9.8 * delta if not is_on_floor() else 0.0
+	# Phase B: fire elder ability alive-tick hook (no-op if no ability or hook unset).
+	# _is_dead already short-circuits this _physics_process at line 55.
+	if _elder_ability != null and not _elder_ability.on_alive_tick.is_null():
+		_elder_ability.on_alive_tick.call(self, delta)
 	move_and_slide()
 
 func _find_player() -> void:
@@ -102,6 +109,9 @@ func _attack_player() -> void:
 		return
 	RunStats.record_damage_from(display_name())
 	_player.take_damage(attack_damage)
+	# Phase B: fire elder ability on-attack hook.
+	if _elder_ability != null and not _elder_ability.on_attack.is_null():
+		_elder_ability.on_attack.call(self, _player)
 
 func flash_hit(duration: float = 0.12) -> void:
 	var mesh: MeshInstance3D = get_node_or_null("Mesh") as MeshInstance3D
@@ -154,7 +164,7 @@ func apply_slow(pct: float, duration: float) -> void:
 	_slow_pct = max(_slow_pct, pct)
 	_slow_remaining = max(_slow_remaining, duration)
 
-func apply_pull_toward(target_pos: Vector3, impulse: float) -> void:
+func apply_pull_toward(target_pos: Vector3, impulse: float, _source: Node = null) -> void:
 	var dir: Vector3 = target_pos - global_position
 	dir.y = 0.0
 	if dir.length() < 0.001:
@@ -203,6 +213,9 @@ func take_damage(amount: int) -> void:
 		HitStop.freeze(_hit_stop_duration())
 		var burst_color: Color = Vfx.COLOR_ALBEDO.get(color, Color(0.5, 0.5, 0.5, 1))
 		Vfx.spawn_death_burst(global_position + Vector3(0, 0.5, 0), burst_color, get_parent())
+		# Phase B: fire elder ability on-death hook before freeing the node.
+		if _elder_ability != null and not _elder_ability.on_death.is_null():
+			_elder_ability.on_death.call(self)
 		died.emit(self, color)
 		queue_free()
 

@@ -42,6 +42,10 @@ func _spawn() -> void:
 	# Far corners only ever produce welps — no off-screen dragons/elders.
 	if _is_far(player_pos):
 		tier = "welp"
+	# Global tier floor: if a dragon or elder was recently spawned, downgrade
+	# to welp so the floor is respected (subsystem B from May 2026 revisit).
+	if not Escalation.can_spawn_tier(tier):
+		tier = "welp"
 	var scene: PackedScene = _scene_for_tier(tier)
 	if scene == null:
 		return
@@ -56,6 +60,8 @@ func _spawn() -> void:
 	get_parent().add_child(enemy)
 	enemy.global_position = spawn_pos
 	_alive_count += 1
+	# No-op for "welp"; only dragon/elder advance their respective floor timestamp.
+	Escalation.record_tier_spawn(tier)
 
 func _scene_for_tier(tier: String) -> PackedScene:
 	match tier:

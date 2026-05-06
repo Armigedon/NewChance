@@ -4,6 +4,7 @@ const DamagePipeline = preload("res://scripts/skills/damage_pipeline.gd")
 
 const TICK_INTERVAL: float = 0.5
 const PULL_FORCE_PER_FRAME: float = 0.05  # constant velocity-add toward center per physics frame
+const REDIRECT_LIFETIME_DRAIN_S: float = 0.5
 
 @export var lifetime: float = 2.0
 @export var radius: float = 2.0
@@ -44,7 +45,16 @@ func _physics_process(_delta: float) -> void:
 		if not body.is_in_group("enemy"):
 			continue
 		if body.has_method("apply_pull_toward"):
-			body.apply_pull_toward(global_position, PULL_FORCE_PER_FRAME)
+			body.apply_pull_toward(global_position, PULL_FORCE_PER_FRAME, self)
+
+func consume_for_redirect() -> void:
+	# Subsystem C (May 2026 revisit): each cone redirect drains lifetime so
+	# stacking wells doesn't grant infinite redirects.
+	var remaining_age: float = lifetime - _age
+	if remaining_age <= REDIRECT_LIFETIME_DRAIN_S:
+		queue_free()
+		return
+	_age += REDIRECT_LIFETIME_DRAIN_S
 
 func _tick_enemies() -> void:
 	var area: Area3D = $HitArea

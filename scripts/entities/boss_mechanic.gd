@@ -2,6 +2,7 @@ extends Node
 class_name BossMechanic
 
 const TelegraphScript = preload("res://scripts/entities/boss_telegraph.gd")
+const CLOUD_BREATH_BLOCK_DAMAGE: int = 5
 
 # Base class for boss mechanics. Subclasses set windup/execution durations,
 # cooldowns_by_phase, unlock_phase, and override the lifecycle hooks.
@@ -101,5 +102,9 @@ func _segment_blocked_by_cloud(from: Vector3, to: Vector3) -> bool:
 		if c.get("base_color") != "green":
 			continue
 		if c.has_method("blocks_segment") and c.blocks_segment(from, to):
+			# Burn-through: cloud takes damage on each blocked tick, eventually
+			# clearing so stacking clouds doesn't fully cheese boss breath.
+			if c.has_method("take_damage"):
+				c.take_damage(CLOUD_BREATH_BLOCK_DAMAGE)
 			return true
 	return false

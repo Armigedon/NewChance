@@ -31,6 +31,7 @@ RunStats="*res://scripts/core/run_stats.gd"
 DamageMeter="*res://scripts/core/damage_meter.gd"
 PauseMenu="*res://scenes/ui/pause_menu.tscn"
 ElderRegistry="*res://scripts/skills/elder_registry.gd"
+ElderAbilityRegistry="*res://scripts/entities/elder_abilities/elder_ability_registry.gd"
 
 [editor_plugins]
 
