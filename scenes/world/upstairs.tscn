@@ -1,10 +1,9 @@
-[gd_scene load_steps=25 format=3]
+[gd_scene load_steps=24 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/interactables/descent_staircase.tscn" id="1_staircase"]
 [ext_resource type="PackedScene" path="res://scenes/ui/descent_prompt.tscn" id="2_prompt"]
 [ext_resource type="PackedScene" path="res://scenes/entities/player.tscn" id="3_player"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="4_hud"]
-[ext_resource type="PackedScene" path="res://scenes/ui/replace_skill_prompt.tscn" id="5_replace"]
 [ext_resource type="Script" path="res://scripts/world/death_handler.gd" id="6_death"]
 [ext_resource type="Script" path="res://scripts/world/corner_spawner.gd" id="7_spawner"]
 [ext_resource type="Script" path="res://scripts/world/corner_zone.gd" id="8_zone"]
@@ -228,8 +227,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 6)
 [node name="HUD" parent="." instance=ExtResource("4_hud")]
 
 [node name="DescentPrompt" parent="." instance=ExtResource("2_prompt")]
-
-[node name="ReplaceSkillPrompt" parent="." instance=ExtResource("5_replace")]
 
 [node name="DeathHandler" type="Node" parent="."]
 script = ExtResource("6_death")
