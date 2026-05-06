@@ -89,6 +89,27 @@ const ARMOR_PER_STACK: int = 5
 var _armor_stacks: int = 0
 var _armor_remaining: float = 0.0
 
+# --- Status effects (B3, blue/purple elder ability targets) ---
+const CHILL_SLOW_PER_STACK: float = 0.05
+const CHILL_MAX_STACKS: int = 6
+const CHILL_DECAY_PER_SEC: float = 0.5
+const KNOCKBACK_DECAY: float = 12.0
+const KNOCKBACK_MAX_SPEED: float = 14.0
+var _chill_stacks: float = 0.0
+var _knockback_velocity: Vector3 = Vector3.ZERO
+
+func apply_chill(stacks: int) -> void:
+	_chill_stacks = min(float(CHILL_MAX_STACKS), _chill_stacks + float(stacks))
+
+func apply_pull_toward(target_pos: Vector3, impulse: float, _source: Node = null) -> void:
+	var dir: Vector3 = target_pos - global_position
+	dir.y = 0.0
+	if dir.length() < 0.001:
+		return
+	_knockback_velocity += dir.normalized() * impulse
+	if _knockback_velocity.length() > KNOCKBACK_MAX_SPEED:
+		_knockback_velocity = _knockback_velocity.normalized() * KNOCKBACK_MAX_SPEED
+
 func _process(delta: float) -> void:
 	if _cast_cooldown_remaining > 0.0:
 		_cast_cooldown_remaining = max(0.0, _cast_cooldown_remaining - delta)
@@ -102,6 +123,8 @@ func _process(delta: float) -> void:
 		_armor_remaining = max(0.0, _armor_remaining - delta)
 		if _armor_remaining == 0.0:
 			_armor_stacks = 0
+	if _chill_stacks > 0.0:
+		_chill_stacks = max(0.0, _chill_stacks - CHILL_DECAY_PER_SEC * delta)
 	if Input.is_action_just_pressed("dash"):
 		var input_dir: Vector2 = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
 		var dash_dir: Vector3 = Vector3(input_dir.x, 0, input_dir.y)
@@ -119,8 +142,13 @@ func _physics_process(delta: float) -> void:
 	else:
 		var input_dir: Vector2 = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
 		var direction: Vector3 = Vector3(input_dir.x, 0, input_dir.y)
-		velocity.x = direction.x * move_speed
-		velocity.z = direction.z * move_speed
+		var slow_factor: float = max(0.2, 1.0 - CHILL_SLOW_PER_STACK * _chill_stacks)
+		velocity.x = direction.x * move_speed * slow_factor
+		velocity.z = direction.z * move_speed * slow_factor
+	if _knockback_velocity.length() > 0.01:
+		velocity.x += _knockback_velocity.x
+		velocity.z += _knockback_velocity.z
+		_knockback_velocity = _knockback_velocity.move_toward(Vector3.ZERO, KNOCKBACK_DECAY * delta)
 	velocity.y -= 9.8 * delta if not is_on_floor() else 0.0
 	move_and_slide()
 

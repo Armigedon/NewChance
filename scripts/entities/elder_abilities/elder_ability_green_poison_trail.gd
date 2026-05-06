@@ -12,7 +12,13 @@ func _init() -> void:
 	on_alive_tick = func(elder: Node, _delta: float) -> void:
 		if not is_instance_valid(elder):
 			return
-		var last_pos: Vector3 = elder.get_meta("green_trail_last_pos", elder.global_position)
+		# Anchor the first tick's position; subsequent ticks measure from it.
+		# Without the explicit has_meta check the default would always be the
+		# current position, so dist is always 0 and no cloud ever drops.
+		if not elder.has_meta("green_trail_last_pos"):
+			elder.set_meta("green_trail_last_pos", elder.global_position)
+			return
+		var last_pos: Vector3 = elder.get_meta("green_trail_last_pos")
 		var dist: float = elder.global_position.distance_to(last_pos)
 		if dist < TRAIL_DROP_DISTANCE:
 			return
