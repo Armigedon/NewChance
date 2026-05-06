@@ -127,7 +127,7 @@ static func apply(target: Node, damage: int, modifier_stack: Array, base_color: 
 				em3.on_kill.call(target, source_pos, stack3)
 
 	if chain_state.budget > 0:
-		var next: Node = _find_chain_target(target, chain_state.hit_set, CHAIN_RANGE)
+		var next: Node = find_chain_target(target, chain_state.hit_set, CHAIN_RANGE)
 		if next != null:
 			chain_state.budget -= 1
 			apply(next, effective_damage, modifier_stack, base_color, source_pos, source_tag, chain_state, skill_system, caster)
@@ -163,7 +163,7 @@ static func _apply_modifier_layer(target: Node, color: String, damage: int, sour
 		"white":
 			pass  # player-side — handled in fire_cast_spawners
 
-static func _find_chain_target(prev_target: Node, hit_set: Dictionary, radius: float) -> Node:
+static func find_chain_target(prev_target: Node, hit_set: Dictionary, radius: float) -> Node:
 	if not is_instance_valid(prev_target):
 		return null
 	var tree: SceneTree = prev_target.get_tree()

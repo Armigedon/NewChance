@@ -48,8 +48,7 @@ func _physics_process(_delta: float) -> void:
 			body.apply_pull_toward(global_position, PULL_FORCE_PER_FRAME, self)
 
 func consume_for_redirect() -> void:
-	# Subsystem C (May 2026 revisit): each cone redirect drains lifetime so
-	# stacking wells doesn't grant infinite redirects.
+	# Each redirect drains lifetime so stacking wells doesn't grant infinite redirects.
 	var remaining_age: float = lifetime - _age
 	if remaining_age <= REDIRECT_LIFETIME_DRAIN_S:
 		queue_free()

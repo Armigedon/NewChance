@@ -89,8 +89,8 @@ func test_green_elder_drops_poison_trail_on_movement() -> void:
 	await get_tree().process_frame
 	# Anchor the trail at origin (first tick records position and returns).
 	elder._elder_ability.on_alive_tick.call(elder, 1.0 / 60.0)
-	# Move elder ~1.5m and fire again — anchor distance now exceeds drop threshold.
-	elder.global_position = Vector3(1.5, 0, 0)
+	# Move elder past TRAIL_DROP_DISTANCE and fire again.
+	elder.global_position = Vector3(2.0, 0, 0)
 	elder._elder_ability.on_alive_tick.call(elder, 1.0 / 60.0)
 	await get_tree().process_frame
 	var found_green_cloud: bool = false

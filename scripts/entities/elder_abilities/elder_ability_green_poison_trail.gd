@@ -2,7 +2,7 @@ extends ElderAbility
 class_name ElderAbilityGreenPoisonTrail
 
 const CloudScene: PackedScene = preload("res://scenes/effects/effect_cloud.tscn")
-const TRAIL_DROP_DISTANCE: float = 1.0
+const TRAIL_DROP_DISTANCE: float = 1.5
 const TRAIL_LIFETIME: float = 2.0
 const TRAIL_RADIUS: float = 1.5
 const TRAIL_TICK_DAMAGE: int = 3

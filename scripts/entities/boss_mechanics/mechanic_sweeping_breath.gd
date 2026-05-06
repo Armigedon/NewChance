@@ -93,6 +93,5 @@ func on_pull_during_windup(pull_origin: Vector3, rotation_deg: float, source: No
 		return  # parallel/anti-parallel: no meaningful side
 	_aim_dir = _aim_dir.rotated(Vector3.UP, deg_to_rad(rotation_deg) * signf(cross_z))
 	_aim_locked_at_windup = _aim_dir
-	# Subsystem C burn-through: drain the well that triggered the redirect.
 	if source != null and is_instance_valid(source) and source.has_method("consume_for_redirect"):
 		source.consume_for_redirect()

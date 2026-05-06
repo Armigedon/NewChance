@@ -89,8 +89,6 @@ func _physics_process(delta: float) -> void:
 		velocity.z += _knockback_velocity.z
 		_knockback_velocity = _knockback_velocity.move_toward(Vector3.ZERO, KNOCKBACK_DECAY * delta)
 	velocity.y -= 9.8 * delta if not is_on_floor() else 0.0
-	# Phase B: fire elder ability alive-tick hook (no-op if no ability or hook unset).
-	# _is_dead already short-circuits this _physics_process at line 55.
 	if _elder_ability != null and not _elder_ability.on_alive_tick.is_null():
 		_elder_ability.on_alive_tick.call(self, delta)
 	move_and_slide()
@@ -109,7 +107,6 @@ func _attack_player() -> void:
 		return
 	RunStats.record_damage_from(display_name())
 	_player.take_damage(attack_damage)
-	# Phase B: fire elder ability on-attack hook.
 	if _elder_ability != null and not _elder_ability.on_attack.is_null():
 		_elder_ability.on_attack.call(self, _player)
 
@@ -213,7 +210,6 @@ func take_damage(amount: int) -> void:
 		HitStop.freeze(_hit_stop_duration())
 		var burst_color: Color = Vfx.COLOR_ALBEDO.get(color, Color(0.5, 0.5, 0.5, 1))
 		Vfx.spawn_death_burst(global_position + Vector3(0, 0.5, 0), burst_color, get_parent())
-		# Phase B: fire elder ability on-death hook before freeing the node.
 		if _elder_ability != null and not _elder_ability.on_death.is_null():
 			_elder_ability.on_death.call(self)
 		died.emit(self, color)

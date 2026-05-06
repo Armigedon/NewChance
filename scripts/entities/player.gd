@@ -89,7 +89,6 @@ const ARMOR_PER_STACK: int = 5
 var _armor_stacks: int = 0
 var _armor_remaining: float = 0.0
 
-# --- Status effects (B3, blue/purple elder ability targets) ---
 const CHILL_SLOW_PER_STACK: float = 0.05
 const CHILL_MAX_STACKS: int = 6
 const CHILL_DECAY_PER_SEC: float = 0.5
@@ -101,7 +100,7 @@ var _knockback_velocity: Vector3 = Vector3.ZERO
 func apply_chill(stacks: int) -> void:
 	_chill_stacks = min(float(CHILL_MAX_STACKS), _chill_stacks + float(stacks))
 
-func apply_pull_toward(target_pos: Vector3, impulse: float, _source: Node = null) -> void:
+func apply_pull_toward(target_pos: Vector3, impulse: float) -> void:
 	var dir: Vector3 = target_pos - global_position
 	dir.y = 0.0
 	if dir.length() < 0.001:

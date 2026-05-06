@@ -57,8 +57,6 @@ func _tick_enemies() -> void:
 		DamagePipeline.apply(body, tick_damage, modifier_stack, base_color, global_position, "cloud", null, null)
 
 func take_damage(amount: int) -> void:
-	# Subsystem C (May 2026 revisit): boss breath burns through clouds.
-	# Each blocked breath tick deals damage; cloud frees on zero.
 	hp = max(0, hp - amount)
 	if hp == 0:
 		queue_free()
