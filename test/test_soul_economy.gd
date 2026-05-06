@@ -107,3 +107,16 @@ func test_deposit_does_not_overflow_with_elder_at_cap() -> void:
 	econ.add_to_carry("red", "elder", 1)
 	econ.deposit_to_pyres()
 	assert_that(econ.pyre_fill("red")).is_equal(SoulEconomyScript.PYRE_CAP)
+
+func test_deposit_credits_minor_souls_to_meta_shop() -> void:
+	MetaShop.reset_for_test()
+	SoulEconomy.add_to_carry("red", "minor", 5)
+	SoulEconomy.add_to_carry("blue", "minor", 3)
+	SoulEconomy.deposit_to_pyres()
+	assert_int(MetaShop.minor_souls()).is_equal(8)
+
+func test_deposit_credits_elder_currency_to_meta_shop() -> void:
+	MetaShop.reset_for_test()
+	SoulEconomy.add_to_carry("purple", "elder", 2)
+	SoulEconomy.deposit_to_pyres()
+	assert_int(MetaShop.elder_currency()).is_equal(2)

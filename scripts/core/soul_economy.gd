@@ -55,6 +55,10 @@ func clear_carry() -> void:
 				carry_changed.emit(color, tier, 0)
 
 func deposit_to_pyres() -> void:
+	# Phase 9: also credits MetaShop currency. Pyre fill state is preserved
+	# for visual displays; MetaShop is the canonical currency store.
+	var minor_total: int = 0
+	var elder_total: int = 0
 	for color in COLORS:
 		var fill_units: int = (
 			_carry[color]["minor"] * SOUL_VALUES["minor"]
@@ -71,6 +75,12 @@ func deposit_to_pyres() -> void:
 		if new_fill >= PYRE_CAP and not was_full:
 			_filled_pyres[color] = true
 			pyre_filled.emit(color)
+		minor_total += _carry[color]["minor"]
+		elder_total += _carry[color]["elder"]
+	if minor_total > 0:
+		MetaShop.credit_minor_souls(minor_total)
+	if elder_total > 0:
+		MetaShop.credit_elder_currency(elder_total)
 	clear_carry()
 
 func has_any_carry() -> bool:
