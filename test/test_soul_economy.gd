@@ -25,9 +25,9 @@ func test_deposit_moves_carry_to_pyres_minor() -> void:
 	assert_that(econ.pyre_fill("red")).is_equal(10)
 
 func test_pyre_caps_at_PYRE_CAP() -> void:
-	econ.add_to_carry("red", "minor", SoulEconomyScript.PYRE_CAP * 2)
+	econ.add_to_carry("red", "minor", SoulEconomyScript.get_pyre_cap() * 2)
 	econ.deposit_to_pyres()
-	assert_that(econ.pyre_fill("red")).is_equal(SoulEconomyScript.PYRE_CAP)
+	assert_that(econ.pyre_fill("red")).is_equal(SoulEconomyScript.get_pyre_cap())
 
 func test_clear_carry_zeroes_pool() -> void:
 	econ.add_to_carry("red", "minor", 5)
@@ -36,12 +36,12 @@ func test_clear_carry_zeroes_pool() -> void:
 
 func test_pyre_filled_signal_at_100_percent() -> void:
 	var monitor := monitor_signals(econ)
-	econ.add_to_carry("red", "minor", SoulEconomyScript.PYRE_CAP)
+	econ.add_to_carry("red", "minor", SoulEconomyScript.get_pyre_cap())
 	econ.deposit_to_pyres()
 	await assert_signal(econ).is_emitted("pyre_filled", ["red"])
 
 func test_pyre_filled_signal_only_once() -> void:
-	econ.add_to_carry("red", "minor", SoulEconomyScript.PYRE_CAP)
+	econ.add_to_carry("red", "minor", SoulEconomyScript.get_pyre_cap())
 	econ.deposit_to_pyres()
 	var monitor := monitor_signals(econ)
 	econ.add_to_carry("red", "minor", 1)
@@ -89,7 +89,7 @@ func test_elder_soul_alone_advances_pyre_by_elder_value() -> void:
 	econ.add_to_carry("red", "elder", 1)
 	econ.deposit_to_pyres()
 	# pyre advances by SOUL_VALUES["elder"] (clamped at PYRE_CAP)
-	var expected: int = min(SoulEconomyScript.SOUL_VALUES["elder"], SoulEconomyScript.PYRE_CAP)
+	var expected: int = min(SoulEconomyScript.SOUL_VALUES["elder"], SoulEconomyScript.get_pyre_cap())
 	assert_that(econ.pyre_fill("red")).is_equal(expected)
 
 func test_deposit_mixes_minor_and_elder_correctly() -> void:
@@ -97,16 +97,16 @@ func test_deposit_mixes_minor_and_elder_correctly() -> void:
 	econ.add_to_carry("red", "elder", 1)
 	econ.deposit_to_pyres()
 	# 1 minor + 1 elder = 1 + SOUL_VALUES["elder"] (clamped to PYRE_CAP)
-	var expected: int = min(1 + SoulEconomyScript.SOUL_VALUES["elder"], SoulEconomyScript.PYRE_CAP)
+	var expected: int = min(1 + SoulEconomyScript.SOUL_VALUES["elder"], SoulEconomyScript.get_pyre_cap())
 	assert_that(econ.pyre_fill("red")).is_equal(expected)
 
 func test_deposit_does_not_overflow_with_elder_at_cap() -> void:
 	# Push pyre near cap, then add an elder; should clamp to PYRE_CAP exactly.
-	var near_cap: int = SoulEconomyScript.PYRE_CAP - 2
+	var near_cap: int = SoulEconomyScript.get_pyre_cap() - 2
 	econ.add_to_carry("red", "minor", near_cap)
 	econ.add_to_carry("red", "elder", 1)
 	econ.deposit_to_pyres()
-	assert_that(econ.pyre_fill("red")).is_equal(SoulEconomyScript.PYRE_CAP)
+	assert_that(econ.pyre_fill("red")).is_equal(SoulEconomyScript.get_pyre_cap())
 
 func test_deposit_credits_minor_souls_to_meta_shop() -> void:
 	MetaShop.reset_for_test()

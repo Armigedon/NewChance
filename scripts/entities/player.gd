@@ -32,9 +32,10 @@ func _ready() -> void:
 		_skill_system.from_dict(BossFlow.retained_skills)
 	elif _skill_system != null:
 		_skill_system.start_default_wand("red")
-	max_hp += MetaProgress.cantrip_bonus("max_hp")
+	# Phase 9 redesign: stats now sourced from MetaShop (cantrips migrated in Task 12).
+	max_hp = int(float(max_hp) * (1.0 + MetaShop.stat_value("vitality")))
 	hp = max_hp
-	dash_cooldown = max(0.2, dash_cooldown + MetaProgress.cantrip_bonus_float("dash_cooldown"))
+	dash_cooldown = max(0.2, dash_cooldown * (1.0 - MetaShop.stat_value("cast_speed")))
 
 func _on_active_skill_changed(_index: int) -> void:
 	if _skill_system == null:

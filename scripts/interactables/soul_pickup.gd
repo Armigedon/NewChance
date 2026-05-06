@@ -17,8 +17,11 @@ const TINTS: Dictionary = {
 # Vacuum: pickups slide toward the player when within VACUUM_RANGE,
 # accelerating with proximity. Reduces time spent standing still in
 # welp territory waiting to walk onto a soul.
-const VACUUM_RANGE: float = 4.0
+const VACUUM_RANGE_BASE: float = 4.0
 const VACUUM_BASE_SPEED: float = 6.0
+
+func _vacuum_range() -> float:
+	return VACUUM_RANGE_BASE + MetaShop.stat_value("soul_magnetism")
 
 var _player: Node = null
 
@@ -46,10 +49,11 @@ func _process(delta: float) -> void:
 	var to_player: Vector3 = _player.global_position - global_position
 	to_player.y = 0.0
 	var distance: float = to_player.length()
-	if distance >= VACUUM_RANGE or distance < 0.001:
+	var range: float = _vacuum_range()
+	if distance >= range or distance < 0.001:
 		return
 	# Speed ramps up as the pickup gets closer (1x at edge, 3x at zero).
-	var closeness: float = 1.0 - distance / VACUUM_RANGE
+	var closeness: float = 1.0 - distance / range
 	var speed: float = VACUUM_BASE_SPEED * (1.0 + closeness * 2.0)
 	global_position += to_player.normalized() * speed * delta
 

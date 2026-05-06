@@ -23,7 +23,7 @@ func show_prompt() -> void:
 		any_carry = true
 		var fill_delta: int = minor * SoulEconomy.SOUL_VALUES["minor"] + elder * SoulEconomy.SOUL_VALUES["elder"]
 		var current_fill: int = SoulEconomy.pyre_fill(color)
-		var new_fill: int = min(current_fill + fill_delta, SoulEconomy.PYRE_CAP)
+		var new_fill: int = min(current_fill + fill_delta, SoulEconomy.get_pyre_cap())
 		var name: String = color.capitalize()
 		var carry_desc: String = ""
 		if minor > 0 and elder > 0:
@@ -32,7 +32,7 @@ func show_prompt() -> void:
 			carry_desc = "%d elder" % elder
 		else:
 			carry_desc = "%d minor" % minor
-		lines.append("%s: %s → pyre %d → %d / %d" % [name, carry_desc, current_fill, new_fill, SoulEconomy.PYRE_CAP])
+		lines.append("%s: %s → pyre %d → %d / %d" % [name, carry_desc, current_fill, new_fill, SoulEconomy.get_pyre_cap()])
 	if not any_carry:
 		lines.append("(no souls to deposit)")
 	# Boss-fight path only valid in IDLE (first trigger) or LOST (retry with elder).
@@ -77,7 +77,7 @@ func _on_confirm() -> void:
 func _can_retry_boss() -> bool:
 	var all_lit: bool = true
 	for c in SoulEconomy.COLORS:
-		if SoulEconomy.pyre_fill(c) < SoulEconomy.PYRE_CAP:
+		if SoulEconomy.pyre_fill(c) < SoulEconomy.get_pyre_cap():
 			all_lit = false
 			break
 	if not all_lit:
@@ -132,9 +132,9 @@ func _will_fill_all_primary_pyres() -> bool:
 		var minor: int = SoulEconomy.carry_count(color, "minor")
 		var elder: int = SoulEconomy.carry_count(color, "elder")
 		var fill_delta: int = minor * SoulEconomy.SOUL_VALUES["minor"] + elder * SoulEconomy.SOUL_VALUES["elder"]
-		var new_fill: int = min(current + fill_delta, SoulEconomy.PYRE_CAP)
-		if new_fill < SoulEconomy.PYRE_CAP:
+		var new_fill: int = min(current + fill_delta, SoulEconomy.get_pyre_cap())
+		if new_fill < SoulEconomy.get_pyre_cap():
 			return false
-		if current < SoulEconomy.PYRE_CAP:
+		if current < SoulEconomy.get_pyre_cap():
 			any_transition = true
 	return any_transition

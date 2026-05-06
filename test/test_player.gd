@@ -8,6 +8,7 @@ func before_test() -> void:
 	# Reset autoload state so the player constructor doesn't read pollution
 	# from the user's real save (cantrip bonuses, retained skills, etc).
 	MetaProgress._init_defaults()
+	MetaShop.reset_for_test()
 	BossFlow.retained_skills.clear()
 	player = auto_free(CharacterBody3D.new())
 	player.set_script(PlayerScript)

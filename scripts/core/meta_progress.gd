@@ -29,7 +29,7 @@ func _ready() -> void:
 
 func _on_pyre_fill_changed(color: String, new_fill: int) -> void:
 	# Compute pct, fire EVERY applicable milestone (handles big jumps).
-	var pct: float = (float(new_fill) / float(SoulEconomy.PYRE_CAP)) * 100.0
+	var pct: float = (float(new_fill) / float(SoulEconomy.get_pyre_cap())) * 100.0
 	var prior_milestone: int = _pyre_milestones.get(color, 0)
 	# Walk thresholds in order; fire each not-yet-reached one.
 	for m in [25, 50, 75]:

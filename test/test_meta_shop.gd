@@ -61,3 +61,15 @@ func test_starting_wand_color_after_unlock() -> void:
 	MetaShop.buy_structural("wand_choice")
 	MetaShop.set_chosen_wand_color("blue")
 	assert_str(MetaShop.starting_wand_color()).is_equal("blue")
+
+func test_vitality_rank_scales_player_hp() -> void:
+	MetaShop.reset_for_test()
+	MetaShop.credit_minor_souls(10000)
+	for i in range(3):
+		MetaShop.buy_stat_rank("vitality")
+	# Stat value at rank 3 = 0.35.
+	var player: CharacterBody3D = auto_free(load("res://scenes/entities/player.tscn").instantiate())
+	add_child(player)
+	await get_tree().process_frame
+	# Base 100 * 1.35 = 135.
+	assert_int(player.max_hp).is_equal(135)
