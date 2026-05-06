@@ -34,7 +34,7 @@ func _process(delta: float) -> void:
 			continue
 		# Sword applies base damage AND the active skill's base color's native
 		# layer (no modifier stack). DamagePipeline with empty stack handles this.
-		DamagePipeline.apply(enemy, scaled_damage(), [], _active_color, global_position, "sword")
+		DamagePipeline.apply(enemy, scaled_damage(), [], _active_color, global_position, "sword", null, _player_skill_system())
 		if enemy.has_method("apply_knockback"):
 			var dir: Vector3 = enemy.global_position - global_position
 			var force: float = _knockback_force_for(enemy)
@@ -94,3 +94,14 @@ func scaled_damage() -> int:
 	# 2.0 - 0.7^n is mathematically equivalent to 1.0 + 1.0*(1.0 - 0.7^n).
 	# See spec §5 — diminishing-returns curve, asymptote 2× base.
 	return int(base_damage * (WHITE_ASYMPTOTE_MULT - pow(WHITE_DECAY, n)))
+
+# Resolve the player's SkillSystem so elder modifier hooks fire on sword hits.
+# Sword is parented to the player but we look up via group for resilience to
+# scene-graph changes.
+func _player_skill_system() -> Node:
+	var player: Node = get_tree().get_first_node_in_group("player") if get_tree() != null else null
+	if player == null or not is_instance_valid(player):
+		return null
+	if not player.has_node("SkillSystem"):
+		return null
+	return player.get_node("SkillSystem")

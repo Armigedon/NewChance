@@ -71,3 +71,48 @@ func test_bone_shield_player_damaged_hook_absorbs() -> void:
 	# (Task 9) actually reads the meta to short-circuit damage.
 	m.on_player_damaged.call(player, 10, 1)
 	assert_int(player.get_meta("bone_shield_charges", 0)).is_equal(0)
+
+func test_ignite_all_hits_via_pipeline() -> void:
+	# Set up: a player with active red wand carrying ignite_all_hits.
+	var player: CharacterBody3D = auto_free(load("res://scenes/entities/player.tscn").instantiate())
+	add_child(player)
+	await get_tree().process_frame
+	var ss: SkillSystem = player.get_node("SkillSystem")
+	ss.start_default_wand("red")
+	ss.apply_elder_modifier("ignite_all_hits")
+	# Drive a damage event through the pipeline.
+	var enemy: CharacterBody3D = auto_free(WelpScene.instantiate())
+	enemy.tier = "welp"
+	enemy.color = "red"
+	add_child(enemy)
+	enemy.global_position = Vector3.ZERO
+	await get_tree().process_frame
+	const DamagePipeline = preload("res://scripts/skills/damage_pipeline.gd")
+	DamagePipeline.apply(enemy, 10, ["red"], "red", Vector3.ZERO, "test_cast", null, ss)
+	# Burn from native red layer + ignite_all_hits.
+	assert_float(enemy._burn_remaining).is_greater(0.0)
+
+func test_chain_on_hit_increases_budget() -> void:
+	var player: CharacterBody3D = auto_free(load("res://scenes/entities/player.tscn").instantiate())
+	add_child(player)
+	await get_tree().process_frame
+	var ss: SkillSystem = player.get_node("SkillSystem")
+	ss.start_default_wand("gold")
+	ss.apply_elder_modifier("chain_on_hit")
+	# Spawn 3 enemies in a line; expect chain to hit at least 1 extra past the primary.
+	var primary: CharacterBody3D = auto_free(WelpScene.instantiate())
+	primary.tier = "welp"
+	primary.color = "gold"
+	add_child(primary)
+	primary.global_position = Vector3.ZERO
+	var secondary: CharacterBody3D = auto_free(WelpScene.instantiate())
+	secondary.tier = "welp"
+	secondary.color = "gold"
+	add_child(secondary)
+	secondary.global_position = Vector3(2, 0, 0)
+	await get_tree().process_frame
+	const DamagePipeline = preload("res://scripts/skills/damage_pipeline.gd")
+	var initial_secondary_hp: int = secondary.hp
+	DamagePipeline.apply(primary, 10, ["gold"], "gold", Vector3.ZERO, "test_cast", null, ss)
+	# Secondary should be hit by chain.
+	assert_int(secondary.hp).is_less(initial_secondary_hp)

@@ -53,4 +53,14 @@ func _tick_enemies() -> void:
 	for body in area.get_overlapping_bodies():
 		if not body.is_in_group("enemy"):
 			continue
-		DamagePipeline.apply(body, tick_damage, modifier_stack, base_color, global_position, "void_well")
+		# Player-side effect — pass the player's SkillSystem so elder modifier
+		# hooks fire on each tick.
+		DamagePipeline.apply(body, tick_damage, modifier_stack, base_color, global_position, "void_well", null, _player_skill_system())
+
+func _player_skill_system() -> Node:
+	var player: Node = get_tree().get_first_node_in_group("player") if get_tree() != null else null
+	if player == null or not is_instance_valid(player):
+		return null
+	if not player.has_node("SkillSystem"):
+		return null
+	return player.get_node("SkillSystem")

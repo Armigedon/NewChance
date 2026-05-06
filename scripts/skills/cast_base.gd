@@ -30,7 +30,18 @@ func _process(delta: float) -> void:
 
 # Hits a single enemy through the unified damage pipeline.
 func _hit_target(target: Node, source_pos: Vector3) -> void:
-	DamagePipeline.apply(target, base_damage, modifier_stack, base_color, source_pos, source_tag)
+	DamagePipeline.apply(target, base_damage, modifier_stack, base_color, source_pos, source_tag, null, _player_skill_system())
+
+# Resolve the player's SkillSystem for elder modifier dispatch. Casts don't
+# carry a caster reference, so look up the player by group. Returns null if
+# unavailable (e.g., test contexts without a player).
+func _player_skill_system() -> Node:
+	var player: Node = get_tree().get_first_node_in_group("player") if get_tree() != null else null
+	if player == null or not is_instance_valid(player):
+		return null
+	if not player.has_node("SkillSystem"):
+		return null
+	return player.get_node("SkillSystem")
 
 # Damages all enemies in a sphere around center; called by AoE casts.
 func _damage_aoe(center: Vector3, radius: float) -> void:
