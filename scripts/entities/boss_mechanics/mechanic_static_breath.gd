@@ -75,7 +75,7 @@ func set_aim(new_dir: Vector3) -> void:
 	if _cone != null and is_instance_valid(_cone):
 		_cone.set_direction(_aim_dir)
 
-func on_pull_during_windup(pull_origin: Vector3, rotation_deg: float) -> void:
+func on_pull_during_windup(pull_origin: Vector3, rotation_deg: float, source: Node = null) -> void:
 	if not is_in_windup():
 		return
 	if _boss == null or not is_instance_valid(_boss):
@@ -94,6 +94,9 @@ func on_pull_during_windup(pull_origin: Vector3, rotation_deg: float) -> void:
 	if absf(cross_z) < 0.001:
 		return
 	set_aim(_aim_dir.rotated(Vector3.UP, deg_to_rad(rotation_deg) * signf(cross_z)))
+	# Subsystem C burn-through: drain the well that triggered the redirect.
+	if source != null and is_instance_valid(source) and source.has_method("consume_for_redirect"):
+		source.consume_for_redirect()
 
 func on_chill_applied(stacks_added: int) -> void:
 	if not is_in_windup():

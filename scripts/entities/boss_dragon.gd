@@ -271,18 +271,18 @@ func apply_slow(pct: float, duration: float) -> void:
 	_slow_pct = max(_slow_pct, pct)
 	_slow_remaining = max(_slow_remaining, duration)
 
-func apply_pull_toward(target_pos: Vector3, impulse: float) -> void:
+func apply_pull_toward(target_pos: Vector3, impulse: float, source: Node = null) -> void:
 	var dir: Vector3 = target_pos - global_position
 	dir.y = 0.0
 	if dir.length() < 0.001:
 		return
 	# Forward to any breath mechanic in windup for cone redirect, and to charge
-	# for trajectory deflection. Mechanics self-filter via is_in_windup() /
-	# is_in_execution(); mutual exclusivity ensures at most one breath-style
-	# mechanic is in windup at a time.
+	# for trajectory deflection. The optional `source` is the gravity well that
+	# triggered this pull — breath mechanics call source.consume_for_redirect()
+	# after applying the redirect (subsystem C burn-through for wells).
 	for m in _mechanics:
 		if m.has_method("on_pull_during_windup"):
-			m.on_pull_during_windup(target_pos, CONE_REDIRECT_PER_PULL_DEG)
+			m.on_pull_during_windup(target_pos, CONE_REDIRECT_PER_PULL_DEG, source)
 		if m.has_method("on_pull_during_charge"):
 			m.on_pull_during_charge(target_pos, impulse)
 	# Boss is CC immune (Spec §3): the cone-redirect / charge-deflect side effects

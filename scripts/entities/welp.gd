@@ -154,7 +154,7 @@ func apply_slow(pct: float, duration: float) -> void:
 	_slow_pct = max(_slow_pct, pct)
 	_slow_remaining = max(_slow_remaining, duration)
 
-func apply_pull_toward(target_pos: Vector3, impulse: float) -> void:
+func apply_pull_toward(target_pos: Vector3, impulse: float, _source: Node = null) -> void:
 	var dir: Vector3 = target_pos - global_position
 	dir.y = 0.0
 	if dir.length() < 0.001:
