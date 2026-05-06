@@ -239,12 +239,20 @@ func _drop_souls() -> void:
 	# Boss-summoned whelps also drop nothing
 	if color == "alarm" or color == "boss":
 		return
-	# welp: 1 minor; dragon: 2-3 minor; elder: 1 elder + 2-3 minor
-	var minor_count: int = 1 if tier == "welp" else (2 + (1 if randf() < 0.5 else 0))
-	for i in range(minor_count):
-		_spawn_pickup("minor", _random_offset())
+	# Phase 9 redesign (May 2026): tier-aware drop policy.
+	# - welp: nothing (was 1 minor)
+	# - dragon: 1-2 minor (was 2-3)
+	# - elder: 1 elder, no minors (was 1 elder + 2-3 minor)
+	if tier == "welp":
+		return
+	if tier == "dragon":
+		var minor_count: int = 1 + (1 if randf() < 0.5 else 0)
+		for i in range(minor_count):
+			_spawn_pickup("minor", _random_offset())
+		return
 	if tier == "elder":
 		_spawn_pickup("elder", _random_offset())
+		return
 
 func _spawn_pickup(pickup_tier: String, offset: Vector3) -> void:
 	var pickup: Area3D = SOUL_PICKUP_SCENE.instantiate()

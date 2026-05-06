@@ -23,6 +23,7 @@ var _player: Node = null
 func _ready() -> void:
 	monitoring = true
 	body_entered.connect(_on_body_entered)
+	add_to_group("soul_pickup")
 	var mesh: MeshInstance3D = $Mesh if has_node("Mesh") else null
 	if mesh != null:
 		var mat: StandardMaterial3D = mesh.material_override as StandardMaterial3D
