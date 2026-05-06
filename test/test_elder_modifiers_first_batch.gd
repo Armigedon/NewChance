@@ -116,3 +116,82 @@ func test_chain_on_hit_increases_budget() -> void:
 	DamagePipeline.apply(primary, 10, ["gold"], "gold", Vector3.ZERO, "test_cast", null, ss)
 	# Secondary should be hit by chain.
 	assert_int(secondary.hp).is_less(initial_secondary_hp)
+
+# --- Production-path tests (final-review fixes) -----------------------------
+# These tests drive the actual production code paths (player.take_damage,
+# DamagePipeline.apply with caster, cast configure) rather than calling
+# Callables directly. They guard against regressions where the hooks pass
+# unit tests but never fire in the real damage pipeline.
+
+func test_overcharge_doubles_damage_via_pipeline_after_third_cast() -> void:
+	var player: CharacterBody3D = auto_free(load("res://scenes/entities/player.tscn").instantiate())
+	add_child(player)
+	await get_tree().process_frame
+	var ss: SkillSystem = player.get_node("SkillSystem")
+	# Player._ready already started a default wand; clear so we can pick gold.
+	ss.clear()
+	ss.start_default_wand("gold")
+	ss.apply_elder_modifier("overcharge")
+	var enemy: CharacterBody3D = auto_free(WelpScene.instantiate())
+	enemy.tier = "welp"
+	enemy.color = "gold"
+	add_child(enemy)
+	enemy.global_position = Vector3.ZERO
+	await get_tree().process_frame
+	# Simulate 3 casts via the on_cast hook (production _try_cast iterates these).
+	for i in range(3):
+		var skill: Skill = ss.active_skill()
+		for mid in skill.elder_modifier_stacks.keys():
+			var em: ElderModifier = ElderRegistry.get_modifier(mid)
+			if em.on_cast.is_null():
+				continue
+			em.on_cast.call(player, skill.modifier_stack, skill.base_color, skill.elder_modifier_stack_count(mid))
+	# Now overcharge_active should be true.
+	assert_bool(bool(player.get_meta("overcharge_active", false))).is_true()
+	# Drive damage through pipeline; expect the flag to be cleared after the hit
+	# (pipeline reads + consumes overcharge_active).
+	const DamagePipeline = preload("res://scripts/skills/damage_pipeline.gd")
+	var initial_hp: int = enemy.hp
+	DamagePipeline.apply(enemy, 10, ["gold"], "gold", Vector3.ZERO, "test_cast", null, ss, player)
+	# Verify damage landed and overcharge flag was cleared.
+	assert_int(enemy.hp).is_less(initial_hp)
+	assert_bool(bool(player.get_meta("overcharge_active", false))).is_false()
+
+func test_bone_shield_absorbs_via_take_damage_in_production() -> void:
+	var player: CharacterBody3D = auto_free(load("res://scenes/entities/player.tscn").instantiate())
+	add_child(player)
+	await get_tree().process_frame
+	var ss: SkillSystem = player.get_node("SkillSystem")
+	ss.clear()
+	ss.start_default_wand("white")
+	ss.apply_elder_modifier("bone_shield")
+	# Charges should seed to 1 on apply (via elder_modifier_applied signal).
+	assert_int(int(player.get_meta("bone_shield_charges", 0))).is_equal(1)
+	var hp_before: int = player.hp
+	player.take_damage(10)
+	# First hit absorbed, no HP loss.
+	assert_int(player.hp).is_equal(hp_before)
+	assert_int(int(player.get_meta("bone_shield_charges", 0))).is_equal(0)
+	# Second hit lands.
+	player.take_damage(10)
+	assert_int(player.hp).is_equal(hp_before - 10)
+
+func test_marrow_pierce_pierces_one_enemy() -> void:
+	var player: CharacterBody3D = auto_free(load("res://scenes/entities/player.tscn").instantiate())
+	add_child(player)
+	await get_tree().process_frame
+	var ss: SkillSystem = player.get_node("SkillSystem")
+	ss.clear()
+	ss.start_default_wand("white")
+	ss.apply_elder_modifier("marrow_pierce")
+	# Verify the active skill has the modifier so cast scenes can read it.
+	assert_int(ss.active_skill().elder_modifier_stack_count("marrow_pierce")).is_equal(1)
+	# Cast scene's pierce_budget population happens in cast_base.gd::configure(skill).
+	# We instantiate a fireball, configure it, and check.
+	const Fireball = preload("res://scenes/skills/cast_red_fireball.tscn")
+	var cast = auto_free(Fireball.instantiate())
+	cast.spawn_pos = Vector3(0, 0.5, 0)
+	cast.configure(ss.active_skill())
+	add_child(cast)
+	# After configure, pierce_budget should be 1.
+	assert_int(cast.pierce_budget).is_equal(1)

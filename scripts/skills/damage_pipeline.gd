@@ -27,7 +27,7 @@ class ChainState extends RefCounted:
 	var budget: int = 0
 	var hit_set: Dictionary = {}  # instance_id -> true; targets already damaged by this cast's chain
 
-static func apply(target: Node, damage: int, modifier_stack: Array, base_color: String, source_pos: Vector3, source_tag: String = "", chain_state: ChainState = null, skill_system: Node = null) -> void:
+static func apply(target: Node, damage: int, modifier_stack: Array, base_color: String, source_pos: Vector3, source_tag: String = "", chain_state: ChainState = null, skill_system: Node = null, caster: Node = null) -> void:
 	if target == null or not is_instance_valid(target):
 		return
 	if not target.has_method("take_damage"):
@@ -45,6 +45,11 @@ static func apply(target: Node, damage: int, modifier_stack: Array, base_color: 
 				var stack: int = active.elder_modifier_stack_count(modifier_id)
 				var mult: float = em.damage_multiplier.call(target, effective_damage, stack)
 				effective_damage = int(float(effective_damage) * mult)
+
+	# Overcharge: if active on caster, double damage and consume the flag.
+	if caster != null and is_instance_valid(caster) and caster.has_meta("overcharge_active") and bool(caster.get_meta("overcharge_active", false)):
+		effective_damage *= 2
+		caster.set_meta("overcharge_active", false)
 
 	if chain_state == null:
 		chain_state = ChainState.new()
@@ -125,7 +130,7 @@ static func apply(target: Node, damage: int, modifier_stack: Array, base_color: 
 		var next: Node = _find_chain_target(target, chain_state.hit_set, CHAIN_RANGE)
 		if next != null:
 			chain_state.budget -= 1
-			apply(next, effective_damage, modifier_stack, base_color, source_pos, source_tag, chain_state, skill_system)
+			apply(next, effective_damage, modifier_stack, base_color, source_pos, source_tag, chain_state, skill_system, caster)
 
 static func _apply_native_layer(target: Node, color: String, damage: int, source_pos: Vector3) -> void:
 	match color:

@@ -25,6 +25,7 @@ signal hp_changed(new_hp: int)
 func _ready() -> void:
 	if _skill_system != null:
 		_skill_system.active_skill_changed.connect(_on_active_skill_changed)
+		_skill_system.elder_modifier_applied.connect(_on_elder_modifier_applied)
 	GameState.run_ended.connect(_on_run_ended)
 	# Boss-flow skill retention: if BossFlow has a snapshot, restore it.
 	# Otherwise seed the run's default wand (Task 13 will hook in Wand Choice).
@@ -36,6 +37,23 @@ func _ready() -> void:
 	max_hp = int(float(max_hp) * (1.0 + MetaShop.stat_value("vitality")))
 	hp = max_hp
 	dash_cooldown = max(0.2, dash_cooldown * (1.0 - MetaShop.stat_value("cast_speed")))
+	# Seed elder modifier per-encounter state (e.g., Bone Shield charges).
+	_seed_elder_modifier_state()
+
+func _seed_elder_modifier_state() -> void:
+	if _skill_system == null:
+		return
+	var active: Skill = _skill_system.active_skill()
+	if active == null:
+		return
+	# Bone Shield seeds charges per stack count.
+	var bs_stacks: int = active.elder_modifier_stack_count("bone_shield")
+	if bs_stacks > 0:
+		set_meta("bone_shield_charges", bs_stacks)
+
+func _on_elder_modifier_applied(modifier_id: String, _new_stack: int) -> void:
+	if modifier_id == "bone_shield":
+		_seed_elder_modifier_state()
 
 func _on_active_skill_changed(_index: int) -> void:
 	if _skill_system == null:
@@ -134,6 +152,22 @@ func take_damage(amount: int) -> void:
 		_armor_stacks -= 1
 	if amount <= 0:
 		return
+	# Fire elder modifier on_player_damaged hooks; if any sets up an absorb
+	# (e.g., Bone Shield consumes a charge), check after.
+	if _skill_system != null:
+		var active: Skill = _skill_system.active_skill()
+		if active != null:
+			var bone_shield_charges_before: int = int(get_meta("bone_shield_charges", 0))
+			for modifier_id in active.elder_modifier_stacks.keys():
+				var em: ElderModifier = ElderRegistry.get_modifier(modifier_id)
+				if em == null or em.on_player_damaged.is_null():
+					continue
+				var stack: int = active.elder_modifier_stack_count(modifier_id)
+				em.on_player_damaged.call(self, amount, stack)
+			# Bone Shield: if a charge was consumed by the hook, the hit is absorbed.
+			var bone_shield_charges_after: int = int(get_meta("bone_shield_charges", 0))
+			if bone_shield_charges_after < bone_shield_charges_before:
+				return  # absorbed, no HP damage
 	hp = max(0, hp - amount)
 	hp_changed.emit(hp)
 	# Visual feedback: red flash + screen shake.
@@ -157,6 +191,13 @@ func _try_cast() -> void:
 	var cast = cast_scene.instantiate()
 	cast.configure(skill)
 	DamagePipeline.fire_cast_spawners(skill, self)
+	# Fire elder modifier on_cast hooks for the active wand.
+	for modifier_id in skill.elder_modifier_stacks.keys():
+		var em: ElderModifier = ElderRegistry.get_modifier(modifier_id)
+		if em == null or em.on_cast.is_null():
+			continue
+		var stack: int = skill.elder_modifier_stack_count(modifier_id)
+		em.on_cast.call(self, skill.modifier_stack, skill.base_color, stack)
 	# Aim direction: toward mouse cursor on the floor plane (y=1)
 	var cam: Camera3D = get_viewport().get_camera_3d()
 	var aim_dir: Vector3 = Vector3.FORWARD

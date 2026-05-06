@@ -13,7 +13,9 @@ var _white_count: int = 0  # white modifiers on the active skill (excludes impli
 var _passive_armor_timer: float = 0.0
 
 func _ready() -> void:
-	base_damage += MetaProgress.cantrip_bonus("sword_damage")
+	# Phase 10: route sword damage through MetaShop's Power stat (multiplicative),
+	# consistent with how player HP, dash, and pyre cap are routed through MetaShop.
+	base_damage = int(float(base_damage) * (1.0 + MetaShop.stat_value("power")))
 
 func _process(delta: float) -> void:
 	# Passive white WARD: armor stack every 5s while equipped to a white-base skill
@@ -34,7 +36,7 @@ func _process(delta: float) -> void:
 			continue
 		# Sword applies base damage AND the active skill's base color's native
 		# layer (no modifier stack). DamagePipeline with empty stack handles this.
-		DamagePipeline.apply(enemy, scaled_damage(), [], _active_color, global_position, "sword", null, _player_skill_system())
+		DamagePipeline.apply(enemy, scaled_damage(), [], _active_color, global_position, "sword", null, _player_skill_system(), _player_node())
 		if enemy.has_method("apply_knockback"):
 			var dir: Vector3 = enemy.global_position - global_position
 			var force: float = _knockback_force_for(enemy)
@@ -99,9 +101,16 @@ func scaled_damage() -> int:
 # Sword is parented to the player but we look up via group for resilience to
 # scene-graph changes.
 func _player_skill_system() -> Node:
-	var player: Node = get_tree().get_first_node_in_group("player") if get_tree() != null else null
-	if player == null or not is_instance_valid(player):
+	var player: Node = _player_node()
+	if player == null:
 		return null
 	if not player.has_node("SkillSystem"):
 		return null
 	return player.get_node("SkillSystem")
+
+# Resolve the player node for DamagePipeline caster (Overcharge etc.).
+func _player_node() -> Node:
+	var player: Node = get_tree().get_first_node_in_group("player") if get_tree() != null else null
+	if player == null or not is_instance_valid(player):
+		return null
+	return player
