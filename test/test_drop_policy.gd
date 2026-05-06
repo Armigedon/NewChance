@@ -67,9 +67,9 @@ func test_minor_pickup_does_not_call_skill_system() -> void:
 	assert_int(ss.skill_count()).is_equal(skills_before)
 	assert_int(SoulEconomy.carry_count("red", "minor")).is_equal(1)
 
-func test_elder_pickup_carries_and_triggers_draft() -> void:
-	# We don't have ElderDraft yet (Task 8); for this task, just verify the
-	# pickup banks to carry and does NOT call add_elder anymore.
+func test_elder_pickup_banks_carry_only() -> void:
+	# ElderDraft is wired in Task 9; this task verifies that elder pickup banks
+	# to carry and does NOT call add_elder anymore (no in-run wand mutation).
 	var player: CharacterBody3D = auto_free(load("res://scenes/entities/player.tscn").instantiate())
 	add_child(player)
 	player.global_position = Vector3.ZERO
@@ -82,6 +82,6 @@ func test_elder_pickup_carries_and_triggers_draft() -> void:
 	add_child(pickup)
 	pickup.global_position = Vector3.ZERO
 	pickup._on_body_entered(player)
-	# Skill system unchanged in this task; ElderDraft hookup lands in Task 8.
+	# Skill system unchanged in this task; ElderDraft hookup lands in Task 9.
 	assert_int(ss.skill_count()).is_equal(skills_before)
 	assert_int(SoulEconomy.carry_count("blue", "elder")).is_equal(1)

@@ -31,10 +31,9 @@ func _ready() -> void:
 	# Otherwise consume the Soul Altar's queued skill (separate mechanism).
 	if not BossFlow.retained_skills.is_empty() and _skill_system != null:
 		_skill_system.from_dict(BossFlow.retained_skills)
-	# Phase 9 redesign: default starting wand handled in Task 4 of soul-skill
-	# economy plan via _skill_system.start_default_wand(). The
-	# MetaProgress.consume_start_with_skill() path is gone — replaced by
-	# Wand Choice structural unlock + start_default_wand_color in Task 13.
+	# Phase 9 redesign: starting wand now handled by start_default_wand() in
+	# Task 4. MetaProgress.consume_start_with_skill() is removed; the Wand Choice
+	# structural unlock (Task 13) will configure the color at that point.
 	max_hp += MetaProgress.cantrip_bonus("max_hp")
 	hp = max_hp
 	dash_cooldown = max(0.2, dash_cooldown + MetaProgress.cantrip_bonus_float("dash_cooldown"))
