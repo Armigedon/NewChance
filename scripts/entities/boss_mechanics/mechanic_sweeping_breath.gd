@@ -1,8 +1,8 @@
 extends "res://scripts/entities/boss_mechanic.gd"
 
 const BreathConeScene: PackedScene = preload("res://scenes/effects/effect_breath_cone.tscn")
-const CONE_LENGTH: float = 7.0
-const CONE_ANGLE_DEG: float = 75.0
+const CONE_LENGTH: float = 12.0  # was 7.0; subsystem C bump
+const CONE_ANGLE_DEG: float = 100.0  # was 75.0; subsystem C bump
 const TICK_DAMAGE: int = 15
 const SWEEP_TOTAL_DEG: float = 90.0
 const CHILL_EXTEND_PER_STACK: float = 0.15
