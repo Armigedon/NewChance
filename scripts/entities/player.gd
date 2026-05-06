@@ -25,15 +25,13 @@ signal hp_changed(new_hp: int)
 func _ready() -> void:
 	if _skill_system != null:
 		_skill_system.active_skill_changed.connect(_on_active_skill_changed)
-		_skill_system.at_cap_replace_prompt_requested.connect(_on_at_cap)
 	GameState.run_ended.connect(_on_run_ended)
 	# Boss-flow skill retention: if BossFlow has a snapshot, restore it.
-	# Otherwise consume the Soul Altar's queued skill (separate mechanism).
+	# Otherwise seed the run's default wand (Task 13 will hook in Wand Choice).
 	if not BossFlow.retained_skills.is_empty() and _skill_system != null:
 		_skill_system.from_dict(BossFlow.retained_skills)
-	# Phase 9 redesign: starting wand now handled by start_default_wand() in
-	# Task 4. MetaProgress.consume_start_with_skill() is removed; the Wand Choice
-	# structural unlock (Task 13) will configure the color at that point.
+	elif _skill_system != null:
+		_skill_system.start_default_wand("red")
 	max_hp += MetaProgress.cantrip_bonus("max_hp")
 	hp = max_hp
 	dash_cooldown = max(0.2, dash_cooldown + MetaProgress.cantrip_bonus_float("dash_cooldown"))
@@ -56,24 +54,6 @@ func _on_run_ended(_outcome: int) -> void:
 	BossFlow.clear_retained_skills()
 	if has_node("Sword"):
 		$Sword.set_active_element("", 0)
-
-var _pending_incoming_color: String = ""
-
-func _on_at_cap(incoming_color: String) -> void:
-	_pending_incoming_color = incoming_color
-	var prompt = get_tree().root.find_child("ReplaceSkillPrompt", true, false)
-	if prompt == null:
-		return
-	if not prompt.replace_chosen.is_connected(_on_replace_chosen):
-		prompt.replace_chosen.connect(_on_replace_chosen)
-		prompt.declined.connect(_on_replace_declined)
-	prompt.show_prompt(_skill_system, incoming_color)
-
-func _on_replace_chosen(index: int) -> void:
-	_skill_system.replace_at(index, _pending_incoming_color)
-
-func _on_replace_declined() -> void:
-	_skill_system.decline_elder(_pending_incoming_color)
 
 var hp: int = max_hp
 var _is_dead: bool = false
@@ -108,12 +88,6 @@ func _process(delta: float) -> void:
 			try_dash(dash_dir.normalized())
 	if Input.is_action_pressed("cast"):
 		_try_cast()
-	if Input.is_action_just_pressed("switch_skill_1"):
-		_skill_system.switch_active(0)
-	if Input.is_action_just_pressed("switch_skill_2"):
-		_skill_system.switch_active(1)
-	if Input.is_action_just_pressed("switch_skill_3"):
-		_skill_system.switch_active(2)
 
 func _physics_process(delta: float) -> void:
 	if _is_dead:
