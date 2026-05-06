@@ -211,6 +211,9 @@ func _maybe_summon_dragon(delta: float) -> void:
 		_summon_dragon()
 
 func _summon_dragon() -> void:
+	# Boss-summoned dragons intentionally bypass Escalation.can_spawn_tier — the
+	# tier floor scopes corner spawners only. Boss summons are paced by their
+	# own per-phase interval (PHASE_2_DRAGON_INTERVAL / PHASE_3_DRAGON_INTERVAL).
 	var d: CharacterBody3D = BOSS_DRAGON_MINION_SCENE.instantiate()
 	var angle: float = randf() * TAU
 	var spawn_pos: Vector3 = global_position + Vector3(cos(angle) * 6.0, 1.0, sin(angle) * 6.0)

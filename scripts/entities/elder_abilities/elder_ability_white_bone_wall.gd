@@ -34,7 +34,11 @@ func _init() -> void:
 			return
 		parent.add_child(wall)
 		wall.global_position = Vector3(wall_pos.x, 0.5, wall_pos.z)
-		# Orient wall perpendicular to the dir vector so it blocks the line.
-		wall.look_at(wall.global_position + Vector3(dir.z, 0, -dir.x), Vector3.UP)
+		# Orient wall so its length (local +X, 4m BoxShape) sits perpendicular to
+		# `dir`, blocking the player→elder line. look_at aims -Z along dir, then
+		# the local Y-rotation swings the X axis to perpendicular. Same pattern
+		# as cast_white_bone.gd.
+		wall.look_at(wall.global_position + dir, Vector3.UP)
+		wall.rotate_object_local(Vector3.UP, PI / 2.0)
 		if wall.has_method("configure"):
 			wall.configure(WALL_HP, WALL_LIFETIME, WALL_LENGTH)

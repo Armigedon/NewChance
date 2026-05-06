@@ -2,6 +2,7 @@ extends Node
 class_name BossMechanic
 
 const TelegraphScript = preload("res://scripts/entities/boss_telegraph.gd")
+const CLOUD_BREATH_BLOCK_DAMAGE: int = 5
 
 # Base class for boss mechanics. Subclasses set windup/execution durations,
 # cooldowns_by_phase, unlock_phase, and override the lifecycle hooks.
@@ -91,8 +92,6 @@ func _segment_blocked_by_wall(from: Vector3, to: Vector3) -> bool:
 				w.take_damage(1)
 			return true
 	return false
-
-const CLOUD_BREATH_BLOCK_DAMAGE: int = 5
 
 func _segment_blocked_by_cloud(from: Vector3, to: Vector3) -> bool:
 	var clouds: Array = get_tree().get_nodes_in_group("damage_cloud")

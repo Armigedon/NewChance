@@ -90,7 +90,8 @@ func _physics_process(delta: float) -> void:
 		_knockback_velocity = _knockback_velocity.move_toward(Vector3.ZERO, KNOCKBACK_DECAY * delta)
 	velocity.y -= 9.8 * delta if not is_on_floor() else 0.0
 	# Phase B: fire elder ability alive-tick hook (no-op if no ability or hook unset).
-	if _elder_ability != null and not _elder_ability.on_alive_tick.is_null() and not _is_dead:
+	# _is_dead already short-circuits this _physics_process at line 55.
+	if _elder_ability != null and not _elder_ability.on_alive_tick.is_null():
 		_elder_ability.on_alive_tick.call(self, delta)
 	move_and_slide()
 

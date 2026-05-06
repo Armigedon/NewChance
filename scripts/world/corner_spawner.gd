@@ -60,6 +60,7 @@ func _spawn() -> void:
 	get_parent().add_child(enemy)
 	enemy.global_position = spawn_pos
 	_alive_count += 1
+	# No-op for "welp"; only dragon/elder advance their respective floor timestamp.
 	Escalation.record_tier_spawn(tier)
 
 func _scene_for_tier(tier: String) -> PackedScene:
