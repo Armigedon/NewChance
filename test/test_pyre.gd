@@ -17,11 +17,11 @@ func test_pyre_reads_initial_fill_from_economy() -> void:
 	SoulEconomy.add_to_carry("red", "minor", 1)
 	SoulEconomy.deposit_to_pyres()
 	pyre.refresh_visual()  # method called manually for test
-	var expected_ratio: float = 1.0 / float(SoulEconomy.PYRE_CAP)
+	var expected_ratio: float = 1.0 / float(SoulEconomy.get_pyre_cap())
 	assert_that(pyre.fill_ratio).is_equal_approx(expected_ratio, 0.001)
 
 func test_pyre_responds_to_pyre_filled_signal() -> void:
-	SoulEconomy.add_to_carry("red", "minor", SoulEconomy.PYRE_CAP)
+	SoulEconomy.add_to_carry("red", "minor", SoulEconomy.get_pyre_cap())
 	SoulEconomy.deposit_to_pyres()
 	await get_tree().process_frame
 	assert_that(pyre.is_fully_lit).is_true()

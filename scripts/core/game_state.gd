@@ -26,6 +26,14 @@ func _load_save_state() -> void:
 	if save_data.has("pyres"):
 		for color in save_data["pyres"]:
 			SoulEconomy.set_pyre_fill(color, int(save_data["pyres"][color]))
+	# Phase 10: MetaShop currency + ranks + structural unlocks. Loaded BEFORE
+	# migrate_to_meta_shop so legacy migration is a no-op when MetaShop already
+	# has state (the _migrated flag in MetaProgress is itself preserved by the
+	# legacy meta save data, but we also restore explicit MetaShop state here).
+	if save_data.has("meta_shop"):
+		MetaShop.from_dict(save_data["meta_shop"])
+	# Phase 9: migrate legacy MetaProgress state into MetaShop (idempotent via _migrated flag).
+	MetaProgress.migrate_to_meta_shop()
 
 static func scene_path_for(location: Location) -> String:
 	match location:
@@ -56,10 +64,11 @@ func end_run(outcome: Outcome) -> void:
 		SoulEconomy.clear_carry()
 	run_ended.emit(outcome)
 	Escalation.reset()
-	# Persist meta progress + pyre fills
+	# Persist meta progress + pyre fills + MetaShop (currency, ranks, unlocks).
 	var save_data: Dictionary = {
 		"meta": MetaProgress.to_dict(),
 		"pyres": _pyre_fills_dict(),
+		"meta_shop": MetaShop.to_dict(),
 	}
 	SaveSystem.save(save_data)
 	transition_to(Location.MAIN_HALL)

@@ -14,8 +14,8 @@ func _ready() -> void:
 
 func refresh_visual() -> void:
 	var fill: int = SoulEconomy.pyre_fill(color)
-	fill_ratio = float(fill) / float(SoulEconomy.PYRE_CAP)
-	is_fully_lit = fill >= SoulEconomy.PYRE_CAP
+	fill_ratio = float(fill) / float(SoulEconomy.get_pyre_cap())
+	is_fully_lit = fill >= SoulEconomy.get_pyre_cap()
 	_apply_visual()
 
 func _on_pyre_filled(filled_color: String) -> void:

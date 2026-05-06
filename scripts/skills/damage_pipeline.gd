@@ -27,15 +27,38 @@ class ChainState extends RefCounted:
 	var budget: int = 0
 	var hit_set: Dictionary = {}  # instance_id -> true; targets already damaged by this cast's chain
 
-static func apply(target: Node, damage: int, modifier_stack: Array, base_color: String, source_pos: Vector3, source_tag: String = "", chain_state: ChainState = null) -> void:
+static func apply(target: Node, damage: int, modifier_stack: Array, base_color: String, source_pos: Vector3, source_tag: String = "", chain_state: ChainState = null, skill_system: Node = null, caster: Node = null) -> void:
 	if target == null or not is_instance_valid(target):
 		return
 	if not target.has_method("take_damage"):
 		return
 
+	# Apply elder modifier damage_multiplier hooks before computing final damage.
+	var effective_damage: int = damage
+	if skill_system != null and skill_system.has_method("active_skill"):
+		var active: Skill = skill_system.active_skill()
+		if active != null:
+			for modifier_id in active.elder_modifier_stacks.keys():
+				var em: ElderModifier = ElderRegistry.get_modifier(modifier_id)
+				if em == null or em.damage_multiplier.is_null():
+					continue
+				var stack: int = active.elder_modifier_stack_count(modifier_id)
+				var mult: float = em.damage_multiplier.call(target, effective_damage, stack)
+				effective_damage = int(float(effective_damage) * mult)
+
+	# Overcharge: if active on caster, double damage and consume the flag.
+	if caster != null and is_instance_valid(caster) and caster.has_meta("overcharge_active") and bool(caster.get_meta("overcharge_active", false)):
+		effective_damage *= 2
+		caster.set_meta("overcharge_active", false)
+
 	if chain_state == null:
 		chain_state = ChainState.new()
 		chain_state.budget = _count(modifier_stack, "gold")
+		# Add elder chain modifier budget on top.
+		if skill_system != null and skill_system.has_method("active_skill"):
+			var active2: Skill = skill_system.active_skill()
+			if active2 != null and active2.has_elder_modifier("chain_on_hit"):
+				chain_state.budget += active2.elder_modifier_stack_count("chain_on_hit")
 
 	# Damage meter tag — derived from source_tag (caller-provided) or base_color
 	# fallback. Chain procs append "+chain" so we can see chain damage as a
@@ -49,18 +72,29 @@ static func apply(target: Node, damage: int, modifier_stack: Array, base_color: 
 	if "hp" in target:
 		hp_before = int(target.get("hp"))
 	if target.has_method("take_damage_with_source"):
-		target.take_damage_with_source(damage, meter_tag)
+		target.take_damage_with_source(effective_damage, meter_tag)
 	else:
-		target.take_damage(damage)
-	var actual: int = damage
+		target.take_damage(effective_damage)
+	var actual: int = effective_damage
 	if hp_before >= 0 and "hp" in target:
 		actual = max(0, hp_before - int(target.get("hp")))
-	DamageMeter.record(target, damage, actual, meter_tag)
+	DamageMeter.record(target, effective_damage, actual, meter_tag)
 
 	if target.has_method("flash_hit"):
 		target.flash_hit()
 	ScreenShake.shake(0.02, 0.04)
 	chain_state.hit_set[target.get_instance_id()] = true
+
+	# Apply elder modifier on_hit hooks (post-damage, but pre-kill check below).
+	if skill_system != null and skill_system.has_method("active_skill"):
+		var active3: Skill = skill_system.active_skill()
+		if active3 != null:
+			for modifier_id in active3.elder_modifier_stacks.keys():
+				var em2: ElderModifier = ElderRegistry.get_modifier(modifier_id)
+				if em2 == null or em2.on_hit.is_null():
+					continue
+				var stack2: int = active3.elder_modifier_stack_count(modifier_id)
+				em2.on_hit.call(target, effective_damage, source_pos, stack2)
 
 	# Burn (red): diminishing-returns curve. Red base contributes 3s native;
 	# each red modifier extends asymptotically toward +5s via 5.0 * (1 - 0.6^n).
@@ -70,17 +104,33 @@ static func apply(target: Node, damage: int, modifier_stack: Array, base_color: 
 	var burn_bonus: float = 5.0 * (1.0 - pow(0.6, red_modifier_count))
 	var total_burn_duration: float = burn_base + burn_bonus
 	if total_burn_duration > 0.0 and target.has_method("apply_burn"):
-		target.apply_burn(float(damage) * BURN_DPS_FRAC, total_burn_duration)
+		target.apply_burn(float(effective_damage) * BURN_DPS_FRAC, total_burn_duration)
 
-	_apply_native_layer(target, base_color, damage, source_pos)
+	_apply_native_layer(target, base_color, effective_damage, source_pos)
 	for color in modifier_stack:
-		_apply_modifier_layer(target, color, damage, source_pos)
+		_apply_modifier_layer(target, color, effective_damage, source_pos)
+
+	# Apply elder on_kill hooks if the target died from this hit.
+	var target_dead: bool = false
+	if "_is_dead" in target:
+		target_dead = bool(target.get("_is_dead"))
+	elif "hp" in target:
+		target_dead = int(target.get("hp")) <= 0
+	if target_dead and skill_system != null and skill_system.has_method("active_skill"):
+		var active4: Skill = skill_system.active_skill()
+		if active4 != null:
+			for modifier_id in active4.elder_modifier_stacks.keys():
+				var em3: ElderModifier = ElderRegistry.get_modifier(modifier_id)
+				if em3 == null or em3.on_kill.is_null():
+					continue
+				var stack3: int = active4.elder_modifier_stack_count(modifier_id)
+				em3.on_kill.call(target, source_pos, stack3)
 
 	if chain_state.budget > 0:
 		var next: Node = _find_chain_target(target, chain_state.hit_set, CHAIN_RANGE)
 		if next != null:
 			chain_state.budget -= 1
-			apply(next, damage, modifier_stack, base_color, source_pos, source_tag, chain_state)
+			apply(next, effective_damage, modifier_stack, base_color, source_pos, source_tag, chain_state, skill_system, caster)
 
 static func _apply_native_layer(target: Node, color: String, damage: int, source_pos: Vector3) -> void:
 	match color:

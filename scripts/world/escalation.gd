@@ -10,10 +10,11 @@ var _heat: Dictionary = {}
 var _player_in_corner: String = ""
 var _player_upstairs: bool = false
 var _upstairs_time: float = 0.0
+# Phase 9: legacy field. The setter (set_in_run_elder_count) was removed when
+# elder souls became modifier drafts (no longer ramp difficulty). Field stays
+# at 0 for the lifetime of the run; enemy_hp_factor / spawn_rate_factor / reset
+# still reference it as 0, leaving their formulas intact for future use.
 var _in_run_elders: int = 0
-
-func set_in_run_elder_count(n: int) -> void:
-	_in_run_elders = n
 
 func _ready() -> void:
 	reset()

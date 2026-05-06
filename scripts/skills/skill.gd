@@ -4,6 +4,10 @@ class_name Skill
 var base_color: String
 var modifier_stack: Array[String] = []
 var locked: bool = false
+# Phase 9: elder modifiers are a separate stack from color modifiers (which
+# come from the now-removed minor-pickup path). Keyed by modifier_id; value
+# is the stack count (compounds on repeat draft).
+var elder_modifier_stacks: Dictionary = {}
 
 func _init(p_base_color: String) -> void:
 	base_color = p_base_color
@@ -22,3 +26,17 @@ func modifier_count_for(color: String) -> int:
 
 func has_modifier(color: String) -> bool:
 	return modifier_count_for(color) > 0
+
+func apply_elder_modifier(modifier_id: String) -> void:
+	# Compounds on repeat — bumps stack count instead of adding a duplicate
+	# entry. Distinct modifier ids each get their own entry.
+	elder_modifier_stacks[modifier_id] = int(elder_modifier_stacks.get(modifier_id, 0)) + 1
+
+func elder_modifier_count() -> int:
+	return elder_modifier_stacks.size()
+
+func elder_modifier_stack_count(modifier_id: String) -> int:
+	return int(elder_modifier_stacks.get(modifier_id, 0))
+
+func has_elder_modifier(modifier_id: String) -> bool:
+	return elder_modifier_stacks.has(modifier_id)

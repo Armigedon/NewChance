@@ -48,7 +48,10 @@ func _tick_enemies() -> void:
 	for body in area.get_overlapping_bodies():
 		if not body.is_in_group("enemy"):
 			continue
-		DamagePipeline.apply(body, tick_damage, modifier_stack, base_color, global_position, "cloud")
+		# Clouds outlive their originating cast and may be spawned boss-side too,
+		# so we don't pass a SkillSystem here. Elder modifier dispatch is a no-op
+		# for cloud ticks per Task 8 of the soul/skill economy redesign.
+		DamagePipeline.apply(body, tick_damage, modifier_stack, base_color, global_position, "cloud", null, null)
 
 func blocks_segment(from: Vector3, to: Vector3) -> bool:
 	# Project to XZ plane to match the breath cone's flat top-down treatment.

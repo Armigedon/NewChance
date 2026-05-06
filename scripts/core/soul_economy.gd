@@ -2,7 +2,10 @@ extends Node
 
 const PYRE_CAP_TEST: int = 10
 const PYRE_CAP_SHIP: int = 100
-static var PYRE_CAP: int = PYRE_CAP_TEST if Debug.FAST_TEST else PYRE_CAP_SHIP
+
+static func get_pyre_cap() -> int:
+	var base: int = PYRE_CAP_TEST if Debug.FAST_TEST else PYRE_CAP_SHIP
+	return base + int(MetaShop.stat_value("pyre_cap"))
 
 const COLORS: Array[String] = ["red", "blue", "green", "purple", "gold", "white"]
 static var SOUL_VALUES: Dictionary = {
@@ -15,7 +18,7 @@ signal pyre_fill_changed(color: String, new_fill: int)
 signal carry_changed(color: String, tier: String, new_count: int)
 
 var _carry: Dictionary = {}     # { color: { tier: count } }
-var _pyres: Dictionary = {}     # { color: int (0..PYRE_CAP) }
+var _pyres: Dictionary = {}     # { color: int (0..pyre_cap) }
 var _filled_pyres: Dictionary = {}  # { color: bool } — track which already emitted filled signal
 
 func _ready() -> void:
@@ -55,6 +58,10 @@ func clear_carry() -> void:
 				carry_changed.emit(color, tier, 0)
 
 func deposit_to_pyres() -> void:
+	# Phase 9: also credits MetaShop currency. Pyre fill state is preserved
+	# for visual displays; MetaShop is the canonical currency store.
+	var minor_total: int = 0
+	var elder_total: int = 0
 	for color in COLORS:
 		var fill_units: int = (
 			_carry[color]["minor"] * SOUL_VALUES["minor"]
@@ -63,14 +70,20 @@ func deposit_to_pyres() -> void:
 		if fill_units == 0:
 			continue
 		var old_fill: int = _pyres[color]
-		var new_fill: int = min(_pyres[color] + fill_units, PYRE_CAP)
+		var new_fill: int = min(_pyres[color] + fill_units, get_pyre_cap())
 		var was_full: bool = _filled_pyres[color]
 		_pyres[color] = new_fill
 		if new_fill != old_fill:
 			pyre_fill_changed.emit(color, new_fill)
-		if new_fill >= PYRE_CAP and not was_full:
+		if new_fill >= get_pyre_cap() and not was_full:
 			_filled_pyres[color] = true
 			pyre_filled.emit(color)
+		minor_total += _carry[color]["minor"]
+		elder_total += _carry[color]["elder"]
+	if minor_total > 0:
+		MetaShop.credit_minor_souls(minor_total)
+	if elder_total > 0:
+		MetaShop.credit_elder_currency(elder_total)
 	clear_carry()
 
 func has_any_carry() -> bool:
@@ -82,10 +95,10 @@ func has_any_carry() -> bool:
 func set_pyre_fill(color: String, fill: int) -> void:
 	if not (color in COLORS):
 		return
-	var clamped: int = clamp(fill, 0, PYRE_CAP)
+	var clamped: int = clamp(fill, 0, get_pyre_cap())
 	var prior: int = _pyres[color]
 	_pyres[color] = clamped
-	if clamped >= PYRE_CAP and not _filled_pyres[color]:
+	if clamped >= get_pyre_cap() and not _filled_pyres[color]:
 		_filled_pyres[color] = true
 	if clamped != prior:
 		pyre_fill_changed.emit(color, clamped)
