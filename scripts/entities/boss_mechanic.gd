@@ -92,6 +92,8 @@ func _segment_blocked_by_wall(from: Vector3, to: Vector3) -> bool:
 			return true
 	return false
 
+const CLOUD_BREATH_BLOCK_DAMAGE: int = 5
+
 func _segment_blocked_by_cloud(from: Vector3, to: Vector3) -> bool:
 	var clouds: Array = get_tree().get_nodes_in_group("damage_cloud")
 	for c in clouds:
@@ -101,5 +103,9 @@ func _segment_blocked_by_cloud(from: Vector3, to: Vector3) -> bool:
 		if c.get("base_color") != "green":
 			continue
 		if c.has_method("blocks_segment") and c.blocks_segment(from, to):
+			# Burn-through: cloud takes damage on each blocked tick, eventually
+			# clearing so stacking clouds doesn't fully cheese boss breath.
+			if c.has_method("take_damage"):
+				c.take_damage(CLOUD_BREATH_BLOCK_DAMAGE)
 			return true
 	return false

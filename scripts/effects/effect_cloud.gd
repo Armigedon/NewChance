@@ -8,6 +8,9 @@ const TICK_INTERVAL: float = 0.5  # ticks per second = 2
 @export var radius: float = 2.0
 @export var tick_damage: int = 6  # 25% of cast base damage default
 
+const NATIVE_HP: int = 30
+var hp: int = NATIVE_HP
+
 func _ready() -> void:
 	add_to_group("damage_cloud")
 
@@ -52,6 +55,13 @@ func _tick_enemies() -> void:
 		# so we don't pass a SkillSystem here. Elder modifier dispatch is a no-op
 		# for cloud ticks per Task 8 of the soul/skill economy redesign.
 		DamagePipeline.apply(body, tick_damage, modifier_stack, base_color, global_position, "cloud", null, null)
+
+func take_damage(amount: int) -> void:
+	# Subsystem C (May 2026 revisit): boss breath burns through clouds.
+	# Each blocked breath tick deals damage; cloud frees on zero.
+	hp = max(0, hp - amount)
+	if hp == 0:
+		queue_free()
 
 func blocks_segment(from: Vector3, to: Vector3) -> bool:
 	# Project to XZ plane to match the breath cone's flat top-down treatment.
