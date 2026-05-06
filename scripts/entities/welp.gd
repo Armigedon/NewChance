@@ -253,6 +253,7 @@ func _drop_souls() -> void:
 	if tier == "elder":
 		_spawn_pickup("elder", _random_offset())
 		return
+	push_warning("welp._drop_souls: unhandled tier '%s' — dropping nothing" % tier)
 
 func _spawn_pickup(pickup_tier: String, offset: Vector3) -> void:
 	var pickup: Area3D = SOUL_PICKUP_SCENE.instantiate()

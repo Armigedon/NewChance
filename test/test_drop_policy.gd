@@ -18,15 +18,9 @@ func _spawn(tier: String, color: String) -> CharacterBody3D:
 
 func _count_pickups_in_scene() -> Dictionary:
 	var counts: Dictionary = {"minor": 0, "elder": 0}
-	for n in get_tree().get_root().get_children():
-		_walk_count(n, counts)
+	for p in get_tree().get_nodes_in_group("soul_pickup"):
+		counts[String(p.tier)] = int(counts.get(String(p.tier), 0)) + 1
 	return counts
-
-func _walk_count(node: Node, counts: Dictionary) -> void:
-	if node.has_method("_on_body_entered") and "tier" in node:
-		counts[String(node.tier)] = int(counts.get(String(node.tier), 0)) + 1
-	for c in node.get_children():
-		_walk_count(c, counts)
 
 func test_whelp_drops_nothing() -> void:
 	var w := _spawn("welp", "red")
