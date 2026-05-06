@@ -44,6 +44,18 @@ func start_default_wand(color: String) -> void:
 	skill_unlocked.emit(0)
 	active_skill_changed.emit(0)
 
+func unlock_first_wand(color: String) -> void:
+	# Phase 10 tuning: the first minor soul pickup of a run unlocks a wand
+	# of that color, but ONLY if no wand exists yet. Idempotent — no-op if
+	# Wand Choice + start_default_wand already seeded a wand.
+	if _skills.size() > 0:
+		return
+	var first := SkillScript.new(color) as Skill
+	_skills.append(first)
+	_active_index = 0
+	skill_unlocked.emit(0)
+	active_skill_changed.emit(0)
+
 func apply_elder_modifier(modifier_id: String) -> void:
 	# Adds modifier to the active wand, or compounds the existing stack if
 	# repeat. No wand swap, no locking.

@@ -14,7 +14,7 @@ const DRAGON_SCENE: PackedScene = preload("res://scenes/entities/dragon.tscn")
 const ELDER_DRAGON_SCENE: PackedScene = preload("res://scenes/entities/elder_dragon.tscn")
 
 @export var color: String = "red"
-@export var base_spawn_interval: float = 3.0  # at heat 0
+@export var base_spawn_interval: float = 4.0  # at heat 0
 @export var max_alive: int = 4
 @export var spawn_radius: float = 4.0
 @export var min_dist_from_player: float = 5.0

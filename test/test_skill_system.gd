@@ -82,6 +82,22 @@ func test_starts_with_default_red_wand() -> void:
 	assert_int(ss.skill_count()).is_equal(1)
 	assert_str(ss.active_skill().base_color).is_equal("red")
 
+func test_unlock_first_wand_creates_wand_of_color() -> void:
+	var ss: SkillSystem = auto_free(SkillSystem.new())
+	add_child(ss)
+	ss.unlock_first_wand("blue")
+	assert_int(ss.skill_count()).is_equal(1)
+	assert_str(ss.active_skill().base_color).is_equal("blue")
+
+func test_unlock_first_wand_idempotent_when_wand_exists() -> void:
+	var ss: SkillSystem = auto_free(SkillSystem.new())
+	add_child(ss)
+	ss.start_default_wand("red")
+	ss.unlock_first_wand("blue")
+	# Should not change the wand.
+	assert_int(ss.skill_count()).is_equal(1)
+	assert_str(ss.active_skill().base_color).is_equal("red")
+
 func test_apply_elder_modifier_routes_to_active_wand() -> void:
 	var ss: SkillSystem = auto_free(SkillSystem.new())
 	add_child(ss)
