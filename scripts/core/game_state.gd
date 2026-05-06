@@ -26,6 +26,8 @@ func _load_save_state() -> void:
 	if save_data.has("pyres"):
 		for color in save_data["pyres"]:
 			SoulEconomy.set_pyre_fill(color, int(save_data["pyres"][color]))
+	# Phase 9: migrate legacy MetaProgress state into MetaShop (idempotent via _migrated flag).
+	MetaProgress.migrate_to_meta_shop()
 
 static func scene_path_for(location: Location) -> String:
 	match location:

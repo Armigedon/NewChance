@@ -21,10 +21,11 @@ var _hub_features_unlocked: int = 0
 var _filled_pyres: Dictionary = {}
 var _pyre_milestones: Dictionary = {}
 var _start_with_skill: String = ""
+var _migrated: bool = false
 
 func _ready() -> void:
 	_init_defaults()
-	SoulEconomy.pyre_fill_changed.connect(_on_pyre_fill_changed)
+	# Phase 9: pyre_fill_changed → auto-unlock removed; MetaShop is now the canonical purchase state.
 
 func _on_pyre_fill_changed(color: String, new_fill: int) -> void:
 	# Compute pct, fire EVERY applicable milestone (handles big jumps).
@@ -54,6 +55,7 @@ func _init_defaults() -> void:
 	for c in COLORS:
 		_pyre_milestones[c] = 0
 	_start_with_skill = ""
+	_migrated = false
 
 func cantrip_level(key: String) -> int:
 	return _cantrips.get(key, 0)
@@ -151,3 +153,33 @@ func from_dict(d: Dictionary) -> void:
 		for c in COLORS:
 			_pyre_milestones[c] = int(d["pyre_milestones"].get(c, 0))
 	_start_with_skill = String(d.get("start_with_skill", ""))
+
+# --- Phase 9 migration ---
+
+func migrate_to_meta_shop() -> void:
+	if _migrated:
+		return
+	# Cantrips → stat ranks (1:1 by index).
+	MetaShop._stat_ranks["vitality"] = int(_cantrips.get("max_hp", 0))
+	MetaShop._stat_ranks["power"] = int(_cantrips.get("sword_damage", 0))
+	MetaShop._stat_ranks["cast_speed"] = int(_cantrips.get("dash_cooldown", 0))
+	# Hub features → mechanic-branch purchases (in fixed order).
+	var hub_unlock_order: Array = [
+		"wand_choice",
+		"second_modifier_slot",
+		"pyre_expansion_1",
+		"replenish_on_descent",
+	]
+	for i in range(_hub_features_unlocked):
+		if i < hub_unlock_order.size():
+			MetaShop._structural_owned[hub_unlock_order[i]] = true
+	# Pyre fills → minor souls (1:1).
+	var fill_total: int = 0
+	for color in SoulEconomy.COLORS:
+		fill_total += SoulEconomy.pyre_fill(color)
+	if fill_total > 0:
+		MetaShop.credit_minor_souls(fill_total)
+		# Reset fills so visual pyres start fresh against new accumulation.
+		for color in SoulEconomy.COLORS:
+			SoulEconomy.set_pyre_fill(color, 0)
+	_migrated = true
