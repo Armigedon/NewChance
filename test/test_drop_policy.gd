@@ -9,6 +9,17 @@ func before_test() -> void:
 	SoulEconomy.clear_carry()
 	await get_tree().process_frame
 
+func after_test() -> void:
+	# Task 9: elder pickup spawns an ElderDraft modal and pauses the tree.
+	# Tear it down so subsequent test suites aren't poisoned.
+	get_tree().paused = false
+	for c in get_tree().root.get_children():
+		if c is CanvasLayer and c.get_script() != null:
+			var src: String = c.get_script().resource_path
+			if src.ends_with("/elder_draft.gd"):
+				c.queue_free()
+	await get_tree().process_frame
+
 func _spawn(tier: String, color: String) -> CharacterBody3D:
 	var w: CharacterBody3D = auto_free(WelpScene.instantiate())
 	w.tier = tier

@@ -1,0 +1,27 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/elder_draft.gd" id="1_draft"]
+
+[node name="ElderDraft" type="CanvasLayer"]
+script = ExtResource("1_draft")
+
+[node name="Center" type="CenterContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Panel" type="Panel" parent="Center"]
+custom_minimum_size = Vector2(720, 360)
+
+[node name="VBox" type="VBoxContainer" parent="Center/Panel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Title" type="Label" parent="Center/Panel/VBox"]
+text = "Elder — pick a modifier"
+horizontal_alignment = 1
+
+[node name="Cards" type="HBoxContainer" parent="Center/Panel/VBox"]
+size_flags_vertical = 3
+alignment = 1

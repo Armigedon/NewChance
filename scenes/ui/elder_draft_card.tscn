@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[node name="ElderDraftCard" type="Button"]
+custom_minimum_size = Vector2(220, 200)
+text = ""
+autowrap_mode = 2

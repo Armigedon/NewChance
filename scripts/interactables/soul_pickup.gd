@@ -3,6 +3,8 @@ extends Area3D
 @export var color: String = "red"
 @export var tier: String = "minor"
 
+const ElderDraftScene: PackedScene = preload("res://scenes/ui/elder_draft.tscn")
+
 const TINTS: Dictionary = {
 	"red": Color(1, 0.4, 0.2, 1),
 	"blue": Color(0.4, 0.7, 1, 1),
@@ -56,6 +58,12 @@ func _on_body_entered(body: Node) -> void:
 		return
 	# Phase 9 redesign: pickups bank to SoulEconomy carry only. The direct
 	# SkillSystem mutation is gone — minors are pure meta currency, elders
-	# trigger an ElderDraft flow in soul_pickup.gd Task 8.
+	# trigger an ElderDraft flow.
 	SoulEconomy.add_to_carry(color, tier, 1)
+	# Phase 9: elder pickups also trigger an in-run modifier draft.
+	if tier == "elder" and body.has_node("SkillSystem"):
+		var draft: CanvasLayer = ElderDraftScene.instantiate()
+		# Add at root so the modal layer is above all gameplay UI.
+		body.get_tree().root.add_child(draft)
+		draft.show_draft(color, body.get_node("SkillSystem"))
 	queue_free()
