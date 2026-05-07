@@ -6,19 +6,12 @@ func test_skill_starts_with_no_modifiers() -> void:
 	var s := SkillScript.new("red")
 	assert_that(s.base_color).is_equal("red")
 	assert_that(s.modifier_stack).is_empty()
-	assert_that(s.locked).is_false()
 
 func test_skill_add_modifier_appends() -> void:
 	var s := SkillScript.new("red")
 	s.add_modifier("blue")
 	s.add_modifier("green")
 	assert_that(s.modifier_stack).is_equal(["blue", "green"])
-
-func test_skill_add_modifier_when_locked_does_nothing() -> void:
-	var s := SkillScript.new("red")
-	s.locked = true
-	s.add_modifier("blue")
-	assert_that(s.modifier_stack).is_empty()
 
 func test_skill_modifier_count_includes_base_repeats() -> void:
 	# Same-color minor souls deepen the base. Track count separately.

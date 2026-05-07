@@ -32,8 +32,3 @@ func current_reduction_pct() -> float:
 		return 0.0
 	var t: float = _active_remaining / _active_total
 	return REDUCTION_START * t
-
-# is_active is reserved for Task 20 (red burn pierces wings), which will need to
-# query "is wings active" without invoking the reduction-pct math path.
-func is_active() -> bool:
-	return _active_remaining > 0.0

@@ -3,18 +3,14 @@ class_name Skill
 
 var base_color: String
 var modifier_stack: Array[String] = []
-var locked: bool = false
-# Phase 9: elder modifiers are a separate stack from color modifiers (which
-# come from the now-removed minor-pickup path). Keyed by modifier_id; value
-# is the stack count (compounds on repeat draft).
+# Elder modifiers stack separately from color modifiers; keyed by modifier_id
+# with stack count as the value (compounds on repeat draft).
 var elder_modifier_stacks: Dictionary = {}
 
 func _init(p_base_color: String) -> void:
 	base_color = p_base_color
 
 func add_modifier(color: String) -> void:
-	if locked:
-		return
 	modifier_stack.append(color)
 
 func modifier_count_for(color: String) -> int:
