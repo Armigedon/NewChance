@@ -69,7 +69,7 @@ func _refresh_souls() -> void:
 	_wisp_gold.set_count(SoulEconomy.carry_count("gold", "minor"))
 	_wisp_white.set_count(SoulEconomy.carry_count("white", "minor"))
 	var total_elder: int = 0
-	for c in SoulEconomy.COLORS:
+	for c in Palette.ALL:
 		total_elder += SoulEconomy.carry_count(c, "elder")
 	_wisp_elder.set_count(total_elder)
 

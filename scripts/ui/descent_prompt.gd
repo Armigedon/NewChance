@@ -15,7 +15,7 @@ func _ready() -> void:
 func show_prompt() -> void:
 	var lines: Array[String] = []
 	var any_carry: bool = false
-	for color in SoulEconomy.COLORS:
+	for color in Palette.ALL:
 		var minor: int = SoulEconomy.carry_count(color, "minor")
 		var elder: int = SoulEconomy.carry_count(color, "elder")
 		if minor == 0 and elder == 0:
@@ -76,7 +76,7 @@ func _on_confirm() -> void:
 
 func _can_retry_boss() -> bool:
 	var all_lit: bool = true
-	for c in SoulEconomy.COLORS:
+	for c in Palette.ALL:
 		if SoulEconomy.pyre_fill(c) < SoulEconomy.get_pyre_cap():
 			all_lit = false
 			break
@@ -85,7 +85,7 @@ func _can_retry_boss() -> bool:
 	if BossFlow.has_won():
 		return false
 	var has_elder: bool = false
-	for c in SoulEconomy.COLORS:
+	for c in Palette.ALL:
 		if SoulEconomy.carry_count(c, "elder") > 0:
 			has_elder = true
 			break
@@ -94,7 +94,7 @@ func _can_retry_boss() -> bool:
 func _descend_and_fight() -> void:
 	# Retry path: consume 1 elder soul if pyres are already at 100%
 	if _can_retry_boss():
-		for c in SoulEconomy.COLORS:
+		for c in Palette.ALL:
 			if SoulEconomy.carry_count(c, "elder") > 0:
 				SoulEconomy._carry[c]["elder"] -= 1
 				break
@@ -127,7 +127,7 @@ func _will_fill_all_primary_pyres() -> bool:
 	# at least one pyre transitions from <PYRE_CAP to PYRE_CAP (i.e., this is
 	# an actual filling deposit, not a no-op against already-full pyres).
 	var any_transition: bool = false
-	for color in SoulEconomy.COLORS:
+	for color in Palette.ALL:
 		var current: int = SoulEconomy.pyre_fill(color)
 		var minor: int = SoulEconomy.carry_count(color, "minor")
 		var elder: int = SoulEconomy.carry_count(color, "elder")

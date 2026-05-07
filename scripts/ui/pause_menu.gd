@@ -87,6 +87,6 @@ func _on_quit_to_menu() -> void:
 
 func _pyre_fills_dict() -> Dictionary:
 	var d: Dictionary = {}
-	for c in SoulEconomy.COLORS:
+	for c in Palette.ALL:
 		d[c] = SoulEconomy.pyre_fill(c)
 	return d

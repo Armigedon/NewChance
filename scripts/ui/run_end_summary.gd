@@ -61,7 +61,7 @@ func _populate_souls_lost() -> void:
 	for child in _souls_row.get_children():
 		child.queue_free()
 	var any_carry: bool = false
-	for c in SoulEconomy.COLORS:
+	for c in Palette.ALL:
 		if SoulEconomy.carry_count(c, "minor") > 0 or SoulEconomy.carry_count(c, "elder") > 0:
 			any_carry = true
 			break
@@ -69,7 +69,7 @@ func _populate_souls_lost() -> void:
 		_souls_lost_box.visible = false
 		return
 	_souls_lost_box.visible = true
-	for c in SoulEconomy.COLORS:
+	for c in Palette.ALL:
 		var wisp: Control = SOUL_WISP_SCENE.instantiate()
 		_souls_row.add_child(wisp)
 		wisp.color = COLOR_TINT.get(c, Color.WHITE)
@@ -80,7 +80,7 @@ func _populate_souls_lost() -> void:
 	divider.color = Color(0.29, 0.23, 0.16, 1)
 	_souls_row.add_child(divider)
 	var elder_total: int = 0
-	for c in SoulEconomy.COLORS:
+	for c in Palette.ALL:
 		elder_total += SoulEconomy.carry_count(c, "elder")
 	var elder_wisp: Control = SOUL_WISP_SCENE.instantiate()
 	_souls_row.add_child(elder_wisp)
@@ -106,6 +106,6 @@ func _on_quit_to_menu() -> void:
 
 func _pyre_fills_dict() -> Dictionary:
 	var d: Dictionary = {}
-	for c in SoulEconomy.COLORS:
+	for c in Palette.ALL:
 		d[c] = SoulEconomy.pyre_fill(c)
 	return d

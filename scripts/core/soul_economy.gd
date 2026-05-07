@@ -7,7 +7,6 @@ static func get_pyre_cap() -> int:
 	var base: int = PYRE_CAP_TEST if Debug.FAST_TEST else PYRE_CAP_SHIP
 	return base + int(MetaShop.stat_value("pyre_cap"))
 
-const COLORS: Array[String] = ["red", "blue", "green", "purple", "gold", "white"]
 static var SOUL_VALUES: Dictionary = {
 	"minor": 1,
 	"elder": 5 if Debug.FAST_TEST else 10,
@@ -33,13 +32,13 @@ func reset_meta() -> void:
 	_carry.clear()
 	_pyres.clear()
 	_filled_pyres.clear()
-	for color in COLORS:
+	for color in Palette.ALL:
 		_carry[color] = {"minor": 0, "elder": 0}
 		_pyres[color] = 0
 		_filled_pyres[color] = false
 
 func add_to_carry(color: String, tier: String, count: int) -> void:
-	assert(color in COLORS, "unknown color: %s" % color)
+	assert(color in Palette.ALL, "unknown color: %s" % color)
 	assert(tier in SOUL_VALUES, "unknown tier: %s" % tier)
 	_carry[color][tier] += count
 	carry_changed.emit(color, tier, _carry[color][tier])
@@ -51,7 +50,7 @@ func pyre_fill(color: String) -> int:
 	return _pyres[color]
 
 func clear_carry() -> void:
-	for color in COLORS:
+	for color in Palette.ALL:
 		for tier in SOUL_VALUES:
 			if _carry[color][tier] > 0:
 				_carry[color][tier] = 0
@@ -62,7 +61,7 @@ func deposit_to_pyres() -> void:
 	# for visual displays; MetaShop is the canonical currency store.
 	var minor_total: int = 0
 	var elder_total: int = 0
-	for color in COLORS:
+	for color in Palette.ALL:
 		var fill_units: int = (
 			_carry[color]["minor"] * SOUL_VALUES["minor"]
 			+ _carry[color]["elder"] * SOUL_VALUES["elder"]
@@ -87,13 +86,13 @@ func deposit_to_pyres() -> void:
 	clear_carry()
 
 func has_any_carry() -> bool:
-	for color in COLORS:
+	for color in Palette.ALL:
 		if _carry[color]["minor"] > 0 or _carry[color]["elder"] > 0:
 			return true
 	return false
 
 func set_pyre_fill(color: String, fill: int) -> void:
-	if not (color in COLORS):
+	if not (color in Palette.ALL):
 		return
 	var clamped: int = clamp(fill, 0, get_pyre_cap())
 	var prior: int = _pyres[color]

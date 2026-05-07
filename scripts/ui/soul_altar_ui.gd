@@ -18,7 +18,7 @@ static var ALTAR_COST: int = ALTAR_COST_TEST if Debug.FAST_TEST else ALTAR_COST_
 func _ready() -> void:
 	visible = false
 	for i in range(_color_buttons.size()):
-		var color: String = SoulEconomy.COLORS[i]
+		var color: String = Palette.ALL[i]
 		_color_buttons[i].pressed.connect(func(): _on_pick(color))
 	_close_btn.pressed.connect(hide_prompt)
 
@@ -29,7 +29,7 @@ func show_prompt() -> void:
 		+ "(Currently queued: %s)" % (queued if queued != "" else "none")
 	)
 	for i in range(_color_buttons.size()):
-		var color: String = SoulEconomy.COLORS[i]
+		var color: String = Palette.ALL[i]
 		var fill: int = SoulEconomy.pyre_fill(color)
 		var btn: Button = _color_buttons[i]
 		btn.text = "%s (pyre: %d)" % [color.capitalize(), fill]

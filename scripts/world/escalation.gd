@@ -1,6 +1,5 @@
 extends Node
 
-const COLORS: Array[String] = ["red", "blue", "green", "purple", "gold", "white"]
 const HEAT_BUILD_PER_SEC: float = 5.0
 const HEAT_DECAY_PER_SEC: float = 2.0
 const HEAT_CAP: float = 100.0
@@ -27,7 +26,7 @@ func _process(delta: float) -> void:
 	tick(delta)
 
 func tick(delta: float) -> void:
-	for color in COLORS:
+	for color in Palette.ALL:
 		var h: float = _heat[color]
 		if color == _player_in_corner:
 			h = min(HEAT_CAP, h + HEAT_BUILD_PER_SEC * delta)
@@ -91,7 +90,7 @@ func time_alarm_factor() -> float:
 
 func reset() -> void:
 	_heat.clear()
-	for color in COLORS:
+	for color in Palette.ALL:
 		_heat[color] = 0.0
 	_player_in_corner = ""
 	_player_upstairs = false

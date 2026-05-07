@@ -1,6 +1,5 @@
 extends Node
 
-const COLORS: Array[String] = ["red", "blue", "green", "purple", "gold", "white"]
 const CANTRIP_KEYS: Array[String] = ["max_hp", "sword_damage", "dash_cooldown"]
 const CANTRIP_MAX_LEVEL: int = 5
 const CANTRIP_BONUSES: Dictionary = {
@@ -43,10 +42,10 @@ func _init_defaults() -> void:
 		_cantrips[k] = 0
 	_hub_features_unlocked = 0
 	_filled_pyres.clear()
-	for c in COLORS:
+	for c in Palette.ALL:
 		_filled_pyres[c] = false
 	_pyre_milestones.clear()
-	for c in COLORS:
+	for c in Palette.ALL:
 		_pyre_milestones[c] = 0
 	_start_with_skill = ""
 	_migrated = false
@@ -102,10 +101,10 @@ func from_dict(d: Dictionary) -> void:
 			_cantrips[k] = int(d["cantrips"].get(k, 0))
 	_hub_features_unlocked = int(d.get("hub_features_unlocked", 0))
 	if d.has("filled_pyres"):
-		for c in COLORS:
+		for c in Palette.ALL:
 			_filled_pyres[c] = bool(d["filled_pyres"].get(c, false))
 	if d.has("pyre_milestones"):
-		for c in COLORS:
+		for c in Palette.ALL:
 			_pyre_milestones[c] = int(d["pyre_milestones"].get(c, 0))
 	_start_with_skill = String(d.get("start_with_skill", ""))
 
@@ -130,11 +129,11 @@ func migrate_to_meta_shop() -> void:
 			MetaShop._structural_owned[hub_unlock_order[i]] = true
 	# Pyre fills → minor souls (1:1).
 	var fill_total: int = 0
-	for color in SoulEconomy.COLORS:
+	for color in Palette.ALL:
 		fill_total += SoulEconomy.pyre_fill(color)
 	if fill_total > 0:
 		MetaShop.credit_minor_souls(fill_total)
 		# Reset fills so visual pyres start fresh against new accumulation.
-		for color in SoulEconomy.COLORS:
+		for color in Palette.ALL:
 			SoulEconomy.set_pyre_fill(color, 0)
 	_migrated = true

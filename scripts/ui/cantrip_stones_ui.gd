@@ -19,7 +19,7 @@ func _ready() -> void:
 
 func show_prompt() -> void:
 	var total_fill: int = 0
-	for c in SoulEconomy.COLORS:
+	for c in Palette.ALL:
 		total_fill += SoulEconomy.pyre_fill(c)
 	_summary.text = (
 		"Spend %d total banked pyre fill (across all colors) per upgrade.\n" % STONE_COST
@@ -41,7 +41,7 @@ func hide_prompt() -> void:
 
 func _buy(key: String) -> void:
 	var remaining: int = STONE_COST
-	for c in SoulEconomy.COLORS:
+	for c in Palette.ALL:
 		if remaining == 0:
 			break
 		var fill: int = SoulEconomy.pyre_fill(c)
