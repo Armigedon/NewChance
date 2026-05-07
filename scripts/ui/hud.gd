@@ -73,7 +73,12 @@ func _refresh_souls() -> void:
 		total_elder += SoulEconomy.carry_count(c, "elder")
 	_wisp_elder.set_count(total_elder)
 
+var _last_hp: int = -1
+
 func _on_hp_changed(new_hp: int) -> void:
+	if _last_hp >= 0 and new_hp < _last_hp:
+		play_damage_flash()
+	_last_hp = new_hp
 	_hp_bar.value = float(new_hp)
 	if _player != null:
 		_hp_bar.max_value = float(_player.max_hp)

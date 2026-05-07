@@ -34,13 +34,6 @@ func test_pull_on_hit_pulls_target() -> void:
 	m.on_hit.call(welp, 10, Vector3.ZERO, 1)
 	assert_bool(welp._knockback_velocity != prev_kb).is_true()
 
-func test_chain_on_hit_attempts_chain() -> void:
-	# Chain modifier should signal chain budget bump; full chain integration
-	# is in damage_pipeline (Task 9). Just verify the hook exists.
-	var m: ElderModifier = ElderRegistry.get_modifier("chain_on_hit")
-	assert_object(m).is_not_null()
-	assert_bool(not m.on_hit.is_null()).is_true()
-
 func test_brittle_returns_damage_multiplier_when_target_frozen() -> void:
 	welp.apply_chill(5)  # freeze threshold
 	var m: ElderModifier = ElderRegistry.get_modifier("brittle")

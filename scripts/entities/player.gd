@@ -199,11 +199,7 @@ func take_damage(amount: int) -> void:
 				return  # absorbed, no HP damage
 	hp = max(0, hp - amount)
 	hp_changed.emit(hp)
-	# Visual feedback: red flash + screen shake.
 	ScreenShake.shake(0.06, 0.12)
-	var hud: CanvasLayer = get_tree().root.find_child("HUD", true, false) as CanvasLayer
-	if hud != null and hud.has_method("play_damage_flash"):
-		hud.play_damage_flash()
 	if hp == 0:
 		_is_dead = true
 		died.emit()

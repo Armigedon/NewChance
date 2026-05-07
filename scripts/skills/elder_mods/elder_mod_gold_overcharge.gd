@@ -15,7 +15,3 @@ func _init() -> void:
 			caster.set_meta("overcharge_counter", 0)
 		else:
 			caster.set_meta("overcharge_active", false)
-	damage_multiplier = func(_target: Node, _base_damage: int, _stack_count: int) -> float:
-		# Pipeline reads from caster meta; multiplier hook reads target side
-		# is no-op for this modifier. Pipeline integration in Task 9.
-		return 1.0
