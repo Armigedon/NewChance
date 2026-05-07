@@ -18,7 +18,7 @@ var description: String
 
 # Hook signatures (all optional):
 # on_hit(target: Node, damage: int, source_pos: Vector3, stack_count: int) -> void
-# on_kill(target: Node, source_pos: Vector3, stack_count: int) -> void
+# on_kill(target: Node, source_pos: Vector3, stack_count: int, caster: Node) -> void
 # on_cast(caster: Node, modifier_stack: Array, base_color: String, stack_count: int) -> void
 # on_player_damaged(player: Node, amount: int, stack_count: int) -> void
 # damage_multiplier(target: Node, base_damage: int, stack_count: int) -> float

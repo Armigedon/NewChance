@@ -20,5 +20,5 @@ func _ready() -> void:
 	well.global_position = Vector3(target_pos.x, 0.5, target_pos.z)
 	# Fire green LINGER if a green modifier is in the stack (purple-base + green
 	# modifier should spawn a cloud at the well placement position).
-	DamagePipeline.fire_impact_spawners(modifier_stack, base_color, well.global_position, get_parent(), base_damage)
+	DamagePipeline.fire_impact_spawners(modifier_stack, base_color, well.global_position, get_parent(), base_damage, _player_skill_system())
 	queue_free()

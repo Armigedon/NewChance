@@ -26,6 +26,14 @@ func _ready() -> void:
 	var hp_total: int = NATIVE_HP  # flat HP — no scaling per playtest balance
 	var lifetime_total: float = 1.5 + 1.5 * (1.0 - pow(0.5, same_color_count))
 	var length_total: float = NATIVE_LENGTH * size_multiplier
+	# Calcify: scale wall length and lifetime when the active wand has the modifier.
+	var ss: Node = _player_skill_system()
+	if ss != null and ss.has_method("active_skill"):
+		var active: Skill = ss.active_skill()
+		if active != null and active.has_elder_modifier("calcify"):
+			var cstack: int = active.elder_modifier_stack_count("calcify")
+			length_total *= ElderModWhiteCalcify.size_multiplier(cstack)
+			lifetime_total *= ElderModWhiteCalcify.lifetime_multiplier(cstack)
 	wall.configure(hp_total, lifetime_total, length_total)
 	get_parent().add_child(wall)
 	wall.global_position = Vector3(target_pos.x, 0.5, target_pos.z)
@@ -35,5 +43,5 @@ func _ready() -> void:
 		wall.rotate_object_local(Vector3.UP, PI / 2.0)
 	# Fire green LINGER if a green modifier is in the stack (white-base + green
 	# modifier should spawn a cloud at the wall placement position).
-	DamagePipeline.fire_impact_spawners(modifier_stack, base_color, wall.global_position, get_parent(), base_damage)
+	DamagePipeline.fire_impact_spawners(modifier_stack, base_color, wall.global_position, get_parent(), base_damage, _player_skill_system())
 	queue_free()

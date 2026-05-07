@@ -31,7 +31,7 @@ func _ready() -> void:
 	# Fire spawners at the strike location regardless of whether enemies were
 	# hit — green LINGER drops a cloud where the cast resolved, not where
 	# damage landed. Matches cast_purple_void's unconditional behavior.
-	DamagePipeline.fire_impact_spawners(modifier_stack, base_color, global_position, get_parent(), base_damage)
+	DamagePipeline.fire_impact_spawners(modifier_stack, base_color, global_position, get_parent(), base_damage, _player_skill_system())
 	# Despawn after brief VFX
 	await get_tree().create_timer(VFX_LIFETIME).timeout
 	queue_free()

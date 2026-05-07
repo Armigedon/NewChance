@@ -30,5 +30,5 @@ func _on_body_entered(body: Node) -> void:
 	# Fire spawner on first hit, at this position (always on-map). Pierce
 	# continues for the remaining lifetime via CastBase._process.
 	if is_first_hit:
-		DamagePipeline.fire_impact_spawners(modifier_stack, base_color, global_position, get_parent(), base_damage)
+		DamagePipeline.fire_impact_spawners(modifier_stack, base_color, global_position, get_parent(), base_damage, _player_skill_system())
 	# Pierces — does NOT queue_free; lets lifetime expire via CastBase._process

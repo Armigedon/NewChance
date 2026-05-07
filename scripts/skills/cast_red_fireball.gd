@@ -28,7 +28,7 @@ func _on_body_entered(body: Node) -> void:
 		return
 	var aoe_radius: float = BASE_AOE_RADIUS * size_multiplier
 	_damage_aoe(global_position, aoe_radius)
-	DamagePipeline.fire_impact_spawners(modifier_stack, base_color, global_position, get_parent(), base_damage)
+	DamagePipeline.fire_impact_spawners(modifier_stack, base_color, global_position, get_parent(), base_damage, _player_skill_system())
 	# Mark this enemy as hit. _damage_aoe also routes through _hit_target which
 	# tracks the hit_set, but we ensure the body that triggered the impact is
 	# tracked even if it's outside the AoE radius (shouldn't happen, but safe).

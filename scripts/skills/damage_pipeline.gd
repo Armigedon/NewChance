@@ -26,6 +26,7 @@ const ARMOR_DURATION: float = 5.0
 class ChainState extends RefCounted:
 	var budget: int = 0
 	var hit_set: Dictionary = {}  # instance_id -> true; targets already damaged by this cast's chain
+	var jump_count: int = 0  # 0 for the original hit, increments per chain recursion (used by Resonance)
 
 static func apply(target: Node, damage: int, modifier_stack: Array, base_color: String, source_pos: Vector3, source_tag: String = "", chain_state: ChainState = null, skill_system: Node = null, caster: Node = null) -> void:
 	if target == null or not is_instance_valid(target):
@@ -124,13 +125,21 @@ static func apply(target: Node, damage: int, modifier_stack: Array, base_color: 
 				if em3 == null or em3.on_kill.is_null():
 					continue
 				var stack3: int = active4.elder_modifier_stack_count(modifier_id)
-				em3.on_kill.call(target, source_pos, stack3)
+				em3.on_kill.call(target, source_pos, stack3, caster)
 
 	if chain_state.budget > 0:
 		var next: Node = find_chain_target(target, chain_state.hit_set, CHAIN_RANGE)
 		if next != null:
 			chain_state.budget -= 1
-			apply(next, effective_damage, modifier_stack, base_color, source_pos, source_tag, chain_state, skill_system, caster)
+			chain_state.jump_count += 1
+			# Resonance: chains amplify per jump (+25% per jump * stack count).
+			var chain_damage: int = effective_damage
+			if skill_system != null and skill_system.has_method("active_skill"):
+				var active5: Skill = skill_system.active_skill()
+				if active5 != null and active5.has_elder_modifier("resonance"):
+					var rstack: int = active5.elder_modifier_stack_count("resonance")
+					chain_damage = int(float(effective_damage) * (1.0 + 0.25 * float(rstack) * float(chain_state.jump_count)))
+			apply(next, chain_damage, modifier_stack, base_color, source_pos, source_tag, chain_state, skill_system, caster)
 
 static func _apply_native_layer(target: Node, color: String, damage: int, source_pos: Vector3) -> void:
 	match color:
@@ -209,7 +218,7 @@ static func fire_cast_spawners(skill: Skill, caster: Node) -> void:
 
 # Fired when a non-spawner cast resolves its primary impact. Handles green LINGER.
 # Pass `cast_node` as `world_root_for_spawn` (clouds are added under the cast's parent).
-static func fire_impact_spawners(modifier_stack: Array, base_color: String, impact_pos: Vector3, world: Node, base_damage: int) -> void:
+static func fire_impact_spawners(modifier_stack: Array, base_color: String, impact_pos: Vector3, world: Node, base_damage: int, skill_system: Node = null) -> void:
 	if base_color == "green":
 		return  # green-base IS the cloud; don't double-spawn from modifier rule
 	var green_count: int = _count(modifier_stack, "green")
@@ -220,6 +229,12 @@ static func fire_impact_spawners(modifier_stack: Array, base_color: String, impa
 	var cloud: Node3D = SPAWNER_CLOUD_SCENE.instantiate()
 	# Cross-color green modifier: no native lifetime, asymptotic +3s extension
 	var lifetime: float = 3.0 * (1.0 - pow(0.5, green_count))
+	# Lingering Mist: extends green-cloud lifetime by 50% per stack.
+	if skill_system != null and skill_system.has_method("active_skill"):
+		var active: Skill = skill_system.active_skill()
+		if active != null and active.has_elder_modifier("lingering_mist"):
+			var lm_stack: int = active.elder_modifier_stack_count("lingering_mist")
+			lifetime *= ElderModGreenLingeringMist.lifetime_multiplier(lm_stack)
 	var tick_dmg: int = max(1, int(float(base_damage) * CLOUD_TICK_FRAC))
 	cloud.configure(lifetime, SPAWNER_CLOUD_BASE_RADIUS, tick_dmg, modifier_stack, base_color)
 	world.add_child(cloud)

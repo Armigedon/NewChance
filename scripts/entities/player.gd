@@ -100,6 +100,34 @@ var _knockback_velocity: Vector3 = Vector3.ZERO
 func apply_chill(stacks: int) -> void:
 	_chill_stacks = min(float(CHILL_MAX_STACKS), _chill_stacks + float(stacks))
 
+func _slipstream_multiplier(input_dir: Vector3) -> float:
+	# Slipstream (purple elder modifier): boost when moving toward an enemy.
+	if _skill_system == null or input_dir.length_squared() < 0.01:
+		return 1.0
+	var active: Skill = _skill_system.active_skill()
+	if active == null or not active.has_elder_modifier("slipstream"):
+		return 1.0
+	var nearest: Node = null
+	var best_dist_sq: float = INF
+	for e in get_tree().get_nodes_in_group("enemy"):
+		if not is_instance_valid(e):
+			continue
+		var d: float = global_position.distance_squared_to(e.global_position)
+		if d < best_dist_sq:
+			best_dist_sq = d
+			nearest = e
+	if nearest == null:
+		return 1.0
+	var to_enemy: Vector3 = nearest.global_position - global_position
+	to_enemy.y = 0.0
+	if to_enemy.length() < 0.01:
+		return 1.0
+	# Dot product > 0 means moving toward the enemy.
+	if input_dir.normalized().dot(to_enemy.normalized()) <= 0.0:
+		return 1.0
+	var stack: int = active.elder_modifier_stack_count("slipstream")
+	return ElderModPurpleSlipstream.speed_multiplier(stack)
+
 func apply_pull_toward(target_pos: Vector3, impulse: float) -> void:
 	var dir: Vector3 = target_pos - global_position
 	dir.y = 0.0
@@ -142,8 +170,9 @@ func _physics_process(delta: float) -> void:
 		var input_dir: Vector2 = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
 		var direction: Vector3 = Vector3(input_dir.x, 0, input_dir.y)
 		var slow_factor: float = max(0.2, 1.0 - CHILL_SLOW_PER_STACK * _chill_stacks)
-		velocity.x = direction.x * move_speed * slow_factor
-		velocity.z = direction.z * move_speed * slow_factor
+		var slipstream_mult: float = _slipstream_multiplier(direction)
+		velocity.x = direction.x * move_speed * slow_factor * slipstream_mult
+		velocity.z = direction.z * move_speed * slow_factor * slipstream_mult
 	if _knockback_velocity.length() > 0.01:
 		velocity.x += _knockback_velocity.x
 		velocity.z += _knockback_velocity.z

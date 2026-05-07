@@ -11,10 +11,9 @@ func _ready() -> void:
 	_register_all()
 
 func _register_all() -> void:
-	# First batch (Phase 2 of plan): 2 modifiers per color = 12 total.
-	# Follow-up plan adds the remaining 36 to reach the spec's 48.
-	# Each modifier is registered with hooks wired to its behavior; behavior
-	# scripts live alongside this file (e.g., elder_mod_red_ignite.gd).
+	# Pool size per color = 4 modifiers (12 first batch + 12 second batch).
+	# Spec target is 8/color = 48; remaining 24 land in a future phase.
+	# First batch (color core mechanics):
 	_register(ElderModRedIgniteAllHits.new())
 	_register(ElderModRedCinderTrail.new())
 	_register(ElderModBlueChillAllHits.new())
@@ -27,6 +26,19 @@ func _register_all() -> void:
 	_register(ElderModGoldOvercharge.new())
 	_register(ElderModWhiteBoneShield.new())
 	_register(ElderModWhiteMarrowPierce.new())
+	# Second batch (build variety):
+	_register(ElderModRedCombustOnKill.new())
+	_register(ElderModRedMass.new())
+	_register(ElderModBlueFrostbite.new())
+	_register(ElderModBlueGlacialPath.new())
+	_register(ElderModGreenLingeringMist.new())
+	_register(ElderModGreenDecay.new())
+	_register(ElderModPurpleSingularity.new())
+	_register(ElderModPurpleSlipstream.new())
+	_register(ElderModGoldResonance.new())
+	_register(ElderModGoldStormCaller.new())
+	_register(ElderModWhiteCalcify.new())
+	_register(ElderModWhiteReaper.new())
 
 func _register(m: ElderModifier) -> void:
 	_modifiers[m.modifier_id] = m
