@@ -31,8 +31,9 @@ func _process(delta: float) -> void:
 	if _timer >= effective_interval and _alive_count < max_alive:
 		_timer = 0.0
 		_spawn()
-		# Burst spawn: 25% chance of a second welp same tick when player is close.
-		if _is_close(player_pos) and randf() < 0.25 and _alive_count < max_alive:
+		# Burst spawn: 10% chance of a second welp same tick when player is close.
+		# (Was 25% — softened as part of the post-boss-1 spawn-pressure tuning.)
+		if _is_close(player_pos) and randf() < 0.10 and _alive_count < max_alive:
 			_spawn()
 
 func _spawn() -> void:
@@ -42,8 +43,12 @@ func _spawn() -> void:
 	# Far corners only ever produce welps — no off-screen dragons/elders.
 	if _is_far(player_pos):
 		tier = "welp"
+	# Tier-floor cooldown: if the rolled tier is on cooldown, skip the spawn
+	# entirely. Earlier Phase 11 behavior downgraded the roll to "welp", which
+	# converted the cooldown window into a welp surge instead of breathing
+	# room. Skipping is the intended floor semantic.
 	if not Escalation.can_spawn_tier(tier):
-		tier = "welp"
+		return
 	var scene: PackedScene = _scene_for_tier(tier)
 	if scene == null:
 		return

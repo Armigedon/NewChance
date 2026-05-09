@@ -14,29 +14,36 @@ func test_spawn_records_tier_when_dragon_rolled() -> void:
 	Escalation.record_tier_spawn("dragon")
 	assert_bool(Escalation.can_spawn_tier("dragon")).is_false()
 
-func test_corner_spawner_downgrades_when_floor_active() -> void:
-	# Set up: floor is active for dragon. The spawner's _spawn rolls dragon
-	# but should downgrade to welp.
+func test_corner_spawner_skips_when_floor_active() -> void:
+	# When both dragon and elder floors are active, every dragon/elder roll
+	# should result in NO spawn (not a welp downgrade). Welp rolls still spawn
+	# normally — the floor only gates the rolled tier, not all spawns.
 	var spawner = preload("res://scripts/world/corner_spawner.gd").new()
 	spawner.color = "red"
 	spawner.max_alive = 10
 	add_child(spawner)
 	spawner.global_position = Vector3.ZERO
-	# Force heat high so roll_tier returns dragon-ish.
 	Escalation._heat["red"] = 100.0
-	# Mark dragon floor as recently used.
 	Escalation.record_tier_spawn("dragon")
-	# Drive _spawn 20 times. With dragon floor active, all spawns should be welps.
-	# (heat 100 alone might still roll elder, so also block elder.)
 	Escalation.record_tier_spawn("elder")
-	var dragon_or_elder_count: int = 0
 	for i in range(20):
 		spawner._spawn()
+	var dragon_or_elder_count: int = 0
+	var welp_count: int = 0
 	for n in get_tree().get_nodes_in_group("enemy"):
-		if "tier" in n and (n.tier == "dragon" or n.tier == "elder"):
+		if not "tier" in n:
+			continue
+		if n.tier == "dragon" or n.tier == "elder":
 			dragon_or_elder_count += 1
-	# All spawns should have downgraded to welp.
+		elif n.tier == "welp":
+			welp_count += 1
+	# No dragons/elders spawned (floors active).
 	assert_int(dragon_or_elder_count).is_equal(0)
+	# Roll outcomes that hit the floor should be skipped, not converted to welps.
+	# At heat 100 the dragon+elder probability is 0.50, so on 20 rolls we expect
+	# ~10 welps and ~10 skips. Allow generous variance — the assertion is just
+	# that NOT all 20 became welps (which would mean downgrade).
+	assert_int(welp_count).is_less(20)
 
 func test_corner_spawner_records_tier_after_successful_spawn() -> void:
 	var spawner = preload("res://scripts/world/corner_spawner.gd").new()
